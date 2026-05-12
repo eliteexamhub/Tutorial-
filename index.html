@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub | Main Hub</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
+
+        :root {
+            --navy: #001f3f;
+            --green: #38761d;
+            --light-bg: #f4f7f6;
+            --error: #d32f2f;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 20px;
+            color: var(--navy);
+        }
+
+        .container { max-width: 800px; margin: auto; }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            background: var(--navy);
+            color: white;
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        .subject-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        .subject-card {
+            background: white;
+            padding: 30px 10px;
+            text-align: center;
+            border-radius: 15px;
+            font-weight: 800;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: 0.3s;
+            border: 2px solid transparent;
+            touch-action: manipulation;
+        }
+
+        .subject-card:hover {
+            border-color: var(--green);
+            transform: translateY(-5px);
+            color: var(--green);
+        }
+
+        #exam-container { display: none; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        .timer-bar {
+            position: sticky;
+            top: 10px;
+            background: var(--green);
+            color: white;
+            padding: 10px;
+            border-radius: 50px;
+            text-align: center;
+            font-weight: bold;
+            z-index: 100;
+            margin-bottom: 20px;
+        }
+
+        .question-block { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .question-text { font-weight: 600; margin-bottom: 15px; display: block; line-height: 1.5; }
+        
+        .options-group label {
+            display: block;
+            background: #f9f9f9;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .options-group label:hover { background: #e8f5e9; }
+        input[type="radio"] { margin-right: 10px; }
+
+        .btn-action {
+            width: 100%;
+            padding: 15px;
+            background: var(--navy);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .btn-home { background: #666; margin-bottom: 10px; }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        .review-section { text-align: left; margin-top: 40px; border-top: 2px solid var(--navy); padding-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="main-hub">
+    <header>
+        <h1 style="margin:0; font-size: 1.5rem;">ELITE EXAM HUB</h1>
+        <p style="margin:5px 0 0; font-size: 0.8rem; opacity: 0.8;">CBT Practice Portal</p>
+    </header>
+
+    <div class="subject-grid">
+        <div class="subject-card" onclick="startExam('GST102')">GST102</div>
+        <div class="subject-card" style="opacity: 0.5;">GST104</div>
+        <div class="subject-card" style="opacity: 0.5;">ENT102</div>
+        <div class="subject-card" style="opacity: 0.5;">GST108</div>
+        <div class="subject-card" style="opacity: 0.5;">GST110</div>
+        <div class="subject-card" style="opacity: 0.5;">CSC102</div>
+        <div class="subject-card" style="opacity: 0.5;">MTH102</div>
+        <div class="subject-card" style="opacity: 0.5;">PHY102</div>
+        <div class="subject-card" style="opacity: 0.5;">CHM102</div>
+        <div class="subject-card" style="opacity: 0.5;">BIO102</div>
+    </div>
+</div>
+
+<div class="container" id="exam-container">
+    <div class="timer-bar" id="timer">Time Remaining: 20:00</div>
+    <button class="btn-action btn-home" onclick="location.reload()">Quit Exam</button>
+    <div id="question-list"></div>
+    <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">GO AND READ😂</div>
+    <h1 id="score-text"></h1>
+    <p id="grade-comment"></p>
+    <button class="btn-action" onclick="location.reload()">Back to Menu</button>
+    <div id="review-area" class="review-section"></div>
+</div>
+
+<script>
+const gstQuestions = [
+    { q: "The basic word for the word 'International' is ______", o: ["Inter", "Nation", "al", "In"], a: 1 },
+    { q: "What does the prefix 'Mal' means?", o: ["Good", "Badly", "Between", "Wrong"], a: 1 },
+    { q: "The word 'Inter' means _____", o: ["Above", "Below", "Between", "Over"], a: 2 },
+    { q: "The prefix 'De' means _____", o: ["Against", "Not", "To reverse", "Nothing"], a: 2 },
+    { q: "______ is the process of adding a letter or a group of letters at the end of a base word?", o: ["Prefixation", "Suffixation", "Adjective", "Grammatical unit"], a: 1 },
+    { q: "Compounding is the process of bringing together the _____ of two words to form a new one", o: ["Prefix form", "Suffix form", "Base form", "Inflection forms"], a: 2 },
+    { q: "Leftover is a ____ word", o: ["Big word", "Compound", "Subordinate", "Conjunction"], a: 1 },
+    { q: "______ is the process of combining two separate frequent forms to produce a single word", o: ["Conversion", "Blending", "Possession", "Compounding"], a: 1 },
+    { q: "Motel is the _____ of Motorway and Hotel", o: ["Conversion", "Compounding", "Blending", "Possession"], a: 2 },
+    { q: "Clipping is a type of word formation process very common in _____ speech", o: ["Formal", "Casual", "Appreciative", "Apology"], a: 1 },
+    { q: "Tele from television is an example of ______", o: ["Clipping", "Compound", "Conversion", "Blending"], a: 0 },
+    { q: "____ is the least common process of word formation in English", o: ["Clipping", "Blending", "Coinage", "Compounding"], a: 2 },
+    { q: "Which of the following is a coinage word?", o: ["Fridge", "Blackout", "Stone", "Nylon"], a: 3 },
+    { q: "Chin Chin is an example of ______", o: ["Clipping", "Reduplication", "Blending", "Conversion"], a: 1 },
+    { q: "What is the full meaning of NFA", o: ["Nigeria Federation Association", "National Football Association", "Nigeria Football Association", "National Federal Association"], a: 2 },
+    { q: "COD means ___", o: ["Cash in Demand", "Call on Demand", "Cash of Demand", "Call of Demand"], a: 1 },
+    { q: "Trouser is a word from ___", o: ["Spanish", "English", "French", "German"], a: 2 },
+    { q: "Alcohol is derived form which language?", o: ["Arabic", "Turkish", "French", "English"], a: 0 },
+    { q: "Robot is a borrowed word form which of the following language?", o: ["Japanese", "Dutch", "Czech", "Arabic"], a: 2 },
+    { q: "An outline shows how the writer has organized ______", o: ["Ideas", "words", "Letters", "Grammar"], a: 0 },
+    { q: "Which of the following is not a type of outlining?", o: ["Topic Outline", "Grammar Outline", "Sentence Outline", "Paragraph Outline"], a: 1 },
+    { q: "Which outline method is more of time consuming?", o: ["Topic Sentence", "Grammar Outline", "Sentence Outline", "Paragraph Outline"], a: 2 },
+    { q: "The more important an idea is the closer to the ______", o: ["Right", "Left", "Above word", "Lower word"], a: 1 },
+    { q: "_____ is a method of generating ideas and sharing knowledge to solve a particular commercial or technical group", o: ["Thinking", "Brainstorming", "Idea Generation", "Idea Formation"], a: 1 },
+    { q: "Who first introduced Brainstorming?", o: ["Woke Shoyinka 1930", "Alex Osborne 1930", "Victoria Aremo 1930", "William Shakespeare 1930"], a: 1 },
+    { q: "Which of these is a basic method if brainstorming?", o: ["Mind mapping", "Question Brainstorming", "Individual Brainstorming", "Electronic Brainstorming"], a: 2 },
+    { q: "______ is the act of taking ideas and show how they're connected to other and tye main topic", o: ["Team Idea Mapping", "Group Brainstorming", "Clustering", "Brainstorming Variation"], a: 2 },
+    { q: "______ is when you write for 5 minutes on your topic without stopping?", o: ["Note Taking", "Listing", "Free Writing", "Outlining"], a: 2 },
+    { q: "Forms of Brainstorming includes all except ______", o: ["Structured Brainstorming", "Silent Brainstorming", "Open door Brainstorming", "Close door Brainstorming"], a: 3 },
+    { q: "______ consist of creating a heading and putting your ideas evidence or points about your topic...", o: ["Listing", "Jotting", "Outlining", "Note Taking"], a: 2 },
+    { q: "The full meaning of Email is _____", o: ["Electric Mail", "Electronic Mail", "Electrostatic Mail", "Electricity Mail"], a: 1 },
+    { q: "______ is where unsolicited mails especially advertisement goes to", o: ["IOS", "SPAM", "ISP", "DRAFT"], a: 1 },
+    { q: "The full meaning of ISP is _____", o: ["Internal Service Provider", "International Service Provider", "Internet Service Provider", "Internet Service Portal"], a: 2 },
+    { q: "IOS stands for ____", o: ["iPhone Operator System", "iPhone Operating System", "iPhone Operative System", "iPhone Office System"], a: 1 },
+    { q: "_____ is not a type of Email", o: ["Formal Email", "Informal Email", "Semi-Formal Email", "Social Email"], a: 3 },
+    { q: "______ is a type of mail sent from an individual to several people?", o: ["One to One Email", "One to Many Email", "Many to One Email", "Transactional Email"], a: 1 },
+    { q: "Which of the following is not an etiquette for an Email", o: ["Proper Email Address", "A clear subject line", "Use of formal language", "Sharing of mails to others"], a: 3 },
+    { q: "Which type of Email is also known as One to One Email?", o: ["Formal Email", "Informal Mail", "Transactional Email", "Semi-Formal Email"], a: 2 },
+    { q: "An Email strictly for business and professional purposes is also known as ____ Email", o: ["Informal", "Formal", "Semi-Formal", "Transactional"], a: 1 },
+    { q: "____ is the situation where two different languages overlap...", o: ["Language Switch", "Coherence", "Inference", "Interference"], a: 3 },
+    { q: "Which of the following is not a level of interference?", o: ["Lexical Interference", "Grammatical Interference", "Phonological Interference", "Code Interference"], a: 3 },
+    { q: "_____ is the use of two different languages simultaneously in a conversation", o: ["Coherence", "Language Mixing", "Code Mixing", "Word Mixing"], a: 2 },
+    { q: "The alternative use of two languages in a conversation is known as ____", o: ["Language Switch", "Code Switch", "Word Switch", "Grammar Switch"], a: 1 },
+    { q: "Which of the following is not a Code Switch?", o: ["Tag Switching", "Inter-Sentential", "Intra-Sentential", "Outer-Sentential"], a: 3 },
+    { q: "Which is not a Code Mixing?", o: ["Alteration", "Congruent Lexicalization", "Insertion", "Removal"], a: 3 },
+    { q: "The word 'Literature' means ____", o: ["Letter", "Word", "An Act", "Grammatical Expressions"], a: 0 },
+    { q: "_____ is an imaginative piece of writing that mirrors real life experiences", o: ["Novel", "Story", "Literature", "A Play"], a: 2 },
+    { q: "The following are the genres of literature except _____", o: ["Drama", "Prose", "Poetry", "Figure of Speech"], a: 3 },
+    { q: "_____ is a figure of speech that express a bad idea in a pleasant way", o: ["Oxymoron", "Euphemism", "Apostrophe", "Synecdoche"], a: 1 },
+    { q: "O death where is thy sting? Which figure of speech...", o: ["Oxymoron", "Euphemism", "Apostrophe", "Synecdoche"], a: 2 },
+    { q: "Alliteration is the repetition of same _____ at the beginning", o: ["Word", "Letter", "Grammar", "part of speech"], a: 1 },
+    { q: "Bang is an example of _____", o: ["Alliteration", "Onomatopoeia", "Euphemism", "Antithesis"], a: 1 },
+    { q: "Life is like a walking shadow for this whole year...", o: ["Irony", "Personification", "Metaphor", "Simile"], a: 2 },
+    { q: "Which figure of speech gives human attributes...", o: ["Irony", "Personification", "Metaphor", "Oxymoron"], a: 1 },
+    { q: "_____ is the use of words to convey a meaning that is opposite", o: ["Metaphor", "Simile", "Irony", "Exclamation"], a: 2 },
+    { q: "Which of the following is True?", o: ["Everyone listens", "Not everyone who hears listens", "Not everyone who listens hear", "Everyone who listens hears"], a: 1 },
+    { q: "Both hearing and listening involves sound perception", o: ["True", "False", "Maybe", "None of the above"], a: 0 },
+    { q: "Listening takes up to ____", o: ["40% to 50%", "30% to 40%", "25% to 35%", "60% to 80%"], a: 0 },
+    { q: "Speaking takes up to ___ percentage", o: ["10% to 20%", "25% to 30%", "50% to 60%", "40% to 60%"], a: 1 },
+    { q: "How many types of listening do we have", o: ["2", "4", "3", "5"], a: 2 },
+    { q: "Reading takes up to ____ percentage", o: ["5% to 10%", "12% to 16%", "25% to 30%", "11% to 16%"], a: 3 },
+    { q: "Writing takes up to ___ percentage", o: ["9%", "15%", "10%", "20%"], a: 0 },
+    { q: "Choosing what you want to listen to is what type of listening?", o: ["Appreciative", "Selective", "Sympathy", "Empathy"], a: 1 },
+    { q: "_____ is the means of comprehending what a message means to you", o: ["Understanding", "Rembering", "Wisdom", "Knowledge"], a: 0 },
+    { q: "Do you give feedback inform of verbal?", o: ["Yes", "No", "Sometimes", "I don't know"], a: 0 },
+    { q: "Which is intentional focus on hearing a speaker's message?", o: ["Receiving", "Understanding", "Evaluating", "Knowledge"], a: 0 },
+    { q: "How many phonemes do we have in English?", o: ["22", "30", "44", "40"], a: 2 },
+    { q: "The process of speaking English correctly and confidently is called", o: ["Grammar", "Pronunciation", "Fluency", "Vocabulary"], a: 2 },
+    { q: "Standard way in which a word is made to sound when spoken?", o: ["Vocabulary", "Pronunciation", "Writing", "Phonetics"], a: 1 },
+    { q: "What is the art of delivering a formal address in public?", o: ["Writing", "Speech writing", "Speech making", "Dialogue"], a: 2 },
+    { q: "Who wrote the book 'The Secrets of Good Communicator'?", o: ["Henry Pilter", "Larry King", "Long Queen", "William Shakespeare"], a: 1 },
+    { q: "Listening skill involves", o: ["The head and active soul", "The nose and the brain", "The voice and the mouth", "The mouth and the hand"], a: 0 },
+    { q: "Refers to the involvement of the ears, eyes, voice and the brain?", o: ["Listening", "Speaking", "Writing", "Reading"], a: 0 },
+    { q: "What is the third language skill after listening and speaking?", o: ["Listening", "Speaking", "Reading", "Writing"], a: 2 },
+    { q: "Reading as a skill has", o: ["Two stages", "Five stages", "Ten stages", "Six stages"], a: 0 },
+    { q: "Which skill involves the use of the brain, eyes and lips?", o: ["Speaking", "Writing", "Reading", "Listening"], a: 2 },
+    { q: "Speaking and writing are called", o: ["Generative skills", "Production skills", "Reception skills", "Reproduction skills"], a: 1 },
+    { q: "Effective listening process suggests", o: ["Concentration", "Distraction", "Sleeping", "Noise making"], a: 0 },
+    { q: "One way of developing effective listening skill is to", o: ["Avoid distraction", "Encourage noise", "Ignore the speaker", "Sleep in class"], a: 0 },
+    { q: "Pronunciation deals with", o: ["Correct sounding of words", "Writing of letters", "Drawing of objects", "Reading silently"], a: 0 },
+    { q: "Fluency in communication means", o: ["Smooth and confident speech", "Ability to draw", "Ability to write slowly", "Ability to sing"], a: 0 },
+    { q: "Speech making is important because it", o: ["Improves communication", "Encourages silence", "Prevents interaction", "Reduces learning"], a: 0 },
+    { q: "Reading skill helps to", o: ["Improve understanding", "Destroy vocabulary", "Reduce knowledge", "Avoid communication"], a: 0 },
+    { q: "Which of the following is a receptive skill?", o: ["Listening", "Speaking", "Writing", "Speech making"], a: 0 },
+    { q: "Which of the following is a productive skill?", o: ["Reading", "Listening", "Writing", "Watching"], a: 2 },
+    { q: "Effective communication requires", o: ["Attention", "Distraction", "Noise", "Silence only"], a: 0 },
+    { q: "Communication skill can be improved through", o: ["Constant practice", "Isolation", "Laziness", "Avoiding people"], a: 0 },
+    { q: "Note taking is the act of ________ information while listening or reading.", o: ["destroying", "recording", "ignoring", "drawing"], a: 1 },
+    { q: "Note making helps students to ________.", o: ["forget easily", "waste time", "summarize information", "avoid studying"], a: 2 },
+    { q: "Which of the following is a method of note taking?", o: ["Drawing", "Cornell method", "Singing", "Dancing"], a: 1 },
+    { q: "One importance of note taking is to ________.", o: ["improve memory", "increase noise", "reduce learning", "encourage laziness"], a: 0 },
+    { q: "Abbreviations are mainly used in note taking to ________.", o: ["confuse", "save time", "waste paper", "increase errors"], a: 1 },
+    { q: "Vocabulary refers to the ________ a person knows and uses.", o: ["books", "languages", "words", "letters"], a: 2 },
+    { q: "Vocabulary development can be improved through ________.", o: ["reading regularly", "avoiding dictionaries", "sleeping", "skipping"], a: 0 },
+    { q: "Words that have similar meanings are called ________.", o: ["antonyms", "homophones", "synonyms", "prefixes"], a: 2 },
+    { q: "Words that have opposite meanings are called ________.", o: ["synonyms", "antonyms", "suffixes", "homonyms"], a: 1 },
+    { q: "Context clues help readers to understand the meaning of ________.", o: ["pictures", "unknown words", "numbers", "drawings"], a: 1 },
+    { q: "Which of the following is correctly spelt?", o: ["Recieve", "Goverment", "Environment", "Enviroment"], a: 2 },
+    { q: "Correct spelling is important because it improves ________.", o: ["confusion", "communication", "silence", "noise"], a: 1 },
+    { q: "A word that sounds alike but has different meanings is called a ________.", o: ["synonym", "antonym", "homophone", "prefix"], a: 2 },
+    { q: "Which of the following contains a silent letter?", o: ["Knife", "Table", "Orange", "Pencil"], a: 0 },
+    { q: "The plural form of 'child' is ________.", o: ["childs", "childrens", "children", "childes"], a: 2 },
+    { q: "The plural form of 'knife' is ________.", o: ["knifes", "knives", "knifees", "knivies"], a: 1 },
+    { q: "Which of the following can improve spelling?", o: ["Constant practice", "Avoiding reading", "Skipping classes", "Poor pronunciation"], a: 0 },
+    { q: "The use of dictionaries helps in ________.", o: ["vocabulary development", "reducing knowledge", "poor writing", "forgetting"], a: 0 },
+    { q: "Main points in note taking are usually ________.", o: ["unnecessary", "key ideas", "jokes", "drawings"], a: 1 },
+    { q: "British spelling of the word 'color' in American English is ________.", o: ["colur", "color", "collor", "colour"], a: 3 },
+    { q: "An outline is mainly used to ________.", o: ["confuse ideas", "organize ideas", "destroy info", "shorten books"], a: 1 },
+    { q: "A good outline helps a writer to ________.", o: ["lose focus", "arrange points logically", "avoid planning", "repeat ideas"], a: 1 },
+    { q: "Which of the following comes first in an outline?", o: ["Supporting details", "Conclusion", "Main topic", "Examples"], a: 2 },
+    { q: "Major divisions in an outline are usually represented by ________.", o: ["Roman numerals", "Small letters", "Symbols", "Colors"], a: 0 },
+    { q: "Subpoints in an outline provide ________.", o: ["unnecessary info", "supporting information", "wrong info", "unrelated ideas"], a: 1 },
+    { q: "A good outline should be ________.", o: ["disorganized", "lengthy", "clear and logical", "without structure"], a: 2 },
+    { q: "Which of the following is NOT a feature of a good outline?", o: ["Arrangement", "Clarity", "Repetition of ideas", "Logical sequence"], a: 2 },
+    { q: "An outline written before an essay is known as a ________.", o: ["draft outline", "topic sentence", "paragraph", "conclusion"], a: 0 },
+    { q: "Which of the following helps in preparing a good outline?", o: ["Brainstorming", "Guesswork", "Noise making", "Daydreaming"], a: 0 },
+    { q: "Details under a main point must be ________.", o: ["unrelated", "connected to main idea", "confusing", "too brief"], a: 1 },
+    { q: "_____ is solely a mental process which deals with the mind.", o: ["Listening", "Communicating", "Reading", "Writing"], a: 2 },
+    { q: "The purpose of reading is obtainable through", o: ["Pleasure", "Practice", "Perceive pages", "Picture, pleasure and points"], a: 3 },
+    { q: "Form of reading not under any compulsion or obligation.", o: ["practice", "pleasure", "points", "examination"], a: 1 },
+    { q: "The act of trying to use visual clues at the page of a book is called", o: ["Scanning", "Skimming", "Browsing", "Studying"], a: 2 },
+    { q: "Process where the reader locates specific or given points is known as", o: ["Scanning", "Study reading", "Skimming", "Browsing"], a: 0 },
+    { q: "Which form of reading is more challenging to carry out?", o: ["Scanning", "Skimming", "Study reading", "Browsing"], a: 2 },
+    { q: "Which of the following reading habits provides a good movement?", o: ["Juggling", "Poring", "Word movement", "Reading aloud"], a: 2 },
+    { q: "Which of the following are reading skills?", o: ["Skimming", "Posing", "Assimilation", "Sleeping"], a: 0 },
+    { q: "Associative meaning of words beyond the basic level.", o: ["Connotation", "Denotation", "Appreciation", "Vocabulary"], a: 0 },
+    { q: "_____ paragraph is important in comprehension.", o: ["Topic", "Introductory", "Final", "Descriptive"], a: 0 }
+];
+
+let activeQuestions = [];
+let timeLeft = 1200;
+let timer;
+
+function startExam(subject) {
+    document.getElementById('main-hub').style.display = 'none';
+    document.getElementById('exam-container').style.display = 'block';
+    
+    // Shuffle and pick 60 out of 127
+    activeQuestions = gstQuestions.sort(() => 0.5 - Math.random()).slice(0, 60);
+    renderExam();
+    startTimer();
+}
+
+function renderExam() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeQuestions.map((item, idx) => `
+        <div class="question-block">
+            <span class="question-text">${idx + 1}. ${item.q}</span>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}"> ${String.fromCharCode(65 + i)}. ${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function startTimer() {
+    timeLeft = 1200; // Reset timer for new attempt
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft / 60);
+        let s = timeLeft % 60;
+        document.getElementById('timer').innerText = `Time: ${m}:${s < 10 ? '0' : ''}${s}`;
+        if (timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2 style="color: var(--navy);">Review Answers</h2>`;
+
+    activeQuestions.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userSelection = sel ? parseInt(sel.value) : null;
+        const isCorrect = userSelection === item.a;
+        
+        if (isCorrect) score++;
+
+        reviewHTML += `
+            <div class="question-block" style="border-left: 5px solid ${isCorrect ? 'var(--green)' : 'var(--error)'}; padding-left: 15px; background: #fff;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: var(--green); margin: 5px 0;">Correct Answer: ${item.o[item.a]}</p>
+                ${!isCorrect ? `<p style="color: var(--error); margin: 5px 0;">Your Pick: ${userSelection !== null ? item.o[userSelection] : 'Skipped'}</p>` : ''}
+            </div>
+        `;
+    });
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    document.getElementById('score-text').innerText = `${score} / 60`;
+    document.getElementById('grade-comment').innerText = score >= 30 ? "PASSED - Excellent Work!" : "FAILED - Please study more.";
+    document.getElementById('review-area').innerHTML = reviewHTML;
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
