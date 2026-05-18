@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Exam Hub | Main Hub</title>
+    <title>Elite Exam Hub | Kelvin</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
 
@@ -183,10 +183,11 @@
 <div id="welcome-overlay">
     <div class="welcome-content">
         <h1>Welcome to <br>Elite Exam Hub</h1>
-        <p>Your journey to academic excellence starts here. Follow these steps to begin:</p>
-        <div class="step-box"><strong>1. Select Your Subject:</strong> Choose from various subjects.</div>
-        <div class="step-box"><strong>2. Track Your Time:</strong> Know how to manage your time.</div>
-        <div class="step-box"><strong>3. Immediate Review:</strong> Submit to see your score and correct answers instantly.</div>
+        <p>Your journey to academic excellence starts here.</p>
+        <div class="step-box"><strong>CHM102:</strong> 40 Questions | 30 Mins</div>
+        <div class="step-box"><strong>GST102:</strong> 60 Questions | 20 Mins</div>
+        <div class="step-box"><strong>GST104:</strong> 60 Questions | 20 Mins</div>
+        <div class="step-box"><strong>ENT102:</strong> 60 Questions | 20 Mins</div>
         <button class="btn-get-started" onclick="closeTutorial()">GET STARTED →</button>
     </div>
 </div>
@@ -199,19 +200,13 @@
     <div class="subject-grid">
         <div class="subject-card" onclick="startExam('GST102')">GST102</div>
         <div class="subject-card" onclick="startExam('CHM102')">CHM102</div>
-        <div class="subject-card" style="opacity: 0.5;">GST104</div>
-        <div class="subject-card" style="opacity: 0.5;">ENT102</div>
-        <div class="subject-card" style="opacity: 0.5;">GST108</div>
-        <div class="subject-card" style="opacity: 0.5;">GST110</div>
-        <div class="subject-card" style="opacity: 0.5;">CSC102</div>
-        <div class="subject-card" style="opacity: 0.5;">MTH102</div>
-        <div class="subject-card" style="opacity: 0.5;">PHY102</div>
-        <div class="subject-card" style="opacity: 0.5;">BIO102</div>
+        <div class="subject-card" onclick="startExam('GST104')">GST104</div>
+        <div class="subject-card" onclick="startExam('ENT102')">ENT102</div>
     </div>
 </div>
 
 <div class="container" id="exam-container">
-    <div class="timer-bar" id="timer">Time Remaining: 20:00</div>
+    <div class="timer-bar" id="timer">Time Remaining: --:--</div>
     <button class="btn-action btn-home" onclick="location.reload()">Quit Exam</button>
     <div id="question-list"></div>
     <button class="btn-action" onclick="submitExam()">Submit Exam</button>
@@ -358,7 +353,7 @@ const examDatabase = {
         { q: "The act of trying to use visual clues at the page of a book is called", o: ["Scanning", "Skimming", "Browsing", "Studying"], a: 2 },
         { q: "Process where the reader locates specific or given points is known as", o: ["Scanning", "Study reading", "Skimming", "Browsing"], a: 0 },
         { q: "Which form of reading is more challenging to carry out?", o: ["Scanning", "Skimming", "Study reading", "Browsing"], a: 2 },
-        { q: "Which of the following reading habits provides a good movement?", o: ["Juggling", "Poring", "Word movement", "Reading aloud"], a: 2 },
+        { q: "Which of the following reading habits provides a user movement?", o: ["Juggling", "Poring", "Word movement", "Reading aloud"], a: 2 },
         { q: "Which of the following are reading skills?", o: ["Skimming", "Posing", "Assimilation", "Sleeping"], a: 0 },
         { q: "Associative meaning of words beyond the basic level.", o: ["Connotation", "Denotation", "Appreciation", "Vocabulary"], a: 0 },
         { q: "_____ paragraph is important in comprehension.", o: ["Topic", "Introductory", "Final", "Descriptive"], a: 0 }
@@ -434,38 +429,229 @@ const examDatabase = {
         { q: "Baeyer test uses", o: ["KMnO4", "HCl", "NaOH", "Br2"], a: 0 },
         { q: "Anti-Markovnikov occurs with", o: ["HCl", "HBr + peroxide", "H2SO4", "NaCl"], a: 1 },
         { q: "Ozonolysis produces", o: ["Alcohols", "Aldehydes/ketones", "Acids", "Alkanes"], a: 1 },
-        // Added questions from user prompt
         { q: "Which of the following properties of carbon is primarily responsible for its ability to form long chains and ring structure?", o: ["Electronegativity", "Catenation", "Atomic radius", "Ionization energy"], a: 1 },
         { q: "Which of the following is NOT considered an organic compound?", o: ["Diamond", "Methane(CH4)", "Ethanol(C2H5OH)", "Acetic acid"], a: 0 },
         { q: "Organic compounds are being divided into two major groups. What are these two groups?", o: ["Saturated and Unsaturated compounds", "Open chain and Closed chain compounds", "Alkanes and Alkenes", "Hydrocarbons and Derivatives"], a: 1 },
-        { q: "Organic compounds as being divided into two major groups. What are these two groups?", o: ["Saturated and Unsaturated compounds", "Open chain and Closed chain compounds", "Alkanes and Alkenes", "Hydrocarbons and Derivatives"], a: 1 },
         { q: "What is the primary characteristic that categorizes a compound as homocyclic?", o: ["It contains at least one double bond in its ring.", "Its ring structure is composed exclusively of carbon atoms.", "It includes atoms other than carbon in its ring.", "It exhibits properties similar to aromatic compounds."], a: 1 },
         { q: "Alicyclic compounds are described as having similar properties to which other class of hydrocarbons?", o: ["Aromatic hydrocarbons", "Heterocyclic compounds", "Unsaturated hydrocarbons", "Aliphatic hydrocarbons"], a: 3 },
         { q: "Which of the following is an example of a benzenoid compound that contains only carbon atoms in its ring structure?", o: ["Phenol", "Toluene", "Aniline", "Benzene"], a: 3 },
         { q: "Which structural category does Tetraphene belong to?", o: ["Bicyclic", "Tricyclic", "Tetracyclic", "Non-benzenoid"], a: 2 },
         { q: "Compounds with a conjugated pi-system that are characterized by a special smell or aroma are called", o: ["Aliphatic compounds", "Aromatic compounds", "Alicyclic compounds", "Heterocyclic compounds"], a: 1 },
-        { q: "What distinguishes non-benzenoid aromatic compounds from other fused-ring systems in the description?", o: ["Their consistent presence of seven-membered rings", "Their composition solely of six membered rings.", "Their aromatic nature and fused-ring structure,often incorporating rings other than six membered ones.", "Their lack of any aromatic characteristics."], a: 2 },
+        { q: "What distinguishes non-benzenoid aromatic compounds from other fused-ring systems?", o: ["Their consistent presence of seven-membered rings", "Their composition solely of six membered rings.", "Their aromatic nature and fused-ring structure, incorporating rings other than six membered ones.", "Their lack of any aromatic characteristics."], a: 2 },
         { q: "What defines a compound as belonging to the 'polycyclic aromatic rings and derivatives'?", o: ["It contains exactly two benzene rings fused together.", "It comprises atleast two benzene rings that are joined.", "It is a non-benzenoid compound with atleast one benzene ring.", "It consists of only five membered and seven membered rings."], a: 1 },
-        { q: "Which of the following is an example of a non-benzenoid compound that has the same molecular formula as benzene but contains a 5-membered ring?", o: ["Oxaazulanone", "Tropone", "Pentafulvene", "TropyliumIon"], a: 2 },
-        { q: "According to the classification provided in your manual, heterocyclic compounds are sub-category of which broader classification?", o: ["Open chain compounds", "Homocyclic compounds", "Acyclic compounds", "Closed chain compounds"], a: 3 },
+        { q: "Which is an example of a non-benzenoid compound that has the same molecular formula as benzene but contains a 5-membered ring?", o: ["Oxaazulanone", "Tropone", "Pentafulvene", "TropyliumIon"], a: 2 },
+        { q: "According to your manual, heterocyclic compounds are sub-category of which broader classification?", o: ["Open chain compounds", "Homocyclic compounds", "Acyclic compounds", "Closed chain compounds"], a: 3 },
         { q: "Alicyclic heterocyclic compounds are characterized by:", o: ["The presence of conjugated double bonds.", "A ring system containing at least one hetero-atom and devoid of conjugated double bonds.", "A ring system composed solely of carbon atoms."], a: 1 },
         { q: "Which of the following is an example of an aromatic heterocyclic compound?", o: ["Pyrrolidine", "Tetrahydro-2H-pyran", "1H-indole", "Piperidine"], a: 2 },
-        { q: "Which of these is an example of an aromatic heterocyclic compound mentioned?", o: ["Benzene", "Cyclohexane", "Furan", "Toluene"], a: 2 },
-        { q: "According to the classification provided in your manual, aromatic heterocyclic compounds can be:", o: ["Only six-membered rings.", "Only fused ring systems.", "Five or six membered rings.", "Non-benzenoid with any number of atoms in the ring."], a: 2 },
+        { q: "Which of these is an example of an aromatic heterocyclic compound?", o: ["Benzene", "Cyclohexane", "Furan", "Toluene"], a: 2 },
+        { q: "Aromatic heterocyclic compounds can be:", o: ["Only six-membered rings.", "Only fused ring systems.", "Five or six membered rings.", "Non-benzenoid with any number of atoms in the ring."], a: 2 },
         { q: "Which of the following is a characteristic feature of aromatic heterocyclic compounds?", o: ["They exclusively contain carbon atoms in a six-membered ring.", "They must contain at least one hetero atom.", "They are always fused ring systems.", "They are only found in five-membered rings."], a: 1 },
         { q: "Which aromatic ion is mentioned as having the molecular formula [C7H7]+?", o: ["Oxaazulanone", "Tropolone", "Pentafulvene", "TropyliumIon"], a: 3 }
+    ],
+    'GST104': [
+        { q: "Philosophy of science is the study of ________", o: ["culture", "scientific knowledge and methods", "religion", "politics"], a: 1 },
+        { q: "Science is mainly based on ________.", o: ["imagination", "observation and experiment", "tradition", "emotions"], a: 1 },
+        { q: "A tentative explanation to a scientific problem is called ________.", o: ["law", "hypothesis", "conclusion", "observation"], a: 1 },
+        { q: "Which of the following is the first step in scientific method?", o: ["Conclusion", "Experimentation", "Observation/problem identification", "Data analysis"], a: 2 },
+        { q: "The branch of science that deals with living things is ________.", o: ["Physics", "Chemistry", "Biology", "Geology"], a: 2 },
+        { q: "Objectivity in science means being ________.", o: ["biased", "emotional", "neutral and factual", "imaginative"], a: 2 },
+        { q: "A scientific theory is ________", o: ["a guess", "a tested explanation", "a law court judgment", "an opinion"], a: 1 },
+        { q: "Which of these is NOT a branch of science?", o: ["Biology", "Chemistry", "Astrology", "Physics"], a: 2 },
+        { q: "Empiricism emphasizes knowledge through ________.", o: ["dreams", "observation and experience", "imagination", "religion"], a: 1 },
+        { q: "Rationalism believes knowledge comes from ________.", o: ["reasoning", "gossip", "culture", "feelings"], a: 0 },
+        { q: "Science and technology are related because ________.", o: ["both solve human problems", "both are religions", "both avoid experiments", "both reject knowledge"], a: 0 },
+        { q: "Which of the following is a characteristic of science?", o: ["Bias", "Superstition", "Objectivity", "Tribalism"], a: 2 },
+        { q: "Scientific method is a ________ approach to solving problems.", o: ["random", "systematic", "emotional", "careless"], a: 1 },
+        { q: "Experimentation helps scientists to ________.", o: ["entertain people", "test hypotheses", "avoid research", "create confusion"], a: 1 },
+        { q: "Data collection involves ________.", o: ["destroying information", "gathering information", "ignoring results", "making assumptions"], a: 1 },
+        { q: "Quantitative research mainly deals with ________.", o: ["stories", "numbers and measurements", "rumors", "emotions"], a: 1 },
+        { q: "Qualitative research mainly deals with ________.", o: ["measurements only", "numerical values", "descriptions and opinions", "equations only"], a: 2 },
+        { q: "A controlled experiment contains ________.", o: ["no variables", "controlled variables", "only conclusions", "only guesses"], a: 1 },
+        { q: "Independent variable is the variable that is ________.", o: ["measured", "controlled", "changed by the researcher", "ignored"], a: 2 },
+        { q: "Dependent variable is the variable that ________.", o: ["changes in response", "is constant", "is hidden", "is not measured"], a: 0 },
+        { q: "Reliability in research means ________.", o: ["consistency of results", "emotional results", "inaccurate results", "weak findings"], a: 0 },
+        { q: "Validity means ________.", o: ["correctness of findings", "carelessness", "false conclusion", "random guessing"], a: 0 },
+        { q: "Research ethics are principles guiding ________.", o: ["corruption", "scientific conduct", "politics", "entertainment"], a: 1 },
+        { q: "Peer review helps to ensure ________.", o: ["poor quality", "accuracy and quality", "bias", "confusion"], a: 1 },
+        { q: "Inductive reasoning moves from ________.", o: ["general to specific", "specific to general", "facts to rumors", "laws to guesses"], a: 1 },
+        { q: "Deductive reasoning moves from ________.", o: ["specific to general", "general to specific", "assumptions to rumors", "observation to confusion"], a: 1 },
+        { q: "Which of these is a limitation of science?", o: ["Objectivity", "Experimentation", "Inability to explain everything", "Accuracy"], a: 2 },
+        { q: "Technology refers to the ________ of scientific knowledge.", o: ["rejection", "application", "confusion", "destruction"], a: 1 },
+        { q: "Artificial Intelligence means ________", o: ["human wisdom", "machine intelligence", "natural learning", "social interaction"], a: 1 },
+        { q: "Robotics is the study and design of ________", o: ["medicines", "robots", "animals", "buildings"], a: 1 },
+        { q: "ICT stands for ________", o: ["International Computer Theory", "Information and Communication Technology", "Internal Communication Training", "Internet Control Technology"], a: 1 },
+        { q: "Biotechnology involves the use of ________", o: ["living organisms", "metals", "living organisms", "plastics"], a: 2 },
+        { q: "Nanotechnology deals with ________", o: ["large machines", "tiny particles and materials", "farming tools", "books"], a: 1 },
+        { q: "Renewable energy includes ________", o: ["petrol", "diesel", "solar energy", "coal"], a: 2 },
+        { q: "Cybercrime is crime committed using ________", o: ["sticks", "computers and internet", "farming tools", "radios"], a: 1 },
+        { q: "Which of these is an example of biotechnology?", o: ["Genetic engineering", "Typing", "Drawing", "Welding"], a: 0 },
+        { q: "One advantage of technology in education is ____", o: ["poor communication", "easier access to information", "increased illiteracy", "reduced learning"], a: 1 },
+        { q: "One negative effect of technology is ________", o: ["cybercrime", "communication", "innovation", "research growth"], a: 0 },
+        { q: "Science contributes to healthcare through ________", o: ["medical discoveries", "superstitions", "traditions", "rumors"], a: 0 },
+        { q: "Observation in science involves _______", o: ["guessing", "careful watching and recording", "storytelling", "entertainment"], a: 1 },
+        { q: "Which of these is a tool for scientific research?", o: ["Microscope", "Drum", "Spoon", "Basket"], a: 0 },
+        { q: "The final step in scientific method is ________.", o: ["observation", "experimentation", "conclusion/reporting", "hypothesis"], a: 2 },
+        { q: "A good researcher should be ________.", o: ["dishonest", "lazy", "objective", "careless"], a: 2 },
+        { q: "Scientific laws describe ________.", o: ["natural relationships", "political systems", "religious beliefs", "opinions"], a: 0 },
+        { q: "Modern communication technology includes ________.", o: ["social media", "charcoal", "cutlass", "hoe"], a: 0 },
+        { q: "Climate change solutions may involve ________.", o: ["renewable energy", "pollution increase", "deforestation", "bush burning"], a: 0 },
+        { q: "Virtual reality creates ________.", o: ["imaginary computer environments", "real forests", "classroom buildings", "road networks"], a: 0 },
+        { q: "Which of these is a modern scientific innovation?", o: ["AI", "Stone tools", "Cave writing", "Smoke signals"], a: 0 },
+        { q: "Philosophy helps science by ________.", o: ["encouraging critical thinking", "promoting ignorance", "avoiding questions", "rejecting evidence"], a: 0 },
+        { q: "Science and technology are important for national ________.", o: ["confusion", "development", "destruction", "division"], a: 1 },
+        { q: "Philosophy deals with all fields of human ______", o: ["Knowledge", "Wisdom", "Science", "Brain"], a: 0 },
+        { q: "_____ is regarded as the Queen of all fields", o: ["Philosophy", "Psychology", "Physiology", "Physiotherapy"], a: 0 },
+        { q: "Who divided Philosophy into different disciplines?", o: ["Aristotle", "Euclidea", "Andronicus of Rhodes", "Socrates"], a: 2 },
+        { q: "The Greek word for 'Wisdom' is ______", o: ["Philo", "Sophia", "Sopia", "Sohpia"], a: 1 },
+        { q: "Who defined a Philosopher as a man whose heart is fixed on reality?", o: ["Socrates", "Plato", "Aristotle", "Ludwig"], a: 1 },
+        { q: "Scholars identified ________ areas of Philosophy", o: ["5", "6", "7", "8"], a: 2 },
+        { q: "Aesthetic is the study of _______", o: ["Brain", "Beauty", "Bones", "Body"], a: 1 },
+        { q: "Philosophy has _____ branches", o: ["3", "4", "5", "6"], a: 1 },
+        { q: "The study of realities outside human terrestrial is known as _______", o: ["Universal Science", "Terrestrial Philosophy", "Cosmological metaphysics", "Ontological metaphysics"], a: 3 },
+        { q: "______ is the totality of being and existence?", o: ["Astronomy", "Metaphysics", "Epistemology", "Logic"], a: 1 },
+        { q: "When we say Reality is one and absolute, we're referring to ______", o: ["Monism", "Dualism", "Determinism", "Pluralism"], a: 0 },
+        { q: "Episteme means _____", o: ["Wisdom", "Understanding", "Reality", "Knowledge"], a: 3 },
+        { q: "_______ is the Science Of Conduct", o: ["Ethics", "Moral", "Behavior", "Characters"], a: 0 },
+        { q: "The principles and method of correct reasoning is _____", o: ["Ethics", "Logic", "Behavior", "Character"], a: 1 },
+        { q: "The new age is best described as the age of ______", o: ["Civilization", "Information Communication Technology", "Science", "Philosophy"], a: 1 },
+        { q: "_____ defines science as the knowledge and understanding of the world around?", o: ["Isaac Newton", "Albert Einstein", "Robert Morgan", "Micheal Faraday"], a: 2 },
+        { q: "The following are characteristics of true scientific knowledge except _____", o: ["Concrete Objectives", "Value neutrality", "Impersonal", "Knowledge of strange things"], a: 3 },
+        { q: "There are two types of observations in science which are ________", o: ["Accidental and Deliberate", "Intentional and Deliberate", "Accidental and Unknown", "Willing and Unwilling"], a: 0 },
+        { q: "The construction of a plan throughout in advance is _____", o: ["Scientific wisdom", "Hypothesis", "Scientific Experiment", "Exponential"], a: 2 },
+        { q: "_____ refers to the possible explanations to a given phenomenon?", o: ["Knowledge", "Scientific Experiment", "Hypothesis", "Observation"], a: 2 },
+        { q: "Laws are developed from ______", o: ["Science", "Formula", "Knowledge", "Facts"], a: 3 },
+        { q: "Scientific laws are statements based on repeated ______", o: ["Facts", "Observation", "Mathematical expression", "Reasoning"], a: 1 },
+        { q: "Aigbodioh defines scientific law as an invariant relationship between _____", o: ["Natural Facts", "Observations", "Experiments", "Knowledge"], a: 0 },
+        { q: "______ is the method many scientists use to arrive at general claims?", o: ["Experiments", "Laws", "Observation", "Inductive Inference"], a: 3 }
+    ],
+    'ENT102': [
+        { q: "Marketing can best be defined as", o: ["Buying and selling only", "Production of goods", "The process of satisfying customer needs profitably", "Transportation of goods"], a: 2 },
+        { q: "Which of the following is a function of marketing?", o: ["Teaching only", "Distribution of goods and services", "Singing", "Farming only"], a: 1 },
+        { q: "The marketing mix is commonly known as", o: ["2Ps", "3Ps", "4Ps", "7Ps only"], a: 2 },
+        { q: "Which of these is NOT part of the 4Ps?", o: ["Product", "Price", "Promotion", "Planning"], a: 3 },
+        { q: "A market is a place where", o: ["Only food is sold", "Buyers and sellers meet", "Students gather", "Cars are repaired"], a: 1 },
+        { q: "Consumer satisfaction is important because it", o: ["Reduces demand", "Increases customer loyalty", "Stops production", "Prevents sales"], a: 1 },
+        { q: "Advertising is mainly used to", o: ["Punish consumers", "Inform and persuade customers", "Destroy goods", "Reduce awareness"], a: 1 },
+        { q: "Which of the following is a marketing activity?", o: ["Warehousing", "Sleeping", "Fighting", "Fishing only"], a: 0 },
+        { q: "The person who buys goods for personal use is called", o: ["Producer", "Retailer", "Consumer", "Wholesaler"], a: 2 },
+        { q: "Promotion in marketing includes", o: ["Advertising", "Banking only", "Harvesting", "Construction"], a: 0 },
+        { q: "Branding helps to", o: ["Identify products", "Destroy products", "Increase poverty", "Reduce quality"], a: 0 },
+        { q: "The exchange process in marketing involves", o: ["Giving and receiving value", "Sleeping", "Fighting", "Borrowing only"], a: 0 },
+        { q: "Which of these is a channel of distribution?", o: ["Manufacturer → Wholesaler → Retailer → Consumer", "Teacher → Student", "Doctor → Patient", "Driver → Passenger"], a: 0 },
+        { q: "Packaging is important because it", o: ["Protects the product", "Damages goods", "Increases waste", "Stops demand"], a: 0 },
+        { q: "Market research helps a business to", o: ["Understand customer needs", "Close business", "Avoid customers", "Waste money"], a: 0 },
+        { q: "The final stage in distribution is the", o: ["Manufacturer", "Consumer", "Wholesaler", "Agent"], a: 1 },
+        { q: "Goods produced for immediate consumption are called", o: ["Consumer goods", "Capital goods", "Industrial goods", "Durable machines"], a: 0 },
+        { q: "Price refers to", o: ["Cost of transportation", "Amount paid for goods or services", "Advertisement expenses", "Salary only"], a: 1 },
+        { q: "Marketing begins with", o: ["Customer needs", "Government rules", "Competition only", "Factories"], a: 0 },
+        { q: "Personal selling involves", o: ["Direct communication with customers", "Radio only", "Television only", "Internet only"], a: 0 },
+        { q: "A small scale business is a business that", o: ["Requires little capital", "Is owned by government only", "Has no workers", "Is illegal"], a: 0 },
+        { q: "The first step in establishing a small scale business is", o: ["Market survey", "Celebration", "Borrowing money carelessly", "Employing workers"], a: 0 },
+        { q: "Capital refers to", o: ["Workers only", "Money used to start business", "Government policy", "Buildings only"], a: 1 },
+        { q: "One source of capital is", o: ["Personal savings", "Sleeping", "Gossiping", "Quarrelling"], a: 0 },
+        { q: "Feasibility study helps an entrepreneur to", o: ["Know business viability", "Waste resources", "Stop production", "Increase unemployment"], a: 0 },
+        { q: "An entrepreneur is a person who", o: ["Organizes and manages business", "Sleeps all day", "Refuses to work", "Avoids risks"], a: 0 },
+        { q: "Which of these is a characteristic of an entrepreneur?", o: ["Creativity", "Laziness", "Fearfulness", "Dishonesty"], a: 0 },
+        { q: "Business location is important because it affects", o: ["Accessibility to customers", "Rainfall only", "Religion only", "Tribe only"], a: 0 },
+        { q: "Record keeping helps business owners to", o: ["Monitor progress", "Forget transactions", "Reduce profits intentionally", "Destroy information"], a: 0 },
+        { q: "Which of these is NOT a source of business finance?", o: ["Bank loan", "Cooperative society", "Personal savings", "Theft"], a: 3 },
+        { q: "Business plan is important because it", o: ["Guides business operations", "Destroys planning", "Stops investment", "Prevents profit"], a: 0 },
+        { q: "Sole proprietorship is owned by", o: ["One person", "Two countries", "Government only", "Students only"], a: 0 },
+        { q: "Partnership business involves", o: ["Two or more persons", "One person only", "Children only", "Government only"], a: 0 },
+        { q: "Customer relations can help a business to", o: ["Retain customers", "Lose customers intentionally", "Stop production", "Increase conflict"], a: 0 },
+        { q: "One major aim of business is to", o: ["Make profit", "Cause confusion", "Increase poverty", "Reduce production"], a: 0 },
+        { q: "Small scale businesses contribute to", o: ["Employment generation", "Unemployment", "Crime only", "Political crisis"], a: 0 },
+        { q: "Risk taking is associated with", o: ["Entrepreneurship", "Sleeping", "Farming only", "Teaching only"], a: 0 },
+        { q: "A cooperative society helps members through", o: ["Financial assistance", "Punishment only", "Isolation", "Competition only"], a: 0 },
+        { q: "The success of a business depends largely on", o: ["Good management", "Bad leadership", "Negligence", "Carelessness"], a: 0 },
+        { q: "Small scale businesses usually require", o: ["Moderate capital", "No capital", "Excessive government control only", "Foreign citizenship"], a: 0 },
+        { q: "Government refers to", o: ["People responsible for administration of a state", "Students only", "Farmers only", "Traders only"], a: 0 },
+        { q: "Society is made up of", o: ["People living together", "Animals only", "Buildings only", "Cars only"], a: 0 },
+        { q: "Economy deals with", o: ["Production and distribution of goods and services", "Sports only", "Entertainment only", "Religion only"], a: 0 },
+        { q: "Democracy is a system of government in which", o: ["People choose their leaders", "Soldiers rule", "Kings rule absolutely", "No laws exist"], a: 0 },
+        { q: "The three arms of government include", o: ["Executive, Legislature, Judiciary", "Police, Army, Navy", "Teacher, Student, Principal", "Market, School, Church"], a: 0 },
+        { q: "The executive arm is responsible for", o: ["Implementing laws", "Making laws only", "Interpreting laws only", "Selling goods"], a: 0 },
+        { q: "The legislature is responsible for", o: ["Making laws", "Enforcing laws only", "Farming only", "Trading only"], a: 0 },
+        { q: "Judiciary is responsible for", o: ["Interpretation of laws", "Selling products", "Transporting goods", "Teaching students"], a: 0 },
+        { q: "The constitution is", o: ["The supreme law of the land", "A market rule", "A school timetable", "A church program"], a: 0 },
+        { q: "Citizenship refers to", o: ["Legal membership of a state", "Tribal meeting", "Friendship only", "Occupation only"], a: 0 },
+        { q: "Rule of law means", o: ["Everyone is subject to the law", "Leaders are above the law", "Laws are ignored", "Judges make no decisions"], a: 0 },
+        { q: "Separation of powers helps to", o: ["Prevent abuse of power", "Increase dictatorship", "Cause confusion", "Stop governance"], a: 0 },
+        { q: "An economy can be classified as", o: ["Capitalist", "Socialist", "Mixed economy", "All of the above"], a: 3 },
+        { q: "Inflation refers to", o: ["Persistent increase in prices", "Fall in prices only", "Increase in rainfall", "Increase in salaries only"], a: 0 },
+        { q: "Taxation is used by government to", o: ["Generate revenue", "Punish citizens only", "Stop trade", "Increase unemployment"], a: 0 },
+        { q: "The primary duty of government is to", o: ["Protect lives and property", "Encourage crime", "Promote disorder", "Destroy infrastructure"], a: 0 },
+        { q: "Which of these is a feature of society?", o: ["Shared culture", "Isolation only", "No interaction", "No laws"], a: 0 },
+        { q: "Economy is important because it", o: ["Helps allocate resources", "Prevents development", "Stops production", "Discourages trade"], a: 0 },
+        { q: "A sovereign state must have", o: ["Population, territory and government", "Cars only", "Markets only", "Churches only"], a: 0 },
+        { q: "Political parties exist mainly to", o: ["Contest elections", "Sell goods", "Teach students", "Repair roads only"], a: 0 },
+        { q: "Nigeria operates a", o: ["Federal system of government", "Monarchy", "Communist system only", "Military dictatorship only"], a: 0 },
+        { q: "Federalism involves", o: ["Sharing powers between central and state governments", "One person ruling", "No constitution", "Abolishing states"], a: 0 },
+        { q: "The head of the executive arm in Nigeria is the", o: ["President", "Chief Judge", "Senate President", "Governor-General"], a: 0 },
+        { q: "The National Assembly consists of", o: ["Senate and House of Representatives", "Army and Navy", "Police and Customs", "Governors and Judges"], a: 0 },
+        { q: "The highest court in Nigeria is the", o: ["Supreme Court", "Magistrate Court", "Customary Court", "Area Court"], a: 0 },
+        { q: "Local government is important for", o: ["Grassroots development", "Foreign affairs only", "International trade only", "Printing money only"], a: 0 },
+        { q: "The Nigerian constitution recognizes", o: ["Three tiers of government", "One tier only", "Four tiers only", "Two tiers only"], a: 0 },
+        { q: "The three tiers of government are", o: ["Federal, State, Local", "Senate, Police, Army", "School, Church, Market", "Judiciary, Students, Teachers"], a: 0 },
+        { q: "Checks and balances help to", o: ["Limit powers of government organs", "Promote dictatorship", "Stop democracy", "End judiciary"], a: 0 },
+        { q: "The judiciary must be", o: ["Independent", "Corrupt", "Controlled by politicians", "Partial"], a: 0 },
+        { q: "Electoral commission is responsible for", o: ["Conducting elections", "Building roads", "Selling fuel", "Teaching students"], a: 0 },
+        { q: "Legislature members are called", o: ["Lawmakers", "Soldiers", "Teachers", "Drivers"], a: 0 },
+        { q: "Impeachment means", o: ["Removal of a public officer from office", "Promotion of leaders", "Election campaign", "Appointment into office"], a: 0 },
+        { q: "Bicameral legislature means", o: ["Two legislative chambers", "One legislative chamber", "No legislature", "Military government"], a: 0 },
+        { q: "Nigeria became independent in", o: ["1960", "1950", "1979", "1999"], a: 0 },
+        { q: "The governor is the head of", o: ["State executive", "Federal judiciary", "Legislature only", "Local judiciary"], a: 0 },
+        { q: "The chairman heads the", o: ["Local government", "Senate", "Supreme Court", "Federal executive"], a: 0 },
+        { q: "Delegated legislation refers to laws made by", o: ["Authorities empowered by parliament", "Foreign countries", "Students", "Traditional rulers only"], a: 0 },
+        { q: "Public corporations are established mainly to", o: ["Provide essential services", "Encourage corruption", "Stop employment", "Prevent development"], a: 0 },
+        { q: "Civil service refers to", o: ["Government workers excluding political office holders", "Politicians only", "Traders only", "Soldiers only"], a: 0 },
+        { q: "Marketing helps producers to", o: ["Reach consumers", "Stop production", "Reduce sales", "Avoid customers"], a: 0 },
+        { q: "Entrepreneurship encourages", o: ["Self-reliance", "Dependency", "Laziness", "Idleness"], a: 0 },
+        { q: "Democracy promotes", o: ["Participation of citizens", "Military rule", "Dictatorship", "One-party oppression"], a: 0 },
+        { q: "Demand means", o: ["Desire backed with ability to pay", "Free goods", "Scarcity only", "Government order only"], a: 0 },
+        { q: "Supply refers to", o: ["Quantity of goods producers are willing to sell", "Demand for labour only", "Population growth", "Tax payment only"], a: 0 },
+        { q: "Wholesalers sell mainly to", o: ["Retailers", "Consumers only", "Students only", "Farmers only"], a: 0 },
+        { q: "Retailers sell directly to", o: ["Final consumers", "Manufacturers only", "Farmers only", "Banks only"], a: 0 },
+        { q: "Budget is", o: ["An estimate of income and expenditure", "A constitution", "A business location", "A law court"], a: 0 },
+        { q: "National development can be achieved through", o: ["Good governance", "Corruption", "Conflict", "Tribalism"], a: 0 },
+        { q: "Socialization is the process by which", o: ["Individuals learn societal values", "Goods are sold", "Elections are conducted", "Roads are built"], a: 0 },
+        { q: "Economic resources are also known as", o: ["Factors of production", "Social classes", "Judicial powers", "Political parties"], a: 0 },
+        { q: "Which of these is a factor of production?", o: ["Land", "Singing", "Fighting", "Dancing only"], a: 0 },
+        { q: "Opportunity cost refers to", o: ["Next best alternative forgone", "Cost of transport", "Cost of feeding only", "Profit made"], a: 0 },
+        { q: "Consumer protection helps to", o: ["Safeguard buyers’ interests", "Reduce quality", "Promote fake goods", "Stop trade"], a: 0 },
+        { q: "Public opinion can influence", o: ["Government policies", "Weather only", "Religion only", "Climate only"], a: 0 },
+        { q: "Human wants are", o: ["Unlimited", "Limited", "Fixed", "Unimportant"], a: 0 },
+        { q: "Scarcity means", o: ["Limited resources to satisfy wants", "Excess resources", "Unlimited supply", "Free production"], a: 0 },
+        { q: "Leadership involves", o: ["Guiding and directing people", "Sleeping only", "Punishment only", "Isolation only"], a: 0 },
+        { q: "Good governance is characterized by", o: ["Accountability and transparency", "Corruption", "Oppression", "Lawlessness"], a: 0 },
+        { q: "Economic growth leads to", o: ["Improved standard of living", "Increased poverty only", "Reduced production only", "National collapse"], a: 0 }
     ]
 };
 
 let activeQuestions = [];
-let timeLeft = 1200;
+let timeLeft = 0;
 let timer;
 
 function startExam(subject) {
     if (!examDatabase[subject]) return;
+    
     document.getElementById('main-hub').style.display = 'none';
     document.getElementById('exam-container').style.display = 'block';
-    activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, 60);
+
+    if(subject === 'CHM102') {
+        activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, 40);
+        timeLeft = 1800; // 30 MINUTES
+    } else if(subject === 'GST102') {
+        activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, 60);
+        timeLeft = 1200; // 20 MINUTES
+    } else if(subject === 'GST104') {
+        activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, 60);
+        timeLeft = 1200; // 20 MINUTES
+    } else if(subject === 'ENT102') {
+        activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, 60);
+        timeLeft = 1200; // 20 MINUTES
+    }
+
     renderExam();
     startTimer();
 }
@@ -485,7 +671,6 @@ function renderExam() {
 }
 
 function startTimer() {
-    timeLeft = 1200;
     clearInterval(timer);
     timer = setInterval(() => {
         timeLeft--;
