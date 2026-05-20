@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub | Kelvin</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
+
+        :root {
+            --navy: #001f3f;
+            --green: #38761d;
+            --light-bg: #f4f7f6;
+            --error: #d32f2f;
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 20px;
+            color: var(--navy);
+            overflow-x: hidden;
+        }
+
+        #welcome-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .welcome-content {
+            max-width: 500px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .welcome-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .step-box {
+            background: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--green);
+            text-align: left;
+        }
+
+        .btn-get-started {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+            box-shadow: 0 10px 20px rgba(56, 118, 29, 0.3);
+            transition: 0.3s;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container { max-width: 800px; margin: auto; }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: var(--gradient);
+            color: white;
+            border-radius: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .subject-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        .subject-card {
+            background: white;
+            padding: 35px 10px;
+            text-align: center;
+            border-radius: 20px;
+            font-weight: 800;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .subject-card:hover {
+            border-color: var(--green);
+            transform: translateY(-8px);
+            background: #f0fdf4;
+        }
+
+        /* Styling for the See More Button */
+        .more-btn {
+            grid-column: 1 / -1; /* Makes it span across the full width */
+            background: var(--navy);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 800;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .more-btn:hover {
+            background: var(--green);
+            transform: scale(1.02);
+        }
+
+        #exam-container { display: none; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        .timer-bar {
+            position: sticky;
+            top: 10px;
+            background: var(--green);
+            color: white;
+            padding: 12px;
+            border-radius: 50px;
+            text-align: center;
+            font-weight: bold;
+            z-index: 100;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .question-block { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .question-text { font-weight: 600; margin-bottom: 15px; display: block; line-height: 1.5; }
+        
+        .options-group label {
+            display: block;
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #eee;
+        }
+
+        .options-group label:hover { background: #e8f5e9; border-color: var(--green); }
+        input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+
+        .btn-action {
+            width: 100%;
+            padding: 18px;
+            background: var(--navy);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+
+        .btn-home { background: #666; margin-bottom: 10px; }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        .review-section { text-align: left; margin-top: 40px; border-top: 2px solid var(--navy); padding-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div id="welcome-overlay">
+    <div class="welcome-content">
+        <h1>Welcome to <br>Elite Exam Hub</h1>
+        <p>Your journey to academic excellence starts here.</p>
+        <div class="step-box"><strong>CHM102:</strong> 40 Questions | 30 Mins</div>
+        <div class="step-box"><strong>GST102:</strong> 60 Questions | 20 Mins</div>
+        <button class="btn-get-started" onclick="closeTutorial()">GET STARTED →</button>
+    </div>
+</div>
+
+<div class="container" id="main-hub">
+    <header>
+        <h1 style="margin:0; font-size: 1.8rem;">ELITE EXAM HUB</h1>
+        <p style="margin:5px 0 0; font-size: 0.9rem; opacity: 0.9;">Excellence through Practice</p>
+    </header>
+    <div class="subject-grid">
+        <div class="subject-card" onclick="startExam('GST102')">GST102</div>
+        <div class="subject-card" onclick="startExam('CHM102')">CHM102</div>
+        <div class="subject-card" onclick="startExam('GST104')">GST104</div>
+        <div class="subject-card" onclick="startExam('ENT102')">ENT102</div>
+        
+        <a href="more.html" class="more-btn">SEE MORE SUBJECTS →</a>
+    </div>
+</div>
+
+<div class="container" id="exam-container">
+    <div class="timer-bar" id="timer">Time Remaining: --:--</div>
+    <button class="btn-action btn-home" onclick="location.reload()">Quit Exam</button>
+    <div id="question-list"></div>
+    <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">GO AND READ😂</div>
+    <h1 id="score-text"></h1>
+    <p id="grade-comment"></p>
+    <button class="btn-action" onclick="location.reload()">Back to Menu</button>
+    <div id="review-area" class="review-section"></div>
+</div>
