@@ -11,7 +11,6 @@
             --navy: #001f3f;
             --green: #38761d;
             --light-bg: #f4f7f6;
-            --error: #d32f2f;
             --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%);
         }
 
@@ -143,11 +142,11 @@
 
 <div class="container" id="main-hub">
     <header>
-        <h1 style="margin:0;">MORE SUBJECTS</h1>
-        <p style="margin:5px 0 0;">Advanced Sciences</p>
+        <h1 style="margin:0;">PHY 102 PRACTICE</h1>
+        <p style="margin:5px 0 0;">40 Questions | 30 Minutes</p>
     </header>
     <div class="subject-grid">
-        <div class="subject-card" onclick="startExam('PHY102')">PHY102</div>
+        <div class="subject-card" onclick="startExam('PHY102')">START PHY102</div>
         <a href="index.html" class="back-btn">← BACK TO HUB</a>
     </div>
 </div>
@@ -166,8 +165,7 @@
 </div>
 
 <script>
-const examDatabase = {
-    "PHY102": [
+const fullDatabase = [
         // ELECTRICITY
         { q: "The two form of electricity are...?", o: ["Static and current", "Power and work", "Resistance and static", "Resistance and current"], a: 0 },
         { q: "The material gases has a charge carriers of.....?", o: ["Electrons", "Protons", "Electron and ions", "Proton and ions"], a: 2 },
@@ -192,7 +190,7 @@ const examDatabase = {
         { q: "The important types of fixed capacitors are...?", o: ["Polymer", "Super", "Transit", "Silver mica"], a: 2 },
         // WAVES
         { q: "What is the frequency of a wave with period 0.01667?", o: ["50.05Hz", "59.98Hz", "70.98Hz", "10Hz"], a: 1 },
-        { q: "Sears Building sways at 0.1Hz. What is the period?", o: ["20s", "30s", "40s", "10s"], a: 3 },
+        { q: "Gusts of wind make the Sears Building sways at 0.1Hz. What is the period?", o: ["20s", "30s", "40s", "10s"], a: 3 },
         { q: "Water wave oscillates 3 times/sec, distance 2m. Speed?", o: ["6m/s", "8m/s", "10m/s", "12m/s"], a: 0 },
         { q: "Transformers works on the basis of Faraday's law?", o: ["True", "False", "Maybe", "None"], a: 0 },
         // ELECTROSTATICS
@@ -237,19 +235,20 @@ const examDatabase = {
         { q: "Linkage 3Wb, 500 turns, X Amps, 750H. X?", o: ["1A", "2A", "3A", "4A"], a: 1 },
         { q: "Inductor blocks sudden changes in:", o: ["Voltage", "Current", "Inductance", "Capacitance"], a: 1 },
         { q: "Energy in a coil is stored in form of:", o: ["Electrical field", "Magnetic Field", "Electrostatic", "Force"], a: 1 }
-    ]
-};
+];
 
 let activeExam = [];
-let timeLeft = 1800;
+let timeLeft = 1800; // 30 Minutes
 let timer;
 
 function initLoader() {
     setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 2000);
 }
 
-function startExam(sub) {
-    activeExam = examDatabase[sub].sort(() => 0.5 - Math.random());
+function startExam() {
+    // Shuffle the full database and take exactly 40 questions
+    activeExam = [...fullDatabase].sort(() => 0.5 - Math.random()).slice(0, 40);
+    
     document.getElementById('main-hub').style.display = 'none';
     document.getElementById('exam-container').style.display = 'block';
     renderQuestions();
@@ -300,7 +299,7 @@ function submitExam() {
 
     document.getElementById('exam-container').style.display = 'none';
     document.getElementById('result-screen').style.display = 'block';
-    document.getElementById('score-text').innerText = `${score} / ${activeExam.length}`;
+    document.getElementById('score-text').innerText = `${score} / 40`;
     document.getElementById('review-area').innerHTML = reviewHTML;
     window.scrollTo(0,0);
 }
