@@ -6,149 +6,37 @@
     <title>Elite Exam Hub - PHY102</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
-
-        :root {
-            --navy: #001f3f;
-            --green: #38761d;
-            --light-bg: #f4f7f6;
-            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%);
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--light-bg);
-            margin: 0;
-            padding: 20px;
-            color: var(--navy);
-        }
-
-        /* Sync Loader */
-        #sync-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            z-index: 3000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--green);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-
+        :root { --navy: #001f3f; --green: #38761d; --light-bg: #f4f7f6; --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .container { max-width: 800px; margin: auto; }
-
-        header {
-            text-align: center;
-            padding: 30px 0;
-            background: var(--gradient);
-            color: white;
-            border-radius: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-
-        .subject-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-        }
-
-        .subject-card {
-            background: white;
-            padding: 35px 10px;
-            text-align: center;
-            border-radius: 20px;
-            font-weight: 800;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .back-btn {
-            grid-column: 1 / -1;
-            background: #666;
-            color: white;
-            padding: 15px;
-            border-radius: 15px;
-            text-decoration: none;
-            text-align: center;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-
-        #exam-container { display: none; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        header { text-align: center; padding: 30px 0; background: var(--gradient); color: white; border-radius: 25px; margin-bottom: 30px; }
+        .subject-card { background: white; padding: 35px 10px; text-align: center; border-radius: 20px; font-weight: 800; box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer; }
+        .back-btn { display: block; background: #666; color: white; padding: 15px; border-radius: 15px; text-decoration: none; text-align: center; margin-top: 20px; }
         
-        .timer-bar {
-            position: sticky;
-            top: 10px;
-            background: var(--green);
-            color: white;
-            padding: 12px;
-            border-radius: 50px;
-            text-align: center;
-            font-weight: bold;
-            z-index: 100;
-            margin-bottom: 20px;
-        }
-
+        #exam-container { display: none; background: white; padding: 25px; border-radius: 20px; }
+        .timer-bar { position: sticky; top: 10px; background: var(--green); color: white; padding: 12px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 20px; }
         .question-block { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-        
-        .options-group label {
-            display: block;
-            background: #f9f9f9;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 12px;
-            cursor: pointer;
-            border: 1px solid #eee;
-        }
-
-        .btn-action {
-            width: 100%;
-            padding: 18px;
-            background: var(--navy);
-            color: white;
-            border: none;
-            border-radius: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
+        .options-group label { display: block; background: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 12px; cursor: pointer; border: 1px solid #eee; }
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 15px; font-weight: 700; cursor: pointer; margin-top: 20px; }
         #result-screen { display: none; text-align: center; padding: 50px 20px; }
-        .review-box { margin-top: 30px; text-align: left; }
     </style>
 </head>
 <body onload="initLoader()">
 
 <div id="sync-loader">
     <div class="spinner"></div>
-    <p style="font-weight: 600; color: var(--navy);">Syncing from data integration...</p>
+    <p>Syncing from data integration...</p>
 </div>
 
 <div class="container" id="main-hub">
-    <header>
-        <h1 style="margin:0;">PHY 102 PRACTICE</h1>
-        <p style="margin:5px 0 0;">40 Questions | 30 Minutes</p>
-    </header>
-    <div class="subject-grid">
-        <div class="subject-card" onclick="startExam('PHY102')">START PHY102</div>
-        <a href="index.html" class="back-btn">← BACK TO HUB</a>
-    </div>
+    <header><h1>PHY 102 PRACTICE</h1><p>40 Random Questions | 30 Mins</p></header>
+    <div class="subject-card" onclick="startExam()">START PHY102</div>
+    <a href="index.html" class="back-btn">← BACK TO HUB</a>
 </div>
 
 <div class="container" id="exam-container">
@@ -160,85 +48,84 @@
 <div class="container" id="result-screen">
     <div style="font-size: 3rem;">GO AND READ😂</div>
     <h1 id="score-text"></h1>
-    <div id="review-area" class="review-box"></div>
+    <div id="review-area"></div>
     <button class="btn-action" onclick="location.reload()">Try Again</button>
 </div>
 
 <script>
 const fullDatabase = [
-        // ELECTRICITY
-        { q: "The two form of electricity are...?", o: ["Static and current", "Power and work", "Resistance and static", "Resistance and current"], a: 0 },
-        { q: "The material gases has a charge carriers of.....?", o: ["Electrons", "Protons", "Electron and ions", "Proton and ions"], a: 2 },
-        { q: "The addition of impurities to a semiconductor is called....?", o: ["Conductivity", "Malleability", "Doping", "Ductility"], a: 2 },
-        { q: "The correct formula for the quantity of charge is...?", o: ["Q=VT", "Q= IT", "Q= I/T", "Q= VR"], a: 1 },
-        { q: "The type of electric current delivered to businesses and residences is...?", o: ["Alternating current", "Visual current", "Direct current", "General current"], a: 0 },
-        { q: "Electric current is a derive quantity?", o: ["True", "False", "Both", "None"], a: 1 },
-        { q: "Factors that affect resistance include all EXCEPT....?", o: ["Length", "Temperature", "Nature of Material", "Resistivity"], a: 3 },
-        { q: "The usual waveform of an Alternating current is....?", o: ["Cosine wave", "Tan wave", "Sine wave", "Electrical wave"], a: 2 },
-        { q: "Resistance depends on the following EXCEPT....?", o: ["Length", "Resistivity", "Cross sectional area", "Temperature"], a: 3 },
-        { q: "Potential difference is measured using...?", o: ["Henry", "Ammeter", "Farad", "Voltmeter"], a: 3 },
-        // CAPACITORS
-        { q: ".......... Are devices for storing electrical charge released in a controlled manner.", o: ["Resistors", "Inductors", "Capacitors", "Ohms meter"], a: 2 },
-        { q: "Capacitors is divided into Fixed and functional types?", o: ["True", "False", "Both", "None"], a: 1 },
-        { q: "Conducting plates separated by insulating materials called...?", o: ["Fixed", "Variable", "Functional", "Dielectrics"], a: 3 },
-        { q: "The Dielectrics of super capacitor is....?", o: ["Polypropylene", "Helmholtz double layer", "Polyethylene sulfide", "Paper"], a: 1 },
-        { q: "The Dielectrics of the film capacitors is....?", o: ["Paper", "Polyethylene sulfide", "Pare electric", "Aluminum oxide"], a: 1 },
-        { q: "Factors affecting capacitance depend on the following EXCEPT...?", o: ["Distance", "Area", "Temperature", "Dielectric"], a: 2 },
-        { q: "Equivalent Resistor and Capacitor in series use the same formula?", o: ["False", "True", "Both", "None"], a: 0 },
-        { q: "Two capacitors (0.30uF and 0.50uF) in parallel. Equivalent?", o: ["0.8uF", "0.8F", "0.2F", "0.2uF"], a: 0 },
-        { q: "Capacitors can not be connected in parallel and series?", o: ["True", "False", "Both", "None"], a: 0 },
-        { q: "The important types of fixed capacitors are...?", o: ["Polymer", "Super", "Transit", "Silver mica"], a: 2 },
-        // WAVES
-        { q: "What is the frequency of a wave with period 0.01667?", o: ["50.05Hz", "59.98Hz", "70.98Hz", "10Hz"], a: 1 },
-        { q: "Gusts of wind make the Sears Building sways at 0.1Hz. What is the period?", o: ["20s", "30s", "40s", "10s"], a: 3 },
-        { q: "Water wave oscillates 3 times/sec, distance 2m. Speed?", o: ["6m/s", "8m/s", "10m/s", "12m/s"], a: 0 },
-        { q: "Transformers works on the basis of Faraday's law?", o: ["True", "False", "Maybe", "None"], a: 0 },
-        // ELECTROSTATICS
-        { q: "Electrostatics is the study of:", o: ["Moving charges", "Stationary charges", "Magnetic fields", "Current"], a: 1 },
-        { q: "Electric charge is:", o: ["Flow of electrons", "Property of matter for electrical effects", "Movement of protons", "Energy"], a: 1 },
-        { q: "Law of conservation of charge states:", o: ["Can be created", "Can be destroyed", "Total remains constant", "Electrons stay"], a: 2 },
-        { q: "The two types of electric charges are:", o: ["North/South", "Positive/Neutral", "Positive/Negative", "Negative/Neutral"], a: 2 },
-        { q: "Coulomb’s law force is:", o: ["Directly prop to d^2", "Inversely prop to d^2", "Independent", "Directly prop to mass"], a: 1 },
-        { q: "Charging by friction occurs when:", o: ["Charges created", "Two objects rub together", "Heating", "Current flow"], a: 1 },
-        { q: "Charging by conduction means:", o: ["Without contact", "Radiation", "Direct contact", "Heating"], a: 2 },
-        { q: "Charging by induction is:", o: ["Direct contact", "Rubbing", "Without contact", "Heating"], a: 2 },
-        { q: "One property of electric charges is:", o: ["Unlike repel", "Like attract", "Like repel", "No effect"], a: 2 },
-        { q: "An electric field is:", o: ["Magnetic", "Region where force is experienced", "Conductor", "Current"], a: 1 },
-        { q: "Electric field intensity is:", o: ["Force/charge", "Charge/force", "Energy/charge", "Voltage/current"], a: 0 },
-        { q: "SI unit of charge:", o: ["Volt", "Coulomb", "Ampere", "Ohm"], a: 1 },
-        { q: "Quantization states charge exists in:", o: ["Fractions", "Continuous", "Integral multiples of e", "Negative only"], a: 2 },
-        { q: "Conductors differ because they:", o: ["Stop charge", "Allow free electron movement", "No electrons", "Always positive"], a: 1 },
-        { q: "Application of electrostatics:", o: ["Electric iron", "Photocopier", "Water heater", "Fridge"], a: 1 },
-        { q: "A conductor:", o: ["Prevents flow", "Allows free flow", "No electrons", "No charge"], a: 1 },
-        { q: "An insulator:", o: ["Allows movement", "Conducts heat", "Resists flow", "Produces electricity"], a: 2 },
-        { q: "Formula for Coulomb's Law:", o: ["F=ma", "V=Ir", "F=kq1q2/r^2", "P=Iv"], a: 2 },
-        { q: "E at 2.0m from 4.0nc charge is:", o: ["9.0 N/C", "18 N/C", "27 N/C", "36 N/C"], a: 0 },
-        { q: "Electrons removed for +1.0x10^-7C:", o: ["6.25x10^11", "6.25x10^12", "1.60x10^-19", "3.20x10^-7"], a: 1 },
-        { q: "Force between Na+ and Cl- at 2.82x10^-10m:", o: ["2.9x10^-9", "8.2x10^-9", "1.6x10^-19", "9.0x10^19"], a: 1 },
-        // INDUCTANCE
-        { q: "A crack in inductor magnetic path results in:", o: ["Unchanged", "Increased", "Zero", "Reduced inductance"], a: 3 },
-        { q: "Self induced voltage NOT affected by:", o: ["Current", "Voltage", "Turns", "Magnetic resistance"], a: 3 },
-        { q: "Moving magnetic field acts as moving conductor:", o: ["Yes", "No", "Both", "None"], a: 0 },
-        { q: "Polarity determined by left hand generator rule:", o: ["Yes", "No", "Both", "None"], a: 0 },
-        { q: "Increasing field/current will decrease force:", o: ["Yes", "No", "Both", "None"], a: 1 },
-        { q: "Reversing field or current reverses force:", o: ["Yes", "No", "Both", "None"], a: 0 },
-        { q: "If coil 1 current is steady, coil 2 current is:", o: ["Zero", "Infinity", "Double", "Halves"], a: 0 },
-        { q: "Linkage 3Wb, 500 turns, coil 2 is 2A. Mutual inductance?", o: ["750H", "500H", "450H", "900H"], a: 0 },
-        { q: "Conductor moves at angle, F = BlsinX:", o: ["Yes", "No", "Both", "None"], a: 1 },
-        { q: "Self inductance defined by EMF when current changes at unit rate:", o: ["Yes", "No", "Both", "None"], a: 0 },
-        { q: "Linkage 3Wb, X turns, 2A current, 750H inductance. X?", o: ["300", "400", "500", "700"], a: 2 },
-        { q: "Linkage X, 500 turns, 2A current, 759H inductance. X?", o: ["1Wb", "2Wb", "3Wb", "4Wb"], a: 2 },
-        { q: "Mutual inductance application:", o: ["DC generator", "AC generator", "Transformer", "Capacitor"], a: 2 },
-        { q: "Induced current in one coil due to neighbor is:", o: ["Electromagnetism", "Susceptance", "Mutual Inductance", "Steady current"], a: 2 },
-        { q: "If current is steady, mutual inductance is:", o: ["Zero", "Infinity", "Double", "Halves"], a: 0 },
-        { q: "SI unit of mutual inductance?", o: ["Ohm", "Henry", "Volt", "Siemens"], a: 1 },
-        { q: "Linkage 3Wb, 500 turns, X Amps, 750H. X?", o: ["1A", "2A", "3A", "4A"], a: 1 },
-        { q: "Inductor blocks sudden changes in:", o: ["Voltage", "Current", "Inductance", "Capacitance"], a: 1 },
-        { q: "Energy in a coil is stored in form of:", o: ["Electrical field", "Magnetic Field", "Electrostatic", "Force"], a: 1 }
+    // ELECTRICITY (10)
+    { q: "The two form of electricity are...?", o: ["Static and current", "Power and work", "Resistance and static", "Resistance and current"], a: 0 },
+    { q: "The material gases has a charge carriers of.....?", o: ["Electrons", "Protons", "Electron and ions", "Proton and ions"], a: 2 },
+    { q: "The addition of impurities to a semiconductor is called....?", o: ["Conductivity", "Malleability", "Doping", "Ductility"], a: 2 },
+    { q: "The correct formula for the quantity of charge is...?", o: ["Q=VT", "Q= IT", "Q= I/T", "Q= VR"], a: 1 },
+    { q: "The type of electric current delivered to businesses and residences is...?", o: ["Alternating current", "Visual current", "Direct current", "General current"], a: 0 },
+    { q: "Electric current is a derive quantity?", o: ["True", "False", "Both", "None"], a: 1 },
+    { q: "Factors that affect resistance include all EXCEPT....?", o: ["Length", "Temperature", "Nature of Material", "Resistivity"], a: 3 },
+    { q: "The usual waveform of an Alternating current is....?", o: ["Cosine wave", "Tan wave", "Sine wave", "Electrical wave"], a: 2 },
+    { q: "Resistance depends on the following EXCEPT....?", o: ["Length", "Resistivity", "Cross sectional area", "Temperature"], a: 3 },
+    { q: "Potential difference is measured using...?", o: ["Henry", "Ammeter", "Farad", "Voltmeter"], a: 3 },
+
+    // CAPACITORS (10)
+    { q: "Are devices for storing electrical charge released in a controlled manner:", o: ["Resistors", "Inductors", "Capacitors", "Ohms meter"], a: 2 },
+    { q: "Capacitors is divided into Fixed and functional types?", o: ["True", "False", "Both", "None"], a: 1 },
+    { q: "Conducting plates separated by insulating materials called...?", o: ["Fixed", "Variable", "Functional", "Dielectrics"], a: 3 },
+    { q: "The Dielectrics of super capacitor is....?", o: ["Polypropylene", "Helmholtz double layer", "Polyethylene sulfide", "Paper"], a: 1 },
+    { q: "The Dielectrics of the film capacitors is....?", o: ["Paper", "Polyethylene sulfide", "Pare electric", "Aluminum oxide"], a: 1 },
+    { q: "Factors affecting capacitance depend on the following EXCEPT...?", o: ["Distance", "Area", "Temperature", "Dielectric"], a: 2 },
+    { q: "Equivalent Resistor and Capacitor in series use the same formula?", o: ["False", "True", "Both", "None"], a: 0 },
+    { q: "Two capacitors (0.30uF and 0.50uF) in parallel. Equivalent?", o: ["0.8uF", "0.8F", "0.2F", "0.2uF"], a: 0 },
+    { q: "Capacitors can not be connected in parallel and series?", o: ["True", "False", "Both", "None"], a: 0 },
+    { q: "The important types of fixed capacitors are...?", o: ["Polymer", "Super", "Transit", "Silver mica"], a: 2 },
+
+    // WAVES (4)
+    { q: "What is the frequency of a wave with period 0.01667?", o: ["50.05Hz", "59.98Hz", "70.98Hz", "10Hz"], a: 1 },
+    { q: "Sears Building sways at 0.1Hz. What is the period?", o: ["20s", "30s", "40s", "10s"], a: 3 },
+    { q: "Water wave oscillates 3 times/sec, distance 2m. Speed?", o: ["6m/s", "8m/s", "10m/s", "12m/s"], a: 0 },
+    { q: "Transformers works on the basis of Faraday's law?", o: ["True", "False", "Maybe", "None"], a: 0 },
+
+    // ELECTROSTATICS (21)
+    { q: "Electrostatics is the study of:", o: ["Moving charges", "Stationary charges", "Magnetic fields", "Current"], a: 1 },
+    { q: "Electric charge is:", o: ["Flow of electrons", "Property of matter for electrical effects", "Movement of protons", "Energy"], a: 1 },
+    { q: "Law of conservation of charge states:", o: ["Can be created", "Can be destroyed", "Total remains constant", "Electrons stay"], a: 2 },
+    { q: "The two types of electric charges are:", o: ["North/South", "Positive/Neutral", "Positive/Negative", "Negative/Neutral"], a: 2 },
+    { q: "Coulomb’s law force is:", o: ["Directly prop to d^2", "Inversely prop to d^2", "Independent", "Directly prop to mass"], a: 1 },
+    { q: "Charging by friction occurs when:", o: ["Charges created", "Two objects rub together", "Heating", "Current flow"], a: 1 },
+    { q: "Charging by conduction means:", o: ["Without contact", "Radiation", "Direct contact", "Heating"], a: 2 },
+    { q: "Charging by induction is:", o: ["Direct contact", "Rubbing", "Without contact", "Heating"], a: 2 },
+    { q: "One property of electric charges is:", o: ["Unlike repel", "Like attract", "Like repel", "No effect"], a: 2 },
+    { q: "An electric field is:", o: ["Magnetic", "Region where force is experienced", "Conductor", "Current"], a: 1 },
+    { q: "Electric field intensity is:", o: ["Force/charge", "Charge/force", "Energy/charge", "Voltage/current"], a: 0 },
+    { q: "SI unit of charge:", o: ["Volt", "Coulomb", "Ampere", "Ohm"], a: 1 },
+    { q: "Quantization states charge exists in:", o: ["Fractions", "Continuous", "Integral multiples of e", "Negative only"], a: 2 },
+    { q: "Conductors differ because they:", o: ["Stop charge", "Allow free electron movement", "No electrons", "Always positive"], a: 1 },
+    { q: "Application of electrostatics:", o: ["Electric iron", "Photocopier", "Water heater", "Fridge"], a: 1 },
+    { q: "A conductor:", o: ["Prevents flow", "Allows free flow", "No electrons", "No charge"], a: 1 },
+    { q: "An insulator:", o: ["Allows movement", "Conducts heat", "Resists flow", "Produces electricity"], a: 2 },
+    { q: "Formula for Coulomb's Law:", o: ["F=ma", "V=Ir", "F=kq1q2/r^2", "P=Iv"], a: 2 },
+    { q: "E at 2.0m from 4.0nc charge is:", o: ["9.0 N/C", "18 N/C", "27 N/C", "36 N/C"], a: 0 },
+    { q: "Electrons removed for +1.0x10^-7C:", o: ["6.25x10^11", "6.25x10^12", "1.60x10^-19", "3.20x10^-7"], a: 1 },
+    { q: "Force between Na+ and Cl- at 2.82x10^-10m:", o: ["2.9x10^-9", "8.2x10^-9", "1.6x10^-19", "9.0x10^19"], a: 1 },
+
+    // INDUCTANCE (14)
+    { q: "A crack in inductor magnetic path results in:", o: ["Unchanged", "Increased", "Zero", "Reduced inductance"], a: 3 },
+    { q: "Self induced voltage NOT affected by:", o: ["Current", "Voltage", "Turns", "Magnetic resistance"], a: 3 },
+    { q: "Moving magnetic field acts as moving conductor:", o: ["Yes", "No", "Both", "None"], a: 0 },
+    { q: "Polarity determined by left hand generator rule:", o: ["Yes", "No", "Both", "None"], a: 0 },
+    { q: "Increasing field/current will decrease force:", o: ["Yes", "No", "Both", "None"], a: 1 },
+    { q: "Reversing field or current reverses force:", o: ["Yes", "No", "Both", "None"], a: 0 },
+    { q: "If coil 1 current is steady, coil 2 current is:", o: ["Zero", "Infinity", "Double", "Halves"], a: 0 },
+    { q: "Linkage 3Wb, 500 turns, coil 2 is 2A. Mutual inductance?", o: ["750H", "500H", "450H", "900H"], a: 0 },
+    { q: "Conductor moves at angle, F = BlsinX:", o: ["Yes", "No", "Both", "None"], a: 1 },
+    { q: "Self inductance defined by EMF when current changes at unit rate:", o: ["Yes", "No", "Both", "None"], a: 0 },
+    { q: "Linkage 3Wb, 500 turns, X Amps, 750H. X?", o: ["1A", "2A", "3A", "4A"], a: 1 },
+    { q: "Mutual inductance application:", o: ["DC generator", "AC generator", "Transformer", "Capacitor"], a: 2 },
+    { q: "Inductor blocks sudden changes in:", o: ["Voltage", "Current", "Inductance", "Capacitance"], a: 1 },
+    { q: "Energy in a coil is stored in form of:", o: ["Electrical field", "Magnetic Field", "Electrostatic", "Force"], a: 1 }
 ];
 
 let activeExam = [];
-let timeLeft = 1800; // 30 Minutes
+let timeLeft = 1800; 
 let timer;
 
 function initLoader() {
@@ -246,9 +133,7 @@ function initLoader() {
 }
 
 function startExam() {
-    // Shuffle the full database and take exactly 40 questions
     activeExam = [...fullDatabase].sort(() => 0.5 - Math.random()).slice(0, 40);
-    
     document.getElementById('main-hub').style.display = 'none';
     document.getElementById('exam-container').style.display = 'block';
     renderQuestions();
@@ -281,22 +166,19 @@ function startTimer() {
 function submitExam() {
     clearInterval(timer);
     let score = 0;
-    let reviewHTML = `<h2>Review Your Performance</h2>`;
-
+    let reviewHTML = `<h2>Review</h2>`;
     activeExam.forEach((item, idx) => {
         const sel = document.querySelector(`input[name="q${idx}"]:checked`);
         const userVal = sel ? parseInt(sel.value) : null;
         const correct = userVal === item.a;
         if(correct) score++;
-
         reviewHTML += `
-            <div class="question-block" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px;">
+            <div class="question-block" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 10px; text-align: left;">
                 <p><strong>${idx + 1}. ${item.q}</strong></p>
-                <p style="color: ${correct ? '#38761d' : '#d32f2f'}">Your Answer: ${userVal !== null ? item.o[userVal] : 'No Answer'}</p>
-                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${item.o[item.a]}</p>` : ''}
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}">You: ${userVal !== null ? item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d;">Correct: ${item.o[item.a]}</p>` : ''}
             </div>`;
     });
-
     document.getElementById('exam-container').style.display = 'none';
     document.getElementById('result-screen').style.display = 'block';
     document.getElementById('score-text').innerText = `${score} / 40`;
