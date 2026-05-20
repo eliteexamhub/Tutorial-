@@ -6,703 +6,142 @@
     <title>Elite Exam Hub | Kelvin</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
+        :root { --navy: #001f3f; --green: #38761d; --red: #cc0000; --light-bg: #f4f7f6; --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); }
 
-        :root {
-            --navy: #001f3f;
-            --green: #38761d;
-            --light-bg: #f4f7f6;
-            --error: #d32f2f;
-            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%);
-        }
+        /* Overlays */
+        #welcome-overlay, #sync-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        #sync-overlay { display: none; background: rgba(255, 255, 255, 0.98); }
+        .sync-ring { width: 60px; height: 60px; border: 4px solid #f3f3f3; border-top: 4px solid var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--light-bg);
-            margin: 0;
-            padding: 20px;
-            color: var(--navy);
-            overflow-x: hidden;
-        }
-
-        #welcome-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .welcome-content {
-            max-width: 500px;
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        .welcome-content h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .step-box {
-            background: #fff;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            border-left: 5px solid var(--green);
-            text-align: left;
-        }
-
-        .btn-get-started {
-            background: var(--gradient);
-            color: white;
-            border: none;
-            padding: 18px 40px;
-            font-size: 1.2rem;
-            font-weight: 800;
-            border-radius: 50px;
-            cursor: pointer;
-            margin-top: 30px;
-            box-shadow: 0 10px 20px rgba(56, 118, 29, 0.3);
-            transition: 0.3s;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-            100% { transform: scale(1); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        /* UI Elements */
         .container { max-width: 800px; margin: auto; }
-
-        header {
-            text-align: center;
-            padding: 30px 0;
-            background: var(--gradient);
-            color: white;
-            border-radius: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-
-        .subject-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-        }
-
-        .subject-card {
-            background: white;
-            padding: 35px 10px;
-            text-align: center;
-            border-radius: 20px;
-            font-weight: 800;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            cursor: pointer;
-            transition: 0.3s;
-            border: 2px solid transparent;
-        }
-
-        .subject-card:hover {
-            border-color: var(--green);
-            transform: translateY(-8px);
-            background: #f0fdf4;
-        }
-
-        #exam-container { display: none; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 25px; margin-bottom: 30px; }
+        .subject-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .subject-card { background: white; padding: 25px 10px; text-align: center; border-radius: 20px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .subject-card:hover { transform: translateY(-5px); }
         
-        .timer-bar {
-            position: sticky;
-            top: 10px;
-            background: var(--green);
-            color: white;
-            padding: 12px;
-            border-radius: 50px;
-            text-align: center;
-            font-weight: bold;
-            z-index: 100;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .question-block { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-        .question-text { font-weight: 600; margin-bottom: 15px; display: block; line-height: 1.5; }
-        
-        .options-group label {
-            display: block;
-            background: #f9f9f9;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid #eee;
-        }
-
-        .options-group label:hover { background: #e8f5e9; border-color: var(--green); }
-        input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
-
-        .btn-action {
-            width: 100%;
-            padding: 18px;
-            background: var(--navy);
-            color: white;
-            border: none;
-            border-radius: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 20px;
-            font-size: 1rem;
-        }
-
-        .btn-home { background: #666; margin-bottom: 10px; }
-
-        #result-screen { display: none; text-align: center; padding: 50px 20px; }
-        .review-section { text-align: left; margin-top: 40px; border-top: 2px solid var(--navy); padding-top: 20px; }
+        #exam-container, #result-screen { display: none; background: white; padding: 25px; border-radius: 20px; }
+        .timer-bar { background: var(--green); color: white; padding: 12px; border-radius: 50px; text-align: center; font-weight: bold; position: sticky; top: 10px; margin-bottom: 20px; }
+        .question-block { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .review-card { padding: 15px; margin-bottom: 10px; border-radius: 10px; background: #f9f9f9; border-left: 6px solid #ccc; }
+        .correct { border-left-color: var(--green); }
+        .wrong { border-left-color: var(--red); }
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 15px; font-weight: 700; cursor: pointer; margin-top: 20px; }
+        .btn-get-started { background: var(--gradient); color: white; border: none; padding: 18px 40px; font-size: 1.2rem; font-weight: 800; border-radius: 50px; cursor: pointer; margin-top: 25px; }
     </style>
 </head>
 <body>
 
 <div id="welcome-overlay">
-    <div class="welcome-content">
-        <h1>Welcome to <br>Elite Exam Hub</h1>
-        <p>Your journey to academic excellence starts here.</p>
-        <div class="step-box"><strong>CHM102:</strong> 40 Questions | 30 Mins</div>
-        <div class="step-box"><strong>GST102:</strong> 60 Questions | 20 Mins</div>
-        <div class="step-box"><strong>GST104:</strong> 60 Questions | 20 Mins</div>
-        <div class="step-box"><strong>ENT102:</strong> 60 Questions | 20 Mins</div>
-        <button class="btn-get-started" onclick="closeTutorial()">GET STARTED →</button>
-    </div>
+    <h1>Elite Exam Hub</h1>
+    <p>Excellence through Practice</p>
+    <button class="btn-get-started" onclick="document.getElementById('welcome-overlay').style.display='none'">PROCEED</button>
+</div>
+
+<div id="sync-overlay">
+    <div class="sync-ring"></div>
+    <div style="margin-top:20px; font-weight:600;" id="sync-msg">Establishing connection...</div>
 </div>
 
 <div class="container" id="main-hub">
-    <header>
-        <h1 style="margin:0; font-size: 1.8rem;">ELITE EXAM HUB</h1>
-        <p style="margin:5px 0 0; font-size: 0.9rem; opacity: 0.9;">Excellence through Practice</p>
-    </header>
+    <header><h1>ELITE EXAM HUB</h1></header>
     <div class="subject-grid">
-        <div class="subject-card" onclick="startExam('GST102')">GST102</div>
+        <div class="subject-card" onclick="startExam('MTH102')">MTH102</div>
+        <div class="subject-card" onclick="handleEntry('PHY102')">PHY102</div>
         <div class="subject-card" onclick="startExam('CHM102')">CHM102</div>
+        <div class="subject-card" onclick="startExam('BIO102')">BIO102</div>
+        <div class="subject-card" onclick="startExam('GST102')">GST102</div>
         <div class="subject-card" onclick="startExam('GST104')">GST104</div>
+        <div class="subject-card" onclick="startExam('GST108')">GST108</div>
+        <div class="subject-card" onclick="startExam('GST110')">GST110</div>
         <div class="subject-card" onclick="startExam('ENT102')">ENT102</div>
     </div>
 </div>
 
 <div class="container" id="exam-container">
-    <div class="timer-bar" id="timer">Time Remaining: --:--</div>
-    <button class="btn-action btn-home" onclick="location.reload()">Quit Exam</button>
+    <div class="timer-bar" id="timer">00:00</div>
     <div id="question-list"></div>
-    <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    <button class="btn-action" onclick="submitExam()">SUBMIT ANSWERS</button>
 </div>
 
 <div class="container" id="result-screen">
-    <div style="font-size: 3rem;">GO AND READ😂</div>
-    <h1 id="score-text"></h1>
-    <p id="grade-comment"></p>
-    <button class="btn-action" onclick="location.reload()">Back to Menu</button>
-    <div id="review-area" class="review-section"></div>
+    <h1 id="score-display" style="text-align:center;"></h1>
+    <div id="detailed-review"></div>
+    <button class="btn-action" onclick="location.reload()">RETURN TO HUB</button>
 </div>
 
+<script src="questions.js"></script>
+<script src="questions2.js"></script>
+<script src="questions3.js"></script>
+<script src="questions4.js"></script>
+
 <script>
-function closeTutorial() {
-    const overlay = document.getElementById('welcome-overlay');
-    overlay.style.transition = '0.5s';
-    overlay.style.opacity = '0';
-    setTimeout(() => { overlay.style.display = 'none'; }, 500);
-}
+    let activeQuestions = [];
+    let timerInterval;
 
-const examDatabase = {
-    'GST102': [
-        { q: "The basic word for the word 'International' is ______", o: ["Inter", "Nation", "al", "In"], a: 1 },
-        { q: "What does the prefix 'Mal' means?", o: ["Good", "Badly", "Between", "Wrong"], a: 1 },
-        { q: "The word 'Inter' means _____", o: ["Above", "Below", "Between", "Over"], a: 2 },
-        { q: "The prefix 'De' means _____", o: ["Against", "Not", "To reverse", "Nothing"], a: 2 },
-        { q: "______ is the process of adding a letter or a group of letters at the end of a base word?", o: ["Prefixation", "Suffixation", "Adjective", "Grammatical unit"], a: 1 },
-        { q: "Compounding is the process of bringing together the _____ of two words to form a new one", o: ["Prefix form", "Suffix form", "Base form", "Inflection forms"], a: 2 },
-        { q: "Leftover is a ____ word", o: ["Big word", "Compound", "Subordinate", "Conjunction"], a: 1 },
-        { q: "______ is the process of combining two separate frequent forms to produce a single word", o: ["Conversion", "Blending", "Possession", "Compounding"], a: 1 },
-        { q: "Motel is the _____ of Motorway and Hotel", o: ["Conversion", "Compounding", "Blending", "Possession"], a: 2 },
-        { q: "Clipping is a type of word formation process very common in _____ speech", o: ["Formal", "Casual", "Appreciative", "Apology"], a: 1 },
-        { q: "Tele from television is an example of ______", o: ["Clipping", "Compound", "Conversion", "Blending"], a: 0 },
-        { q: "____ is the least common process of word formation in English", o: ["Clipping", "Blending", "Coinage", "Compounding"], a: 2 },
-        { q: "Which of the following is a coinage word?", o: ["Fridge", "Blackout", "Stone", "Nylon"], a: 3 },
-        { q: "Chin Chin is an example of ______", o: ["Clipping", "Reduplication", "Blending", "Conversion"], a: 1 },
-        { q: "What is the full meaning of NFA", o: ["Nigeria Federation Association", "National Football Association", "Nigeria Football Association", "National Federal Association"], a: 2 },
-        { q: "COD means ___", o: ["Cash in Demand", "Call on Demand", "Cash of Demand", "Call of Demand"], a: 1 },
-        { q: "Trouser is a word from ___", o: ["Spanish", "English", "French", "German"], a: 2 },
-        { q: "Alcohol is derived form which language?", o: ["Arabic", "Turkish", "French", "English"], a: 0 },
-        { q: "Robot is a borrowed word form which of the following language?", o: ["Japanese", "Dutch", "Czech", "Arabic"], a: 2 },
-        { q: "An outline shows how the writer has organized ______", o: ["Ideas", "words", "Letters", "Grammar"], a: 0 },
-        { q: "Which of the following is not a type of outlining?", o: ["Topic Outline", "Grammar Outline", "Sentence Outline", "Paragraph Outline"], a: 1 },
-        { q: "Which outline method is more of time consuming?", o: ["Topic Sentence", "Grammar Outline", "Sentence Outline", "Paragraph Outline"], a: 2 },
-        { q: "The more important an idea is the closer to the ______", o: ["Right", "Left", "Above word", "Lower word"], a: 1 },
-        { q: "_____ is a method of generating ideas and sharing knowledge to solve a particular commercial or technical group", o: ["Thinking", "Brainstorming", "Idea Generation", "Idea Formation"], a: 1 },
-        { q: "Who first introduced Brainstorming?", o: ["Woke Shoyinka 1930", "Alex Osborne 1930", "Victoria Aremo 1930", "William Shakespeare 1930"], a: 1 },
-        { q: "Which of these is a basic method if brainstorming?", o: ["Mind mapping", "Question Brainstorming", "Individual Brainstorming", "Electronic Brainstorming"], a: 2 },
-        { q: "______ is the act of taking ideas and show how they're connected to other and tye main topic", o: ["Team Idea Mapping", "Group Brainstorming", "Clustering", "Brainstorming Variation"], a: 2 },
-        { q: "______ is when you write for 5 minutes on your topic without stopping?", o: ["Note Taking", "Listing", "Free Writing", "Outlining"], a: 2 },
-        { q: "Forms of Brainstorming includes all except ______", o: ["Structured Brainstorming", "Silent Brainstorming", "Open door Brainstorming", "Close door Brainstorming"], a: 3 },
-        { q: "______ consist of creating a heading and putting your ideas evidence or points about your topic...", o: ["Listing", "Jotting", "Outlining", "Note Taking"], a: 2 },
-        { q: "The full meaning of Email is _____", o: ["Electric Mail", "Electronic Mail", "Electrostatic Mail", "Electricity Mail"], a: 1 },
-        { q: "______ is where unsolicited mails especially advertisement goes to", o: ["IOS", "SPAM", "ISP", "DRAFT"], a: 1 },
-        { q: "The full meaning of ISP is _____", o: ["Internal Service Provider", "International Service Provider", "Internet Service Provider", "Internet Service Portal"], a: 2 },
-        { q: "IOS stands for ____", o: ["iPhone Operator System", "iPhone Operating System", "iPhone Operative System", "iPhone Office System"], a: 1 },
-        { q: "_____ is not a type of Email", o: ["Formal Email", "Informal Email", "Semi-Formal Email", "Social Email"], a: 3 },
-        { q: "______ is a type of mail sent from an individual to several people?", o: ["One to One Email", "One to Many Email", "Many to One Email", "Transactional Email"], a: 1 },
-        { q: "Which of the following is not an etiquette for an Email", o: ["Proper Email Address", "A clear subject line", "Use of formal language", "Sharing of mails to others"], a: 3 },
-        { q: "Which type of Email is also known as One to One Email?", o: ["Formal Email", "Informal Mail", "Transactional Email", "Semi-Formal Email"], a: 2 },
-        { q: "An Email strictly for business and professional purposes is also known as ____ Email", o: ["Informal", "Formal", "Semi-Formal", "Transactional"], a: 1 },
-        { q: "____ is the situation where two different languages overlap...", o: ["Language Switch", "Coherence", "Inference", "Interference"], a: 3 },
-        { q: "Which of the following is not a level of interference?", o: ["Lexical Interference", "Grammatical Interference", "Phonological Interference", "Code Interference"], a: 3 },
-        { q: "_____ is the use of two different languages simultaneously in a conversation", o: ["Coherence", "Language Mixing", "Code Mixing", "Word Mixing"], a: 2 },
-        { q: "The alternative use of two languages in a conversation is known as ____", o: ["Language Switch", "Code Switch", "Word Switch", "Grammar Switch"], a: 1 },
-        { q: "Which of the following is not a Code Switch?", o: ["Tag Switching", "Inter-Sentential", "Intra-Sentential", "Outer-Sentential"], a: 3 },
-        { q: "Which is not a Code Mixing?", o: ["Alteration", "Congruent Lexicalization", "Insertion", "Removal"], a: 3 },
-        { q: "The word 'Literature' means ____", o: ["Letter", "Word", "An Act", "Grammatical Expressions"], a: 0 },
-        { q: "_____ is an imaginative piece of writing that mirrors real life experiences", o: ["Novel", "Story", "Literature", "A Play"], a: 2 },
-        { q: "The following are the genres of literature except _____", o: ["Drama", "Prose", "Poetry", "Figure of Speech"], a: 3 },
-        { q: "_____ is a figure of speech that express a bad idea in a pleasant way", o: ["Oxymoron", "Euphemism", "Apostrophe", "Synecdoche"], a: 1 },
-        { q: "O death where is thy string? Which figure of speech...", o: ["Oxymoron", "Euphemism", "Apostrophe", "Synecdoche"], a: 2 },
-        { q: "Alliteration is the repetition of same _____ at the beginning", o: ["Word", "Letter", "Grammar", "part of speech"], a: 1 },
-        { q: "Bang is an example of _____", o: ["Alliteration", "Onomatopoeia", "Euphemism", "Antithesis"], a: 1 },
-        { q: "Life is like a walking shadow for this whole year...", o: ["Irony", "Personification", "Metaphor", "Simile"], a: 2 },
-        { q: "Which figure of speech gives human attributes...", o: ["Irony", "Personification", "Metaphor", "Oxymoron"], a: 1 },
-        { q: "_____ is the use of words to convey a meaning that is opposite", o: ["Metaphor", "Simile", "Irony", "Exclamation"], a: 2 },
-        { q: "Which of the following is True?", o: ["Everyone listens", "Not everyone who hears listens", "Not everyone who listens hear", "Everyone who listens hears"], a: 1 },
-        { q: "Both hearing and listening involves sound perception", o: ["True", "False", "Maybe", "None of the above"], a: 0 },
-        { q: "Listening takes up to ____", o: ["40% to 50%", "30% to 40%", "25% to 35%", "60% to 80%"], a: 0 },
-        { q: "Speaking takes up to ___ percentage", o: ["10% to 20%", "25% to 30%", "50% to 60%", "40% to 60%"], a: 1 },
-        { q: "How many types of listening do we have", o: ["2", "4", "3", "5"], a: 2 },
-        { q: "Reading takes up to ____ percentage", o: ["5% to 10%", "12% to 16%", "25% to 30%", "11% to 16%"], a: 3 },
-        { q: "Writing takes up to ___ percentage", o: ["9%", "15%", "10%", "20%"], a: 0 },
-        { q: "Choosing what you want to listen to is what type of listening?", o: ["Appreciative", "Selective", "Sympathy", "Empathy"], a: 1 },
-        { q: "_____ is the means of comprehending what a message means to you", o: ["Understanding", "Rembering", "Wisdom", "Knowledge"], a: 0 },
-        { q: "Do you give feedback inform of verbal?", o: ["Yes", "No", "Sometimes", "I don't know"], a: 0 },
-        { q: "Which is intentional focus on hearing a speaker's message?", o: ["Receiving", "Understanding", "Evaluating", "Knowledge"], a: 0 },
-        { q: "How many phonemes do we have in English?", o: ["22", "30", "44", "40"], a: 2 },
-        { q: "The process of speaking English correctly and confidently is called", o: ["Grammar", "Pronunciation", "Fluency", "Vocabulary"], a: 2 },
-        { q: "Standard way in which a word is made to sound when spoken?", o: ["Vocabulary", "Pronunciation", "Writing", "Phonetics"], a: 1 },
-        { q: "What is the art of delivering a formal address in public?", o: ["Writing", "Speech writing", "Speech making", "Dialogue"], a: 2 },
-        { q: "Who wrote the book 'The Secrets of Good Communicator'?", o: ["Henry Pilter", "Larry King", "Long Queen", "William Shakespeare"], a: 1 },
-        { q: "Listening skill involves", o: ["The head and active soul", "The nose and the brain", "The voice and the mouth", "The mouth and the hand"], a: 0 },
-        { q: "Refers to the involvement of the ears, eyes, voice and the brain?", o: ["Listening", "Speaking", "Writing", "Reading"], a: 0 },
-        { q: "What is the third language skill after listening and speaking?", o: ["Listening", "Speaking", "Reading", "Writing"], a: 2 },
-        { q: "Reading as a skill has", o: ["Two stages", "Five stages", "Ten stages", "Six stages"], a: 0 },
-        { q: "Which skill involves the use of the brain, eyes and lips?", o: ["Speaking", "Writing", "Reading", "Listening"], a: 2 },
-        { q: "Speaking and writing are called", o: ["Generative skills", "Production skills", "Reception skills", "Reproduction skills"], a: 1 },
-        { q: "Effective listening process suggests", o: ["Concentration", "Distraction", "Sleeping", "Noise making"], a: 0 },
-        { q: "One way of developing effective listening skill is to", o: ["Avoid distraction", "Encourage noise", "Ignore the speaker", "Sleep in class"], a: 0 },
-        { q: "Pronunciation deals with", o: ["Correct sounding of words", "Writing of letters", "Drawing of objects", "Reading silently"], a: 0 },
-        { q: "Fluency in communication means", o: ["Smooth and confident speech", "Ability to draw", "Ability to write slowly", "Ability to sing"], a: 0 },
-        { q: "Speech making is important because it", o: ["Improves communication", "Encourages silence", "Prevents interaction", "Reduces learning"], a: 0 },
-        { q: "Reading skill helps to", o: ["Improve understanding", "Destroy vocabulary", "Reduce knowledge", "Avoid communication"], a: 0 },
-        { q: "Which of the following is a receptive skill?", o: ["Listening", "Speaking", "Writing", "Speech making"], a: 0 },
-        { q: "Which of the following is a productive skill?", o: ["Reading", "Listening", "Writing", "Watching"], a: 2 },
-        { q: "Effective communication requires", o: ["Attention", "Distraction", "Noise", "Silence only"], a: 0 },
-        { q: "Communication skill can be improved through", o: ["Constant practice", "Isolation", "Laziness", "Avoiding people"], a: 0 },
-        { q: "Note taking is the act of ________ information while listening or reading.", o: ["destroying", "recording", "ignoring", "drawing"], a: 1 },
-        { q: "Note making helps students to ________.", o: ["forget easily", "waste time", "summarize information", "avoid studying"], a: 2 },
-        { q: "Which of the following is a method of note taking?", o: ["Drawing", "Cornell method", "Singing", "Dancing"], a: 1 },
-        { q: "One importance of note taking is to ________.", o: ["improve memory", "increase noise", "reduce learning", "encourage laziness"], a: 0 },
-        { q: "Abbreviations are mainly used in note taking to ________.", o: ["confuse", "save time", "waste paper", "increase errors"], a: 1 },
-        { q: "Vocabulary refers to the ________ a person knows and uses.", o: ["books", "languages", "words", "letters"], a: 2 },
-        { q: "Vocabulary development can be improved through ________.", o: ["reading regularly", "avoiding dictionaries", "sleeping", "skipping"], a: 0 },
-        { q: "Words that have similar meanings are called ________.", o: ["antonyms", "homophones", "synonyms", "prefixes"], a: 2 },
-        { q: "Words that have opposite meanings are called ________.", o: ["synonyms", "antonyms", "suffixes", "homonyms"], a: 1 },
-        { q: "Context clues help readers to understand the meaning of ________.", o: ["pictures", "unknown words", "numbers", "drawings"], a: 1 },
-        { q: "Which of the following is correctly spelt?", o: ["Recieve", "Goverment", "Environment", "Enviroment"], a: 2 },
-        { q: "Correct spelling is important because it improves ________.", o: ["confusion", "communication", "silence", "noise"], a: 1 },
-        { q: "A word that sounds alike but has different meanings is called a ________.", o: ["synonym", "antonym", "homophone", "prefix"], a: 2 },
-        { q: "Which of the following contains a silent letter?", o: ["Knife", "Table", "Orange", "Pencil"], a: 0 },
-        { q: "The plural form of 'child' is ________.", o: ["childs", "childrens", "children", "childes"], a: 2 },
-        { q: "The plural form of 'knife' is ________.", o: ["knifes", "knives", "knifees", "knivies"], a: 1 },
-        { q: "Which of the following can improve spelling?", o: ["Constant practice", "Avoiding reading", "Skipping classes", "Poor pronunciation"], a: 0 },
-        { q: "The use of dictionaries helps in ________.", o: ["vocabulary development", "reducing knowledge", "poor writing", "forgetting"], a: 0 },
-        { q: "Main points in note taking are usually ________.", o: ["unnecessary", "key ideas", "jokes", "drawings"], a: 1 },
-        { q: "British spelling of the word 'color' in American English is ________.", o: ["colur", "color", "collor", "colour"], a: 3 },
-        { q: "An outline is mainly used to ________.", o: ["confuse ideas", "organize ideas", "destroy info", "shorten books"], a: 1 },
-        { q: "A good outline helps a writer to ________.", o: ["lose focus", "arrange points logically", "avoid planning", "repeat ideas"], a: 1 },
-        { q: "Which of the following comes first in an outline?", o: ["Supporting details", "Conclusion", "Main topic", "Examples"], a: 2 },
-        { q: "Major divisions in an outline are usually represented by ________.", o: ["Roman numerals", "Small letters", "Symbols", "Colors"], a: 0 },
-        { q: "Subpoints in an outline provide ________.", o: ["unnecessary info", "supporting information", "wrong info", "unrelated ideas"], a: 1 },
-        { q: "A good outline should be ________.", o: ["disorganized", "lengthy", "clear and logical", "without structure"], a: 2 },
-        { q: "Which of the following is NOT a feature of a good outline?", o: ["Arrangement", "Clarity", "Repetition of ideas", "Logical sequence"], a: 2 },
-        { q: "An outline written before an essay is known as a ________.", o: ["draft outline", "topic sentence", "paragraph", "conclusion"], a: 0 },
-        { q: "Which of the following helps in preparing a good outline?", o: ["Brainstorming", "Guesswork", "Noise making", "Daydreaming"], a: 0 },
-        { q: "Details under a main point must be ________.", o: ["unrelated", "connected to main idea", "confusing", "too brief"], a: 1 },
-        { q: "_____ is solely a mental process which deals with the mind.", o: ["Listening", "Communicating", "Reading", "Writing"], a: 2 },
-        { q: "The purpose of reading is obtainable through", o: ["Pleasure", "Practice", "Perceive pages", "Picture, pleasure and points"], a: 3 },
-        { q: "Form of reading not under any compulsion or obligation.", o: ["practice", "pleasure", "points", "examination"], a: 1 },
-        { q: "The act of trying to use visual clues at the page of a book is called", o: ["Scanning", "Skimming", "Browsing", "Studying"], a: 2 },
-        { q: "Process where the reader locates specific or given points is known as", o: ["Scanning", "Study reading", "Skimming", "Browsing"], a: 0 },
-        { q: "Which form of reading is more challenging to carry out?", o: ["Scanning", "Skimming", "Study reading", "Browsing"], a: 2 },
-        { q: "Which of the following reading habits provides a user movement?", o: ["Juggling", "Poring", "Word movement", "Reading aloud"], a: 2 },
-        { q: "Which of the following are reading skills?", o: ["Skimming", "Posing", "Assimilation", "Sleeping"], a: 0 },
-        { q: "Associative meaning of words beyond the basic level.", o: ["Connotation", "Denotation", "Appreciation", "Vocabulary"], a: 0 },
-        { q: "_____ paragraph is important in comprehension.", o: ["Topic", "Introductory", "Final", "Descriptive"], a: 0 }
-    ],
-    'CHM102': [
-        { q: "Which of the following is not a characteristic of organic compounds?", o: ["Low melting point", "Insoluble in water", "Conduct electricity in solution", "Covalent bonding"], a: 2 },
-        { q: "The element least likely found in organic compounds is", o: ["Oxygen", "Nitrogen", "Sulfur", "Silicon"], a: 3 },
-        { q: "One major source of organic compounds is", o: ["Atmosphere", "Natural gas", "Seawater", "Soil"], a: 1 },
-        { q: "Catenation refers to carbon’s ability to", o: ["Form ions", "Bond with itself", "Form salts", "Conduct electricity"], a: 1 },
-        { q: "Carbon in stable organic compounds forms", o: ["2 bonds", "3 bonds", "4 bonds", "5 bonds"], a: 2 },
-        { q: "A carbon-carbon double bond consists of", o: ["1 sigma, 1 pi", "2 sigma", "1 sigma, 2 pi", "2 pi"], a: 0 },
-        { q: "Acetylene contains", o: ["1 sigma, 2 pi", "2 sigma, 2 pi", "3 sigma, 1 pi", "1 sigma, 1 pi"], a: 0 },
-        { q: "In propene, total bonds are", o: ["8 sigma, 1 pi", "7 sigma, 2 pi", "6 sigma, 3 pi", "5 sigma, 2 pi"], a: 0 },
-        { q: "Propyne has", o: ["6 sigma, 2 pi", "7 sigma, 1 pi", "5 sigma, 3 pi", "4 sigma, 2 pi"], a: 0 },
-        { q: "Hybridization in methane is", o: ["sp", "sp2", "sp3", "p"], a: 2 },
-        { q: "Bond angle in methane is", o: ["180°", "120°", "109.5°", "90°"], a: 2 },
-        { q: "Bond angle in ethene is", o: ["90°", "120°", "180°", "109.5°"], a: 1 },
-        { q: "Carbon-carbon bond length increases in order", o: ["Triple < Double < Single", "Single < Double < Triple", "Double < Triple < Single", "Triple < Single < Double"], a: 0 },
-        { q: "Shortest bond is found in", o: ["CH3CH3", "CH2=CH2", "HC≡CH", "CH4"], a: 2 },
-        { q: "Hybridization of sp2 carbon bonds to", o: ["2 atoms", "3 atoms", "4 atoms", "5 atoms"], a: 1 },
-        { q: "Planar molecule among these is", o: ["Methane", "Formaldehyde", "Ethane", "Propane"], a: 1 },
-        { q: "Resonance hybrid is", o: ["Less stable", "More stable", "Equal stability", "Unstable"], a: 1 },
-        { q: "Resonance structures have", o: ["Same atoms arrangement", "Different atoms", "Different electrons", "Different bonds only"], a: 0 },
-        { q: "Dipole moment exists in", o: ["CO2", "CCl4", "CHCl3", "Cl2"], a: 2 },
-        { q: "Lowest dipole moment is", o: ["CHCl3", "CH3Cl", "CCl4", "CH2Cl2"], a: 2 },
-        { q: "Homolytic fission produces", o: ["Ions", "Molecules", "Free radicals", "Atoms"], a: 2 },
-        { q: "Stability of carbocation follows", o: ["Primary > Secondary > Tertiary", "Tertiary > Secondary > Primary", "Secondary > Primary > Tertiary", "Equal"], a: 1 },
-        { q: "Stability of carbanions is", o: ["Tertiary > Secondary > Primary", "Primary > Secondary > Tertiary", "Secondary > Primary > Tertiary", "Equal"], a: 1 },
-        { q: "Most stable radical is", o: ["Methyl", "Primary", "Secondary", "Tertiary"], a: 3 },
-        { q: "Electrophiles are", o: ["Electron rich", "Electron deficient", "Neutral", "Negative"], a: 1 },
-        { q: "Nucleophiles are", o: ["Positive", "Electron deficient", "Electron rich", "Neutral"], a: 2 },
-        { q: "Lewis acid is", o: ["Electron donor", "Electron acceptor", "Proton donor", "Proton acceptor"], a: 1 },
-        { q: "Hydrogen bond strength is about", o: ["6–10 kcal", "60–80 kcal", "100 kcal", "200 kcal"], a: 0 },
-        { q: "Bond dissociation energy is", o: ["Energy released forming bond", "Energy to break bond", "Energy lost", "Heat absorbed"], a: 1 },
-        { q: "Energy is released when", o: ["Bond breaks", "Bond forms", "Electron moves", "Reaction stops"], a: 1 },
-        { q: "Curved arrow represents", o: ["Movement of atoms", "Movement of electrons", "Bond formation", "Reaction step"], a: 1 },
-        { q: "Shape of CH3• radical is", o: ["Linear", "Tetrahedral", "Trigonal planar", "Bent"], a: 2 },
-        { q: "Carbocation means", o: ["Negative carbon", "Positive carbon", "Neutral carbon", "Radical carbon"], a: 1 },
-        { q: "Reaction rate decreases with", o: ["Temperature", "Concentration", "Activation energy", "Pressure"], a: 2 },
-        { q: "Rate determining step is", o: ["Fastest", "Slowest", "Middle", "Final"], a: 1 },
-        { q: "Strongest interaction is", o: ["Van der Waals", "Hydrogen bond", "Dipole", "Covalent bond"], a: 3 },
-        { q: "Nonpolar molecule is", o: ["NH3", "HCl", "H2", "CH3Cl"], a: 2 },
-        { q: "Stronger acid has", o: ["High pKa", "Low pKa", "High pH", "Low Ka"], a: 1 },
-        { q: "Stronger acid has conjugate base that is", o: ["Strong", "Weak", "Neutral", "Unstable"], a: 1 },
-        { q: "Strongest acid among these", o: ["H2O", "CH4", "HI", "CH3OH"], a: 2 },
-        { q: "Isomers have", o: ["Same formula", "Same structure", "Same arrangement", "Same shape"], a: 0 },
-        { q: "Structural isomers differ in", o: ["Shape", "Arrangement", "Formula", "Mass"], a: 1 },
-        { q: "Ethanol and dimethyl ether are", o: ["Identical", "Structural isomers", "Stereoisomers", "Enantiomers"], a: 1 },
-        { q: "Geometrical isomerism arises due to", o: ["Free rotation", "Double bond restriction", "Single bond", "Triple bond"], a: 1 },
-        { q: "Cis-trans isomer exists in", o: ["1-butene", "2-butene", "Ethane", "Methane"], a: 1 },
-        { q: "Chiral molecule is", o: ["Superimposable", "Mirror image identical", "Non-superimposable", "Symmetrical"], a: 2 },
-        { q: "Optical activity is due to", o: ["Planar structure", "Symmetry", "Chirality", "Mass"], a: 2 },
-        { q: "Enantiomers are", o: ["Same", "Mirror images", "Identical", "Different compounds"], a: 1 },
-        { q: "Diastereomers are", o: ["Mirror images", "Not mirror images", "Identical", "Same structure"], a: 1 },
-        { q: "Hydrocarbons contain", o: ["C, H", "C, O", "C, N", "C, S"], a: 0 },
-        { q: "Alkanes are", o: ["Saturated", "Unsaturated", "Aromatic", "Cyclic"], a: 0 },
-        { q: "Propane is", o: ["Unsaturated", "Saturated", "Aromatic", "Reactive"], a: 1 },
-        { q: "Tertiary carbon is attached to", o: ["1 carbon", "2 carbons", "3 carbons", "4 carbons"], a: 2 },
-        { q: "Isobutyl group is", o: ["Primary", "Secondary", "Tertiary", "Quaternary"], a: 0 },
-        { q: "Boiling point increases with", o: ["Decreasing mass", "Increasing mass", "Branching", "Symmetry"], a: 1 },
-        { q: "Lowest boiling point alkane is", o: ["n-heptane", "isopentane", "neopentane", "n-hexane"], a: 2 },
-        { q: "Methane preparation includes", o: ["Wurtz reaction", "Soda lime", "Hydrolysis", "Oxidation"], a: 1 },
-        { q: "Kolbe electrolysis produces", o: ["Alkane", "Alkene", "Alkyne", "Alcohol"], a: 0 },
-        { q: "Unreactive to sulfuric acid", o: ["Alkane", "Alkene", "Alkyne", "Alcohol"], a: 0 },
-        { q: "Combustion produces", o: ["CO2 + H2O", "CO", "H2", "CH4"], a: 0 },
-        { q: "Cracking means", o: ["Heating", "Decomposition", "Oxidation", "Reduction"], a: 1 },
-        { q: "LPG contains", o: ["Methane", "Ethane", "Butane", "Propene"], a: 2 },
-        { q: "Octane number relates to", o: ["Density", "Combustion", "Anti-knock", "Boiling point"], a: 2 },
-        { q: "Highest octane number is", o: ["Heptane", "Isooctane", "Methane", "Butane"], a: 1 },
-        { q: "Double bond carbons are", o: ["sp", "sp2", "sp3", "p"], a: 1 },
-        { q: "Most stable alkene is", o: ["Ethene", "Propene", "Butene", "Substituted alkene"], a: 3 },
-        { q: "Markovnikov rule applies to", o: ["Addition", "Substitution", "Elimination", "Oxidation"], a: 0 },
-        { q: "Baeyer test uses", o: ["KMnO4", "HCl", "NaOH", "Br2"], a: 0 },
-        { q: "Anti-Markovnikov occurs with", o: ["HCl", "HBr + peroxide", "H2SO4", "NaCl"], a: 1 },
-        { q: "Ozonolysis produces", o: ["Alcohols", "Aldehydes/ketones", "Acids", "Alkanes"], a: 1 },
-        { q: "Which of the following properties of carbon is primarily responsible for its ability to form long chains and ring structure?", o: ["Electronegativity", "Catenation", "Atomic radius", "Ionization energy"], a: 1 },
-        { q: "Which of the following is NOT considered an organic compound?", o: ["Diamond", "Methane(CH4)", "Ethanol(C2H5OH)", "Acetic acid"], a: 0 },
-        { q: "Organic compounds are being divided into two major groups. What are these two groups?", o: ["Saturated and Unsaturated compounds", "Open chain and Closed chain compounds", "Alkanes and Alkenes", "Hydrocarbons and Derivatives"], a: 1 },
-        { q: "What is the primary characteristic that categorizes a compound as homocyclic?", o: ["It contains at least one double bond in its ring.", "Its ring structure is composed exclusively of carbon atoms.", "It includes atoms other than carbon in its ring.", "It exhibits properties similar to aromatic compounds."], a: 1 },
-        { q: "Alicyclic compounds are described as having similar properties to which other class of hydrocarbons?", o: ["Aromatic hydrocarbons", "Heterocyclic compounds", "Unsaturated hydrocarbons", "Aliphatic hydrocarbons"], a: 3 },
-        { q: "Which of the following is an example of a benzenoid compound that contains only carbon atoms in its ring structure?", o: ["Phenol", "Toluene", "Aniline", "Benzene"], a: 3 },
-        { q: "Which structural category does Tetraphene belong to?", o: ["Bicyclic", "Tricyclic", "Tetracyclic", "Non-benzenoid"], a: 2 },
-        { q: "Compounds with a conjugated pi-system that are characterized by a special smell or aroma are called", o: ["Aliphatic compounds", "Aromatic compounds", "Alicyclic compounds", "Heterocyclic compounds"], a: 1 },
-        { q: "What distinguishes non-benzenoid aromatic compounds from other fused-ring systems?", o: ["Their consistent presence of seven-membered rings", "Their composition solely of six membered rings.", "Their aromatic nature and fused-ring structure, incorporating rings other than six membered ones.", "Their lack of any aromatic characteristics."], a: 2 },
-        { q: "What defines a compound as belonging to the 'polycyclic aromatic rings and derivatives'?", o: ["It contains exactly two benzene rings fused together.", "It comprises atleast two benzene rings that are joined.", "It is a non-benzenoid compound with atleast one benzene ring.", "It consists of only five membered and seven membered rings."], a: 1 },
-        { q: "Which is an example of a non-benzenoid compound that has the same molecular formula as benzene but contains a 5-membered ring?", o: ["Oxaazulanone", "Tropone", "Pentafulvene", "TropyliumIon"], a: 2 },
-        { q: "According to your manual, heterocyclic compounds are sub-category of which broader classification?", o: ["Open chain compounds", "Homocyclic compounds", "Acyclic compounds", "Closed chain compounds"], a: 3 },
-        { q: "Alicyclic heterocyclic compounds are characterized by:", o: ["The presence of conjugated double bonds.", "A ring system containing at least one hetero-atom and devoid of conjugated double bonds.", "A ring system composed solely of carbon atoms."], a: 1 },
-        { q: "Which of the following is an example of an aromatic heterocyclic compound?", o: ["Pyrrolidine", "Tetrahydro-2H-pyran", "1H-indole", "Piperidine"], a: 2 },
-        { q: "Which of these is an example of an aromatic heterocyclic compound?", o: ["Benzene", "Cyclohexane", "Furan", "Toluene"], a: 2 },
-        { q: "Aromatic heterocyclic compounds can be:", o: ["Only six-membered rings.", "Only fused ring systems.", "Five or six membered rings.", "Non-benzenoid with any number of atoms in the ring."], a: 2 },
-        { q: "Which of the following is a characteristic feature of aromatic heterocyclic compounds?", o: ["They exclusively contain carbon atoms in a six-membered ring.", "They must contain at least one hetero atom.", "They are always fused ring systems.", "They are only found in five-membered rings."], a: 1 },
-        { q: "Which aromatic ion is mentioned as having the molecular formula [C7H7]+?", o: ["Oxaazulanone", "Tropolone", "Pentafulvene", "TropyliumIon"], a: 3 }
-    ],
-    'GST104': [
-        { q: "Philosophy of science is the study of ________", o: ["culture", "scientific knowledge and methods", "religion", "politics"], a: 1 },
-        { q: "Science is mainly based on ________.", o: ["imagination", "observation and experiment", "tradition", "emotions"], a: 1 },
-        { q: "A tentative explanation to a scientific problem is called ________.", o: ["law", "hypothesis", "conclusion", "observation"], a: 1 },
-        { q: "Which of the following is the first step in scientific method?", o: ["Conclusion", "Experimentation", "Observation/problem identification", "Data analysis"], a: 2 },
-        { q: "The branch of science that deals with living things is ________.", o: ["Physics", "Chemistry", "Biology", "Geology"], a: 2 },
-        { q: "Objectivity in science means being ________.", o: ["biased", "emotional", "neutral and factual", "imaginative"], a: 2 },
-        { q: "A scientific theory is ________", o: ["a guess", "a tested explanation", "a law court judgment", "an opinion"], a: 1 },
-        { q: "Which of these is NOT a branch of science?", o: ["Biology", "Chemistry", "Astrology", "Physics"], a: 2 },
-        { q: "Empiricism emphasizes knowledge through ________.", o: ["dreams", "observation and experience", "imagination", "religion"], a: 1 },
-        { q: "Rationalism believes knowledge comes from ________.", o: ["reasoning", "gossip", "culture", "feelings"], a: 0 },
-        { q: "Science and technology are related because ________.", o: ["both solve human problems", "both are religions", "both avoid experiments", "both reject knowledge"], a: 0 },
-        { q: "Which of the following is a characteristic of science?", o: ["Bias", "Superstition", "Objectivity", "Tribalism"], a: 2 },
-        { q: "Scientific method is a ________ approach to solving problems.", o: ["random", "systematic", "emotional", "careless"], a: 1 },
-        { q: "Experimentation helps scientists to ________.", o: ["entertain people", "test hypotheses", "avoid research", "create confusion"], a: 1 },
-        { q: "Data collection involves ________.", o: ["destroying information", "gathering information", "ignoring results", "making assumptions"], a: 1 },
-        { q: "Quantitative research mainly deals with ________.", o: ["stories", "numbers and measurements", "rumors", "emotions"], a: 1 },
-        { q: "Qualitative research mainly deals with ________.", o: ["measurements only", "numerical values", "descriptions and opinions", "equations only"], a: 2 },
-        { q: "A controlled experiment contains ________.", o: ["no variables", "controlled variables", "only conclusions", "only guesses"], a: 1 },
-        { q: "Independent variable is the variable that is ________.", o: ["measured", "controlled", "changed by the researcher", "ignored"], a: 2 },
-        { q: "Dependent variable is the variable that ________.", o: ["changes in response", "is constant", "is hidden", "is not measured"], a: 0 },
-        { q: "Reliability in research means ________.", o: ["consistency of results", "emotional results", "inaccurate results", "weak findings"], a: 0 },
-        { q: "Validity means ________.", o: ["correctness of findings", "carelessness", "false conclusion", "random guessing"], a: 0 },
-        { q: "Research ethics are principles guiding ________.", o: ["corruption", "scientific conduct", "politics", "entertainment"], a: 1 },
-        { q: "Peer review helps to ensure ________.", o: ["poor quality", "accuracy and quality", "bias", "confusion"], a: 1 },
-        { q: "Inductive reasoning moves from ________.", o: ["general to specific", "specific to general", "facts to rumors", "laws to guesses"], a: 1 },
-        { q: "Deductive reasoning moves from ________.", o: ["specific to general", "general to specific", "assumptions to rumors", "observation to confusion"], a: 1 },
-        { q: "Which of these is a limitation of science?", o: ["Objectivity", "Experimentation", "Inability to explain everything", "Accuracy"], a: 2 },
-        { q: "Technology refers to the ________ of scientific knowledge.", o: ["rejection", "application", "confusion", "destruction"], a: 1 },
-        { q: "Artificial Intelligence means ________", o: ["human wisdom", "machine intelligence", "natural learning", "social interaction"], a: 1 },
-        { q: "Robotics is the study and design of ________", o: ["medicines", "robots", "animals", "buildings"], a: 1 },
-        { q: "ICT stands for ________", o: ["International Computer Theory", "Information and Communication Technology", "Internal Communication Training", "Internet Control Technology"], a: 1 },
-        { q: "Biotechnology involves the use of ________", o: ["living organisms", "metals", "living organisms", "plastics"], a: 2 },
-        { q: "Nanotechnology deals with ________", o: ["large machines", "tiny particles and materials", "farming tools", "books"], a: 1 },
-        { q: "Renewable energy includes ________", o: ["petrol", "diesel", "solar energy", "coal"], a: 2 },
-        { q: "Cybercrime is crime committed using ________", o: ["sticks", "computers and internet", "farming tools", "radios"], a: 1 },
-        { q: "Which of these is an example of biotechnology?", o: ["Genetic engineering", "Typing", "Drawing", "Welding"], a: 0 },
-        { q: "One advantage of technology in education is ____", o: ["poor communication", "easier access to information", "increased illiteracy", "reduced learning"], a: 1 },
-        { q: "One negative effect of technology is ________", o: ["cybercrime", "communication", "innovation", "research growth"], a: 0 },
-        { q: "Science contributes to healthcare through ________", o: ["medical discoveries", "superstitions", "traditions", "rumors"], a: 0 },
-        { q: "Observation in science involves _______", o: ["guessing", "careful watching and recording", "storytelling", "entertainment"], a: 1 },
-        { q: "Which of these is a tool for scientific research?", o: ["Microscope", "Drum", "Spoon", "Basket"], a: 0 },
-        { q: "The final step in scientific method is ________.", o: ["observation", "experimentation", "conclusion/reporting", "hypothesis"], a: 2 },
-        { q: "A good researcher should be ________.", o: ["dishonest", "lazy", "objective", "careless"], a: 2 },
-        { q: "Scientific laws describe ________.", o: ["natural relationships", "political systems", "religious beliefs", "opinions"], a: 0 },
-        { q: "Modern communication technology includes ________.", o: ["social media", "charcoal", "cutlass", "hoe"], a: 0 },
-        { q: "Climate change solutions may involve ________.", o: ["renewable energy", "pollution increase", "deforestation", "bush burning"], a: 0 },
-        { q: "Virtual reality creates ________.", o: ["imaginary computer environments", "real forests", "classroom buildings", "road networks"], a: 0 },
-        { q: "Which of these is a modern scientific innovation?", o: ["AI", "Stone tools", "Cave writing", "Smoke signals"], a: 0 },
-        { q: "Philosophy helps science by ________.", o: ["encouraging critical thinking", "promoting ignorance", "avoiding questions", "rejecting evidence"], a: 0 },
-        { q: "Science and technology are important for national ________.", o: ["confusion", "development", "destruction", "division"], a: 1 },
-        { q: "Philosophy deals with all fields of human ______", o: ["Knowledge", "Wisdom", "Science", "Brain"], a: 0 },
-        { q: "_____ is regarded as the Queen of all fields", o: ["Philosophy", "Psychology", "Physiology", "Physiotherapy"], a: 0 },
-        { q: "Who divided Philosophy into different disciplines?", o: ["Aristotle", "Euclidea", "Andronicus of Rhodes", "Socrates"], a: 2 },
-        { q: "The Greek word for 'Wisdom' is ______", o: ["Philo", "Sophia", "Sopia", "Sohpia"], a: 1 },
-        { q: "Who defined a Philosopher as a man whose heart is fixed on reality?", o: ["Socrates", "Plato", "Aristotle", "Ludwig"], a: 1 },
-        { q: "Scholars identified ________ areas of Philosophy", o: ["5", "6", "7", "8"], a: 2 },
-        { q: "Aesthetic is the study of _______", o: ["Brain", "Beauty", "Bones", "Body"], a: 1 },
-        { q: "Philosophy has _____ branches", o: ["3", "4", "5", "6"], a: 1 },
-        { q: "The study of realities outside human terrestrial is known as _______", o: ["Universal Science", "Terrestrial Philosophy", "Cosmological metaphysics", "Ontological metaphysics"], a: 3 },
-        { q: "______ is the totality of being and existence?", o: ["Astronomy", "Metaphysics", "Epistemology", "Logic"], a: 1 },
-        { q: "When we say Reality is one and absolute, we're referring to ______", o: ["Monism", "Dualism", "Determinism", "Pluralism"], a: 0 },
-        { q: "Episteme means _____", o: ["Wisdom", "Understanding", "Reality", "Knowledge"], a: 3 },
-        { q: "_______ is the Science Of Conduct", o: ["Ethics", "Moral", "Behavior", "Characters"], a: 0 },
-        { q: "The principles and method of correct reasoning is _____", o: ["Ethics", "Logic", "Behavior", "Character"], a: 1 },
-        { q: "The new age is best described as the age of ______", o: ["Civilization", "Information Communication Technology", "Science", "Philosophy"], a: 1 },
-        { q: "_____ defines science as the knowledge and understanding of the world around?", o: ["Isaac Newton", "Albert Einstein", "Robert Morgan", "Micheal Faraday"], a: 2 },
-        { q: "The following are characteristics of true scientific knowledge except _____", o: ["Concrete Objectives", "Value neutrality", "Impersonal", "Knowledge of strange things"], a: 3 },
-        { q: "There are two types of observations in science which are ________", o: ["Accidental and Deliberate", "Intentional and Deliberate", "Accidental and Unknown", "Willing and Unwilling"], a: 0 },
-        { q: "The construction of a plan throughout in advance is _____", o: ["Scientific wisdom", "Hypothesis", "Scientific Experiment", "Exponential"], a: 2 },
-        { q: "_____ refers to the possible explanations to a given phenomenon?", o: ["Knowledge", "Scientific Experiment", "Hypothesis", "Observation"], a: 2 },
-        { q: "Laws are developed from ______", o: ["Science", "Formula", "Knowledge", "Facts"], a: 3 },
-        { q: "Scientific laws are statements based on repeated ______", o: ["Facts", "Observation", "Mathematical expression", "Reasoning"], a: 1 },
-        { q: "Aigbodioh defines scientific law as an invariant relationship between _____", o: ["Natural Facts", "Observations", "Experiments", "Knowledge"], a: 0 },
-        { q: "______ is the method many scientists use to arrive at general claims?", o: ["Experiments", "Laws", "Observation", "Inductive Inference"], a: 3 }
-    ],
-    'ENT102': [
-        { q: "Marketing can best be defined as", o: ["Buying and selling only", "Production of goods", "The process of satisfying customer needs profitably", "Transportation of goods"], a: 2 },
-        { q: "Which of the following is a function of marketing?", o: ["Teaching only", "Distribution of goods and services", "Singing", "Farming only"], a: 1 },
-        { q: "The marketing mix is commonly known as", o: ["2Ps", "3Ps", "4Ps", "7Ps only"], a: 2 },
-        { q: "Which of these is NOT part of the 4Ps?", o: ["Product", "Price", "Promotion", "Planning"], a: 3 },
-        { q: "A market is a place where", o: ["Only food is sold", "Buyers and sellers meet", "Students gather", "Cars are repaired"], a: 1 },
-        { q: "Consumer satisfaction is important because it", o: ["Reduces demand", "Increases customer loyalty", "Stops production", "Prevents sales"], a: 1 },
-        { q: "Advertising is mainly used to", o: ["Punish consumers", "Inform and persuade customers", "Destroy goods", "Reduce awareness"], a: 1 },
-        { q: "Which of the following is a marketing activity?", o: ["Warehousing", "Sleeping", "Fighting", "Fishing only"], a: 0 },
-        { q: "The person who buys goods for personal use is called", o: ["Producer", "Retailer", "Consumer", "Wholesaler"], a: 2 },
-        { q: "Promotion in marketing includes", o: ["Advertising", "Banking only", "Harvesting", "Construction"], a: 0 },
-        { q: "Branding helps to", o: ["Identify products", "Destroy products", "Increase poverty", "Reduce quality"], a: 0 },
-        { q: "The exchange process in marketing involves", o: ["Giving and receiving value", "Sleeping", "Fighting", "Borrowing only"], a: 0 },
-        { q: "Which of these is a channel of distribution?", o: ["Manufacturer → Wholesaler → Retailer → Consumer", "Teacher → Student", "Doctor → Patient", "Driver → Passenger"], a: 0 },
-        { q: "Packaging is important because it", o: ["Protects the product", "Damages goods", "Increases waste", "Stops demand"], a: 0 },
-        { q: "Market research helps a business to", o: ["Understand customer needs", "Close business", "Avoid customers", "Waste money"], a: 0 },
-        { q: "The final stage in distribution is the", o: ["Manufacturer", "Consumer", "Wholesaler", "Agent"], a: 1 },
-        { q: "Goods produced for immediate consumption are called", o: ["Consumer goods", "Capital goods", "Industrial goods", "Durable machines"], a: 0 },
-        { q: "Price refers to", o: ["Cost of transportation", "Amount paid for goods or services", "Advertisement expenses", "Salary only"], a: 1 },
-        { q: "Marketing begins with", o: ["Customer needs", "Government rules", "Competition only", "Factories"], a: 0 },
-        { q: "Personal selling involves", o: ["Direct communication with customers", "Radio only", "Television only", "Internet only"], a: 0 },
-        { q: "A small scale business is a business that", o: ["Requires little capital", "Is owned by government only", "Has no workers", "Is illegal"], a: 0 },
-        { q: "The first step in establishing a small scale business is", o: ["Market survey", "Celebration", "Borrowing money carelessly", "Employing workers"], a: 0 },
-        { q: "Capital refers to", o: ["Workers only", "Money used to start business", "Government policy", "Buildings only"], a: 1 },
-        { q: "One source of capital is", o: ["Personal savings", "Sleeping", "Gossiping", "Quarrelling"], a: 0 },
-        { q: "Feasibility study helps an entrepreneur to", o: ["Know business viability", "Waste resources", "Stop production", "Increase unemployment"], a: 0 },
-        { q: "An entrepreneur is a person who", o: ["Organizes and manages business", "Sleeps all day", "Refuses to work", "Avoids risks"], a: 0 },
-        { q: "Which of these is a characteristic of an entrepreneur?", o: ["Creativity", "Laziness", "Fearfulness", "Dishonesty"], a: 0 },
-        { q: "Business location is important because it affects", o: ["Accessibility to customers", "Rainfall only", "Religion only", "Tribe only"], a: 0 },
-        { q: "Record keeping helps business owners to", o: ["Monitor progress", "Forget transactions", "Reduce profits intentionally", "Destroy information"], a: 0 },
-        { q: "Which of these is NOT a source of business finance?", o: ["Bank loan", "Cooperative society", "Personal savings", "Theft"], a: 3 },
-        { q: "Business plan is important because it", o: ["Guides business operations", "Destroys planning", "Stops investment", "Prevents profit"], a: 0 },
-        { q: "Sole proprietorship is owned by", o: ["One person", "Two countries", "Government only", "Students only"], a: 0 },
-        { q: "Partnership business involves", o: ["Two or more persons", "One person only", "Children only", "Government only"], a: 0 },
-        { q: "Customer relations can help a business to", o: ["Retain customers", "Lose customers intentionally", "Stop production", "Increase conflict"], a: 0 },
-        { q: "One major aim of business is to", o: ["Make profit", "Cause confusion", "Increase poverty", "Reduce production"], a: 0 },
-        { q: "Small scale businesses contribute to", o: ["Employment generation", "Unemployment", "Crime only", "Political crisis"], a: 0 },
-        { q: "Risk taking is associated with", o: ["Entrepreneurship", "Sleeping", "Farming only", "Teaching only"], a: 0 },
-        { q: "A cooperative society helps members through", o: ["Financial assistance", "Punishment only", "Isolation", "Competition only"], a: 0 },
-        { q: "The success of a business depends largely on", o: ["Good management", "Bad leadership", "Negligence", "Carelessness"], a: 0 },
-        { q: "Small scale businesses usually require", o: ["Moderate capital", "No capital", "Excessive government control only", "Foreign citizenship"], a: 0 },
-        { q: "Government refers to", o: ["People responsible for administration of a state", "Students only", "Farmers only", "Traders only"], a: 0 },
-        { q: "Society is made up of", o: ["People living together", "Animals only", "Buildings only", "Cars only"], a: 0 },
-        { q: "Economy deals with", o: ["Production and distribution of goods and services", "Sports only", "Entertainment only", "Religion only"], a: 0 },
-        { q: "Democracy is a system of government in which", o: ["People choose their leaders", "Soldiers rule", "Kings rule absolutely", "No laws exist"], a: 0 },
-        { q: "The three arms of government include", o: ["Executive, Legislature, Judiciary", "Police, Army, Navy", "Teacher, Student, Principal", "Market, School, Church"], a: 0 },
-        { q: "The executive arm is responsible for", o: ["Implementing laws", "Making laws only", "Interpreting laws only", "Selling goods"], a: 0 },
-        { q: "The legislature is responsible for", o: ["Making laws", "Enforcing laws only", "Farming only", "Trading only"], a: 0 },
-        { q: "Judiciary is responsible for", o: ["Interpretation of laws", "Selling products", "Transporting goods", "Teaching students"], a: 0 },
-        { q: "The constitution is", o: ["The supreme law of the land", "A market rule", "A school timetable", "A church program"], a: 0 },
-        { q: "Citizenship refers to", o: ["Legal membership of a state", "Tribal meeting", "Friendship only", "Occupation only"], a: 0 },
-        { q: "Rule of law means", o: ["Everyone is subject to the law", "Leaders are above the law", "Laws are ignored", "Judges make no decisions"], a: 0 },
-        { q: "Separation of powers helps to", o: ["Prevent abuse of power", "Increase dictatorship", "Cause confusion", "Stop governance"], a: 0 },
-        { q: "An economy can be classified as", o: ["Capitalist", "Socialist", "Mixed economy", "All of the above"], a: 3 },
-        { q: "Inflation refers to", o: ["Persistent increase in prices", "Fall in prices only", "Increase in rainfall", "Increase in salaries only"], a: 0 },
-        { q: "Taxation is used by government to", o: ["Generate revenue", "Punish citizens only", "Stop trade", "Increase unemployment"], a: 0 },
-        { q: "The primary duty of government is to", o: ["Protect lives and property", "Encourage crime", "Promote disorder", "Destroy infrastructure"], a: 0 },
-        { q: "Which of these is a feature of society?", o: ["Shared culture", "Isolation only", "No interaction", "No laws"], a: 0 },
-        { q: "Economy is important because it", o: ["Helps allocate resources", "Prevents development", "Stops production", "Discourages trade"], a: 0 },
-        { q: "A sovereign state must have", o: ["Population, territory and government", "Cars only", "Markets only", "Churches only"], a: 0 },
-        { q: "Political parties exist mainly to", o: ["Contest elections", "Sell goods", "Teach students", "Repair roads only"], a: 0 },
-        { q: "Nigeria operates a", o: ["Federal system of government", "Monarchy", "Communist system only", "Military dictatorship only"], a: 0 },
-        { q: "Federalism involves", o: ["Sharing powers between central and state governments", "One person ruling", "No constitution", "Abolishing states"], a: 0 },
-        { q: "The head of the executive arm in Nigeria is the", o: ["President", "Chief Judge", "Senate President", "Governor-General"], a: 0 },
-        { q: "The National Assembly consists of", o: ["Senate and House of Representatives", "Army and Navy", "Police and Customs", "Governors and Judges"], a: 0 },
-        { q: "The highest court in Nigeria is the", o: ["Supreme Court", "Magistrate Court", "Customary Court", "Area Court"], a: 0 },
-        { q: "Local government is important for", o: ["Grassroots development", "Foreign affairs only", "International trade only", "Printing money only"], a: 0 },
-        { q: "The Nigerian constitution recognizes", o: ["Three tiers of government", "One tier only", "Four tiers only", "Two tiers only"], a: 0 },
-        { q: "The three tiers of government are", o: ["Federal, State, Local", "Senate, Police, Army", "School, Church, Market", "Judiciary, Students, Teachers"], a: 0 },
-        { q: "Checks and balances help to", o: ["Limit powers of government organs", "Promote dictatorship", "Stop democracy", "End judiciary"], a: 0 },
-        { q: "The judiciary must be", o: ["Independent", "Corrupt", "Controlled by politicians", "Partial"], a: 0 },
-        { q: "Electoral commission is responsible for", o: ["Conducting elections", "Building roads", "Selling fuel", "Teaching students"], a: 0 },
-        { q: "Legislature members are called", o: ["Lawmakers", "Soldiers", "Teachers", "Drivers"], a: 0 },
-        { q: "Impeachment means", o: ["Removal of a public officer from office", "Promotion of leaders", "Election campaign", "Appointment into office"], a: 0 },
-        { q: "Bicameral legislature means", o: ["Two legislative chambers", "One legislative chamber", "No legislature", "Military government"], a: 0 },
-        { q: "Nigeria became independent in", o: ["1960", "1950", "1979", "1999"], a: 0 },
-        { q: "The governor is the head of", o: ["State executive", "Federal judiciary", "Legislature only", "Local judiciary"], a: 0 },
-        { q: "The chairman heads the", o: ["Local government", "Senate", "Supreme Court", "Federal executive"], a: 0 },
-        { q: "Delegated legislation refers to laws made by", o: ["Authorities empowered by parliament", "Foreign countries", "Students", "Traditional rulers only"], a: 0 },
-        { q: "Public corporations are established mainly to", o: ["Provide essential services", "Encourage corruption", "Stop employment", "Prevent development"], a: 0 },
-        { q: "Civil service refers to", o: ["Government workers excluding political office holders", "Politicians only", "Traders only", "Soldiers only"], a: 0 },
-        { q: "Marketing helps producers to", o: ["Reach consumers", "Stop production", "Reduce sales", "Avoid customers"], a: 0 },
-        { q: "Entrepreneurship encourages", o: ["Self-reliance", "Dependency", "Laziness", "Idleness"], a: 0 },
-        { q: "Democracy promotes", o: ["Participation of citizens", "Military rule", "Dictatorship", "One-party oppression"], a: 0 },
-        { q: "Demand means", o: ["Desire backed with ability to pay", "Free goods", "Scarcity only", "Government order only"], a: 0 },
-        { q: "Supply refers to", o: ["Quantity of goods producers are willing to sell", "Demand for labour only", "Population growth", "Tax payment only"], a: 0 },
-        { q: "Wholesalers sell mainly to", o: ["Retailers", "Consumers only", "Students only", "Farmers only"], a: 0 },
-        { q: "Retailers sell directly to", o: ["Final consumers", "Manufacturers only", "Farmers only", "Banks only"], a: 0 },
-        { q: "Budget is", o: ["An estimate of income and expenditure", "A constitution", "A business location", "A law court"], a: 0 },
-        { q: "National development can be achieved through", o: ["Good governance", "Corruption", "Conflict", "Tribalism"], a: 0 },
-        { q: "Socialization is the process by which", o: ["Individuals learn societal values", "Goods are sold", "Elections are conducted", "Roads are built"], a: 0 },
-        { q: "Economic resources are also known as", o: ["Factors of production", "Social classes", "Judicial powers", "Political parties"], a: 0 },
-        { q: "Which of these is a factor of production?", o: ["Land", "Singing", "Fighting", "Dancing only"], a: 0 },
-        { q: "Opportunity cost refers to", o: ["Next best alternative forgone", "Cost of transport", "Cost of feeding only", "Profit made"], a: 0 },
-        { q: "Consumer protection helps to", o: ["Safeguard buyers’ interests", "Reduce quality", "Promote fake goods", "Stop trade"], a: 0 },
-        { q: "Public opinion can influence", o: ["Government policies", "Weather only", "Religion only", "Climate only"], a: 0 },
-        { q: "Human wants are", o: ["Unlimited", "Limited", "Fixed", "Unimportant"], a: 0 },
-        { q: "Scarcity means", o: ["Limited resources to satisfy wants", "Excess resources", "Unlimited supply", "Free production"], a: 0 },
-        { q: "Leadership involves", o: ["Guiding and directing people", "Sleeping only", "Punishment only", "Isolation only"], a: 0 },
-        { q: "Good governance is characterized by", o: ["Accountability and transparency", "Corruption", "Oppression", "Lawlessness"], a: 0 },
-        { q: "Economic growth leads to", o: ["Improved standard of living", "Increased poverty only", "Reduced production only", "National collapse"], a: 0 }
-    ]
-};
-
-let activeQuestions = [];
-let timeLeft = 0;
-let timer;
-
-function startExam(subject) {
-    if (!examDatabase[subject]) return;
-    
-    document.getElementById('main-hub').style.display = 'none';
-    document.getElementById('exam-container').style.display = 'block';
-
-    if(subject === 'CHM102') {
-        activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, 40);
-        timeLeft = 1800; // 30 MINUTES
-    } else if(subject === 'GST102') {
-        activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, 60);
-        timeLeft = 1200; // 20 MINUTES
-    } else if(subject === 'GST104') {
-        activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, 60);
-        timeLeft = 1200; // 20 MINUTES
-    } else if(subject === 'ENT102') {
-        activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, 60);
-        timeLeft = 1200; // 20 MINUTES
+    function handleEntry(subject) {
+        const sync = document.getElementById('sync-overlay');
+        const msg = document.getElementById('sync-msg');
+        sync.style.display = 'flex';
+        const phases = ["Syncing question bank...", "Verifying PHY102 modules...", "Finalizing session..."];
+        let i = 0;
+        const step = setInterval(() => {
+            if (i < phases.length) { msg.innerText = phases[i]; i++; }
+            else { clearInterval(step); sync.style.display = 'none'; startExam(subject); }
+        }, 700);
     }
 
-    renderExam();
-    startTimer();
-}
+    function startExam(subject) {
+        document.getElementById('main-hub').style.display = 'none';
+        document.getElementById('exam-container').style.display = 'block';
+        let config = { count: 60, time: 1200 };
+        if (['MTH102', 'PHY102', 'CHM102'].includes(subject)) config = { count: 40, time: 1800 };
+        else if (subject === 'BIO102') config = { count: 80, time: 1800 };
 
-function renderExam() {
-    const list = document.getElementById('question-list');
-    list.innerHTML = activeQuestions.map((item, idx) => `
-        <div class="question-block">
-            <span class="question-text">${idx + 1}. ${item.q}</span>
-            <div class="options-group">
-                ${item.o.map((opt, i) => `
-                    <label><input type="radio" name="q${idx}" value="${i}"> ${String.fromCharCode(65 + i)}. ${opt}</label>
-                `).join('')}
+        activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, config.count);
+        let time = config.time;
+        renderExam();
+        timerInterval = setInterval(() => {
+            time--;
+            document.getElementById('timer').innerText = Math.floor(time/60) + ":" + (time%60 < 10 ? '0' : '') + (time%60);
+            if(time <= 0) submitExam();
+        }, 1000);
+    }
+
+    function renderExam() {
+        const list = document.getElementById('question-list');
+        list.innerHTML = activeQuestions.map((q, i) => `
+            <div class="question-block">
+                <p><strong>${i+1}. ${q.q}</strong></p>
+                ${q.o.map((opt, oi) => `<label style="display:block; margin:5px 0; cursor:pointer;"><input type="radio" name="q${i}" value="${oi}"> ${opt}</label>`).join('')}
             </div>
-        </div>
-    `).join('');
-}
+        `).join('');
+    }
 
-function startTimer() {
-    clearInterval(timer);
-    timer = setInterval(() => {
-        timeLeft--;
-        let m = Math.floor(timeLeft / 60);
-        let s = timeLeft % 60;
-        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s < 10 ? '0' : ''}${s}`;
-        if (timeLeft <= 0) submitExam();
-    }, 1000);
-}
-
-function submitExam() {
-    clearInterval(timer);
-    let score = 0;
-    let reviewHTML = `<h2>Review Answers</h2>`;
-    activeQuestions.forEach((item, idx) => {
-        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
-        const userSelection = sel ? parseInt(sel.value) : null;
-        const isCorrect = userSelection === item.a;
-        if (isCorrect) score++;
-        reviewHTML += `<div class="question-block" style="border-left: 5px solid ${isCorrect ? 'var(--green)' : 'var(--error)'}; padding-left: 15px;">
-            <p><strong>${idx + 1}. ${item.q}</strong></p>
-            <p style="color: var(--green);">Correct Answer: ${item.o[item.a]}</p>
-            ${!isCorrect ? `<p style="color: var(--error);">Your Pick: ${userSelection !== null ? item.o[userSelection] : 'Skipped'}</p>` : ''}
-        </div>`;
-    });
-    document.getElementById('exam-container').style.display = 'none';
-    document.getElementById('result-screen').style.display = 'block';
-    document.getElementById('score-text').innerText = `${score} / ${activeQuestions.length}`;
-    document.getElementById('grade-comment').innerText = score >= (activeQuestions.length/2) ? "PASSED - Excellent Work!" : "FAILED - Please study more.";
-    document.getElementById('review-area').innerHTML = reviewHTML;
-    window.scrollTo(0,0);
-}
+    function submitExam() {
+        clearInterval(timerInterval);
+        let score = 0;
+        let reviewHTML = "<h3>Question Review:</h3>";
+        activeQuestions.forEach((q, i) => {
+            const pick = document.querySelector(`input[name="q${i}"]:checked`);
+            const selected = pick ? parseInt(pick.value) : null;
+            const isCorrect = selected === q.a;
+            if (isCorrect) score++;
+            reviewHTML += `
+                <div class="review-card ${isCorrect ? 'correct' : 'wrong'}">
+                    <p><strong>${i+1}. ${q.q}</strong></p>
+                    <p>Your answer: ${selected !== null ? q.o[selected] : 'Skipped'}</p>
+                    ${!isCorrect ? `<p style="color:var(--green)">Correct: ${q.o[q.a]}</p>` : ''}
+                </div>`;
+        });
+        document.getElementById('exam-container').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        document.getElementById('score-display').innerText = `Score: ${score} / ${activeQuestions.length}`;
+        document.getElementById('detailed-review').innerHTML = reviewHTML;
+        window.scrollTo(0,0);
+    }
 </script>
 </body>
 </html>
