@@ -3,46 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Exam Hub - PHY102</title>
+    <title>Elite Exam Hub - Advanced Sciences & General Studies</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
-        :root { --navy: #001f3f; --green: #38761d; --light-bg: #f4f7f6; --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
         
         #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .container { max-width: 800px; margin: auto; }
-        header { text-align: center; padding: 30px 0; background: var(--gradient); color: white; border-radius: 25px; margin-bottom: 30px; }
-        .subject-card { background: white; padding: 35px 10px; text-align: center; border-radius: 20px; font-weight: 800; box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer; }
-        .back-btn { display: block; background: #666; color: white; padding: 15px; border-radius: 15px; text-decoration: none; text-align: center; margin-top: 20px; }
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
         
-        #exam-container { display: none; background: white; padding: 25px; border-radius: 20px; }
-        .timer-bar { position: sticky; top: 10px; background: var(--green); color: white; padding: 12px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 20px; }
-        .question-block { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-        .options-group label { display: block; background: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 12px; cursor: pointer; border: 1px solid #eee; }
-        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 15px; font-weight: 700; cursor: pointer; margin-top: 20px; }
+        .subject-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .subject-card { background: white; padding: 30px 20px; text-align: center; border-radius: 20px; font-weight: 800; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.06); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .subject-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 31, 63, 0.1); border-color: rgba(0,31,63,0.15); }
+        .back-btn { display: block; background: #475569; color: white; padding: 16px; border-radius: 16px; text-decoration: none; text-align: center; margin-top: 25px; font-weight: 600; transition: background 0.2s; }
+        .back-btn:hover { background: #334155; }
+        
+        /* Exam Layout Layout Grid - Sidebar Locked to the Right Desktop Structure */
+        .exam-layout { display: none; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        
+        /* Fixed absolute sticky wrapper context */
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        .question-block { margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px; text-align: left; }
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        /* Sidebar container handling map viewport boundaries */
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+
         #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
     </style>
 </head>
 <body onload="initLoader()">
 
 <div id="sync-loader">
     <div class="spinner"></div>
-    <p>Syncing from data integration...</p>
+    <p style="font-weight: 600; color: var(--navy);">Syncing from data integration...</p>
 </div>
 
 <div class="container" id="main-hub">
-    <header><h1>PHY 102 PRACTICE</h1><p>40 Random Questions | 30 Mins</p></header>
-    <div class="subject-card" onclick="startExam()">START PHY102</div>
-    <a href="index.html" class="back-btn">← BACK TO HUB</a>
+    <header>
+        <h1>PRACTICE HUB</h1>
+        <p>Dynamic Engines • Adaptive Timers & Question Quotas</p>
+    </header>
+    <div class="subject-grid">
+        <div class="subject-card" onclick="startExam('PHY102')" style="border-top: 4px solid var(--navy);">START PHY102<br><span style="font-size:0.75rem; font-weight:400; color:#64748b; margin-top:5px;">40 Qs • 30 Mins</span></div>
+        <div class="subject-card" onclick="startExam('COS102')" style="border-top: 4px solid var(--navy);">START COS102<br><span style="font-size:0.75rem; font-weight:400; color:#64748b; margin-top:5px;">40 Qs • 30 Mins</span></div>
+        
+        <div class="subject-card" onclick="window.location.href='mth102.html'" style="border-top: 4px solid var(--navy);">START MTH102<br><span style="font-size:0.75rem; font-weight:400; color:#64748b; margin-top:5px;">40 Qs • 30 Mins</span></div>
+        <div class="subject-card" onclick="window.location.href='bio102.html'" style="border-top: 4px solid var(--navy);">START BIO102<br><span style="font-size:0.75rem; font-weight:400; color:#64748b; margin-top:5px;">80 Qs • 30 Mins</span></div>
+        
+        <div class="subject-card" onclick="startExam('GST110')" style="border-top: 4px solid var(--green);">START GST110<br><span style="font-size:0.75rem; font-weight:400; color:var(--green); margin-top:5px;">60 Qs • 20 Mins</span></div>
+        <div class="subject-card" onclick="startExam('GST108')" style="border-top: 4px solid var(--green);">START GST108<br><span style="font-size:0.75rem; font-weight:400; color:var(--green); margin-top:5px;">60 Qs • 20 Mins</span></div>
+    </div>
+    <a href="index.html" class="back-btn">← BACK TO MAIN ENGINE</a>
 </div>
 
-<div class="container" id="exam-container">
-    <div class="timer-bar" id="timer">Time Remaining: 30:00</div>
-    <div id="question-list"></div>
-    <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 30:00</div>
+        <div id="question-list"></div>
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="container" id="result-screen">
@@ -52,9 +118,13 @@
     <button class="btn-action" onclick="location.reload()">Try Again</button>
 </div>
 
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
 <script>
-const fullDatabase = [
-    // ELECTRICITY (10)
+const phyDatabase = [
     { q: "The two form of electricity are...?", o: ["Static and current", "Power and work", "Resistance and static", "Resistance and current"], a: 0 },
     { q: "The material gases has a charge carriers of.....?", o: ["Electrons", "Protons", "Electron and ions", "Proton and ions"], a: 2 },
     { q: "The addition of impurities to a semiconductor is called....?", o: ["Conductivity", "Malleability", "Doping", "Ductility"], a: 2 },
@@ -65,8 +135,6 @@ const fullDatabase = [
     { q: "The usual waveform of an Alternating current is....?", o: ["Cosine wave", "Tan wave", "Sine wave", "Electrical wave"], a: 2 },
     { q: "Resistance depends on the following EXCEPT....?", o: ["Length", "Resistivity", "Cross sectional area", "Temperature"], a: 3 },
     { q: "Potential difference is measured using...?", o: ["Henry", "Ammeter", "Farad", "Voltmeter"], a: 3 },
-
-    // CAPACITORS (10)
     { q: "Are devices for storing electrical charge released in a controlled manner:", o: ["Resistors", "Inductors", "Capacitors", "Ohms meter"], a: 2 },
     { q: "Capacitors is divided into Fixed and functional types?", o: ["True", "False", "Both", "None"], a: 1 },
     { q: "Conducting plates separated by insulating materials called...?", o: ["Fixed", "Variable", "Functional", "Dielectrics"], a: 3 },
@@ -77,14 +145,10 @@ const fullDatabase = [
     { q: "Two capacitors (0.30uF and 0.50uF) in parallel. Equivalent?", o: ["0.8uF", "0.8F", "0.2F", "0.2uF"], a: 0 },
     { q: "Capacitors can not be connected in parallel and series?", o: ["True", "False", "Both", "None"], a: 0 },
     { q: "The important types of fixed capacitors are...?", o: ["Polymer", "Super", "Transit", "Silver mica"], a: 2 },
-
-    // WAVES (4)
     { q: "What is the frequency of a wave with period 0.01667?", o: ["50.05Hz", "59.98Hz", "70.98Hz", "10Hz"], a: 1 },
     { q: "Sears Building sways at 0.1Hz. What is the period?", o: ["20s", "30s", "40s", "10s"], a: 3 },
     { q: "Water wave oscillates 3 times/sec, distance 2m. Speed?", o: ["6m/s", "8m/s", "10m/s", "12m/s"], a: 0 },
     { q: "Transformers works on the basis of Faraday's law?", o: ["True", "False", "Maybe", "None"], a: 0 },
-
-    // ELECTROSTATICS (21)
     { q: "Electrostatics is the study of:", o: ["Moving charges", "Stationary charges", "Magnetic fields", "Current"], a: 1 },
     { q: "Electric charge is:", o: ["Flow of electrons", "Property of matter for electrical effects", "Movement of protons", "Energy"], a: 1 },
     { q: "Law of conservation of charge states:", o: ["Can be created", "Can be destroyed", "Total remains constant", "Electrons stay"], a: 2 },
@@ -106,8 +170,6 @@ const fullDatabase = [
     { q: "E at 2.0m from 4.0nc charge is:", o: ["9.0 N/C", "18 N/C", "27 N/C", "36 N/C"], a: 0 },
     { q: "Electrons removed for +1.0x10^-7C:", o: ["6.25x10^11", "6.25x10^12", "1.60x10^-19", "3.20x10^-7"], a: 1 },
     { q: "Force between Na+ and Cl- at 2.82x10^-10m:", o: ["2.9x10^-9", "8.2x10^-9", "1.6x10^-19", "9.0x10^19"], a: 1 },
-
-    // INDUCTANCE (14)
     { q: "A crack in inductor magnetic path results in:", o: ["Unchanged", "Increased", "Zero", "Reduced inductance"], a: 3 },
     { q: "Self induced voltage NOT affected by:", o: ["Current", "Voltage", "Turns", "Magnetic resistance"], a: 3 },
     { q: "Moving magnetic field acts as moving conductor:", o: ["Yes", "No", "Both", "None"], a: 0 },
@@ -124,34 +186,352 @@ const fullDatabase = [
     { q: "Energy in a coil is stored in form of:", o: ["Electrical field", "Magnetic Field", "Electrostatic", "Force"], a: 1 }
 ];
 
+const cosDatabase = [
+    { q: "______ is a list of a well defined instructions or a step by step procedure to solve a problem.", o: ["Programming", "Coding", "Algorithm", "Computing"], a: 2 },
+    { q: "____ is a graphical representation of an algorithm, which makes the understanding of the logic of complicated and lengthy problems easier.", o: ["Flowchart", "Barchart", "Piechart", "Histogram"], a: 0 },
+    { q: "The symbol oval indicates ____ in flowchart", o: ["Depicts inputs or output operation", "Start or end of the program", "Depicts decision making and branching", "Process definition"], a: 1 },
+    { q: "Rectangle symbolizes ____", o: ["Decision making", "processing function of a program", "joining if two parts of program", "End programs"], a: 1 },
+    { q: "Parallelogram stands for _____", o: ["Decision making", "Attaching two programs", "Starting a program", "Depicts input or output operation"], a: 3 },
+    { q: "Diamond depicts _____", o: ["Connector", "Inputs", "Outputs", "Decision making"], a: 3 },
+    { q: "Small circles depicts _____", o: ["Decision making", "Input", "Output", "Connector or Joining two parts of program"], a: 3 },
+    { q: "Which of the following is not a characteristic of a Flowchart?", o: ["Easy to follow", "Clear", "Neat", "Ambiguity"], a: 3 },
+    { q: "Only ____ flow line should come out from a process symbol.", o: ["One", "Two", "Three", "Four"], a: 0 },
+    { q: "The usual direction of the flow of a procedure or system is from ___ to ____ or ____ to _____", o: ["Right to Left or Top to Bottom", "Left to Right or Bottom to Top", "Left to Right or Top to Bottom", "Top to Right or Left to Bottom"], a: 2 },
+    { q: "How many flow lines is used in Conjunction with terminal symbols?", o: ["1", "2", "3", "4"], a: 0 },
+    { q: "All flowcharts must have a ____ and ___", o: ["Middle and Finish", "Start and Finish", "Finish and End", "Start and Beginning"], a: 1 },
+    { q: "_____ is a Flowchart that can help you visualize the data pipeline of a system so you can trace what happens to the data as it moves between components.", o: ["Data Flow Diagram", "Flowchart", "Coding Tree", "Flow diagram"], a: 0 },
+    { q: "____ is a diagram of all logic and possible outcomes associated with a particular process.", o: ["Flowchart", "Decision Table", "Data Flow Diagram", "Barchart"], a: 1 },
+    { q: "Conditions and condition alternatives represent the specific _____ when making decisions.", o: ["Rules", "Steps", "Process", "Programs"], a: 0 },
+    { q: "To develop a decision table, you need to determine the ______ of the table and eliminate any impossible situations.", o: ["Minimum size of the table", "Maximum size of the table", "Length of the table", "Breadth if the table"], a: 1 },
+    { q: "Which of the following is not a type of statement in visual basics?", o: ["Variable", "Constant declaration", "Input statement", "Coefficient statement"], a: 3 },
+    { q: "A _____ is an element whose value does not and cannot be changed during the execution of a program.", o: ["Variable", "Constant", "Declaration", "Coefficient"], a: 1 },
+    { q: "There are ___ types of constant in BASIC.", o: ["1", "2", "3", "4"], a: 2 },
+    { q: "Which of these is not a constant?", o: ["Numeric", "Integers", "String", "Coefficient"], a: 3 },
+    { q: "The values of variables may change during the execution of the program.", o: ["True", "False", "Maybe", "None of the above"], a: 0 },
+    { q: "Variable are declared using the _____ keyword.", o: ["Div", "Dim", "Head", "Vir"], a: 1 },
+    { q: "Which of the following is not a data type?", o: ["Boolean", "String", "Integer", "Python"], a: 3 },
+    { q: "Arithmetic operators are used in carrying out ____", o: ["Programming operations", "Arithmetic operations", "Multiple operations", "Addition and Subtraction"], a: 1 },
+    { q: "The symbol ^ is known as ____", o: ["Power", "Exponential", "Negation", "Subtraction"], a: 1 },
+    { q: "The symbol \\ is known as ___", o: ["Division", "Integer Division", "Negation", "Multiplication"], a: 1 },
+    { q: "Relational operators are used to carry out comparison between two or more quantities and they return either ___ or ____", o: ["Greater than it Less than", "Equal to it Not Equal to", "True or False", "Maybe or Maybe not"], a: 2 },
+    { q: "_____ are used in Conjunction with selection/reputation structures.", o: ["Picker", "Selector", "Connector", "Simple conditions"], a: 3 },
+    { q: "All of the following are examples of logical operators except _____", o: ["And", "Or", "Either", "Xor"], a: 2 },
+    { q: "Xor operator returns true if the inputs are at _____", o: ["Same logical level", "Different Logical level", "Almost the same logical level", "None of the above"], a: 1 },
+    { q: "____ are data structures that can hold more than one value and they are common in large programs.", o: ["Trays", "Arrays", "Visuals", "Console"], a: 1 },
+    { q: "Arrays are accessed by their _____", o: ["Number", "Alphanumeric number", "Index number", "Super number"], a: 2 },
+    { q: "What does VB stand for in Visual Basic?", o: ["Visual Byte", "Virtual Basic", "Visual Basic", "Visual Build"], a: 2 },
+    { q: "Visual Basic 2008 is mainly used for:", o: ["Web browsing", "Programming applications", "Typing documents", "Playing games"], a: 1 },
+    { q: "Which company developed Visual Basic 2008?", o: ["Google", "Apple", "Microsoft", "IBM"], a: 2 },
+    { q: "Which of the following is an IDE in Visual Basic 2008?", o: ["Paint", "Visual Studio", "Chrome", "Excel"], a: 1 },
+    { q: "The extension for a Visual Basic project file is:", o: [".txt", ".vb", ".html", ".jpg"], a: 1 },
+    { q: "Which toolbox control is used to display text?", o: ["Button", "Label", "Timer", "CheckBox"], a: 1 },
+    { q: "Which control allows users to type input?", o: ["TextBox", "Label", "PictureBox", "Shape"], a: 0 },
+    { q: "Which event occurs when a button is pressed?", o: ["MouseMove", "Click", "Load", "Resize"], a: 1 },
+    { q: "Which keyword is used to declare a variable in VB 2008?", o: ["Let", "Var", "Dim", "Const"], a: 2 },
+    { q: "Which data type stores whole numbers?", o: ["String", "Integer", "Boolean", "Char"], a: 1 },
+    { q: "Which symbol is used for comments in VB 2008?", o: ["//", "#", "'", "%"], a: 2 },
+    { q: "Which statement is used to display a message box?", o: ["Print()", "MsgBox()", "Show()", "Alert()"], a: 1 },
+    { q: "Which operator is used for addition?", o: ["*", "-", "+", "/"], a: 2 },
+    { q: "What is the default event of a button?", o: ["Hover", "DoubleClick", "Click", "Enter"], a: 2 },
+    { q: "Which control is used to create clickable buttons?", o: ["Label", "Button", "GroupBox", "Panel"], a: 1 },
+    { q: "Which statement is used for decision making?", o: ["If...Then", "While", "Next", "End"], a: 0 },
+    { q: "Which loop repeats a block of code a specific number of times?", o: ["Do While", "If", "For...Next", "Select Case"], a: 2 },
+    { q: "Which keyword ends a program?", o: ["Stop", "End", "Finish", "Break"], a: 1 },
+    { q: "Which property changes the background color of a form?", o: ["ForeColor", "BackColor", "Color", "BgColor"], a: 1 },
+    { q: "Which property changes the text on a button?", o: ["Name", "Caption", "Text", "Label"], a: 2 },
+    { q: "A form in VB 2008 is:", o: ["A database", "A window/interface", "A printer", "A browser"], a: 1 },
+    { q: "Which control is used to display images?", o: ["PictureBox", "Label", "TextBox", "RadioButton"], a: 0 },
+    { q: "Which of these is a logical operator?", o: ["+", "AND", "/", "="], a: 1 },
+    { q: "Which keyword is used to create a constant value?", o: ["Fixed", "Dim", "Const", "Static"], a: 2 },
+    { q: "Which function converts text to integer?", o: ["Val()", "Str()", "Chr()", "Asc()"], a: 0 },
+    { q: "Which statement is used to select one option from many?", o: ["If", "Select Case", "While", "Loop"], a: 1 },
+    { q: "Which property gives a control its programmatic name?", o: ["Text", "Name", "Caption", "Value"], a: 1 },
+    { q: "Which window displays the properties of a selected control?", o: ["Output Window", "Toolbox", "Properties Window", "Code Window"], a: 2 },
+    { q: "Which window contains controls used in a project?", o: ["Solution Explorer", "Toolbox", "Menu Bar", "Status Bar"], a: 1 },
+    { q: "Which control allows only one option to be selected?", o: ["CheckBox", "RadioButton", "Label", "ListBox"], a: 1 },
+    { q: "Which control allows multiple selections?", o: ["RadioButton", "CheckBox", "Label", "Timer"], a: 1 },
+    { q: "Which event occurs when a form starts?", o: ["Click", "Load", "Close", "Exit"], a: 1 },
+    { q: "Which keyword is used to define a procedure?", o: ["Function", "Sub", "Dim", "Class"], a: 1 },
+    { q: "Which statement is used to repeat code while a condition is true?", o: ["If", "Do While", "Select Case", "End"], a: 1 },
+    { q: "Which data type stores True or False values?", o: ["String", "Integer", "Boolean", "Double"], a: 2 },
+    { q: "Which operator is used for multiplication?", o: ["+", "*", "/", "-"], a: 1 },
+    { q: "Which control is used to keep time intervals?", o: ["Timer", "Button", "Label", "MenuStrip"], a: 0 },
+    { q: "Which menu is used to start debugging?", o: ["File", "Edit", "Debug", "View"], a: 2 },
+    { q: "Which statement accepts user input through an input box?", o: ["InputBox()", "MsgBox()", "Console.Read()", "Accept()"], a: 0 },
+    { q: "Which property controls the font style of a control?", o: ["BackColor", "Font", "Text", "Border"], a: 1 },
+    { q: "Which keyword is used to return a value from a function?", o: ["Return", "Exit", "End", "Next"], a: 0 },
+    { q: "Which operator checks equality?", o: [">", "<", "=", "+"], a: 2 },
+    { q: "Which window shows all files in a project?", o: ["Toolbox", "Solution Explorer", "Properties Window", "Form Designer"], a: 1 },
+    { q: "Which control is used for drop-down lists?", o: ["ComboBox", "TextBox", "Label", "Button"], a: 0 },
+    { q: "Which statement exits a loop immediately?", o: ["Continue", "Exit For", "Return", "End"], a: 1 },
+    { q: "Which method clears text in a TextBox?", o: ["Delete()", "Remove()", "Clear()", "Empty()"], a: 2 },
+    { q: "Which file extension is used for Visual Basic source code files?", o: [".exe", ".vb", ".doc", ".ppt"], a: 1 },
+    { q: "Which operator is used for division?", o: ["*", "-", "/", "+"], a: 2 },
+    { q: "Which part of Visual Studio is used to design forms visually?", o: ["Code Editor", "Toolbox", "Form Designer", "Output Window"], a: 2 },
+    { q: "Which of the following is NOT a programming structure?", o: ["Sequence", "Selection", "Repetition", "Compilation"], a: 3 }
+];
+
+const gst110Database = [
+    { q: "Which of the following best describes African civilization?", o: ["Foreign culture imposed on Africans", "The total way of life of African people", "Western education alone", "Urbanization only"], a: 1 },
+    { q: "Culture can be defined as:", o: ["Traditional religion only", "A people’s language alone", "The learned way of life shared by a group", "Economic activities only"], a: 2 },
+    { q: "Which of the following is a feature of African traditional society?", o: ["Individualism", "Communal living", "Isolation", "Industrialization"], a: 1 },
+    { q: "The extended family system is common in:", o: ["African society", "European society only", "American society only", "Asian society only"], a: 0 },
+    { q: "Which of the following promotes unity in African societies?", o: ["Tribalism", "Communalism", "Colonialism", "Dictatorship"], a: 1 },
+    { q: "African traditional religion mainly emphasizes:", o: ["Idol worship only", "Ancestor reverence and belief in God", "Atheism", "Secularism"], a: 1 },
+    { q: "Which of the following is a major element of culture?", o: ["Language", "Transportation", "Climate", "Currency"], a: 0 },
+    { q: "One importance of culture is that it:", o: ["Destroys identity", "Promotes social identity", "Discourages unity", "Prevents education"], a: 1 },
+    { q: "African art includes:", o: ["Sculpture", "Music", "Dance", "All of the above"], a: 3 },
+    { q: "Which of the following influenced African civilization most before colonialism?", o: ["Internet", "Traditional institutions", "Social media", "Industrial machines"], a: 1 },
+    { q: "A major occupation of pre-colonial Africans was:", o: ["Oil refining", "Farming", "Banking", "Aviation"], a: 1 },
+    { q: "Which institution preserved African culture traditionally?", o: ["Family", "Cinema", "Television", "Parliament"], a: 0 },
+    { q: "Traditional rulers in Africa were regarded as:", o: ["Foreigners", "Custodians of culture", "Colonial agents", "Military officers"], a: 1 },
+    { q: "Which of these is NOT an African cultural value?", o: ["Respect for elders", "Hospitality", "Communalism", "Terrorism"], a: 3 },
+    { q: "The Nok civilization is associated with:", o: ["Bronze casting", "Terracotta works", "Oil production", "Textile industry"], a: 1 },
+    { q: "The Benin Kingdom became famous for:", o: ["Iron smelting", "Bronze works", "Fishing", "Cocoa farming"], a: 1 },
+    { q: "Which empire was famous in West Africa?", o: ["Roman Empire", "Mali Empire", "Ottoman Empire", "British Empire"], a: 1 },
+    { q: "Mansa Musa was associated with the:", o: ["Songhai Empire", "Mali Empire", "Ghana Empire", "Kanem-Bornu Empire"], a: 1 },
+    { q: "The trans-Saharan trade connected West Africa with:", o: ["Southern Africa", "North Africa", "East Africa", "Europe only"], a: 1 },
+    { q: "Which religion spread widely through trans-Saharan trade?", o: ["Christianity", "Judaism", "Islam", "Buddhism"], a: 2 },
+    { q: "Colonialism in Africa mainly aimed at:", o: ["Cultural development", "Economic exploitation", "Sports development", "Religious freedom"], a: 1 },
+    { q: "Indirect rule in Nigeria was introduced by:", o: ["Lord Lugard", "Herbert Macaulay", "Nnamdi Azikiwe", "Tafawa Balewa"], a: 0 },
+    { q: "Nigeria gained independence in:", o: ["1957", "1960", "1963", "1966"], a: 1 },
+    { q: "Nigeria became a republic in:", o: ["1954", "1960", "1963", "1979"], a: 2 },
+    { q: "The first Prime Minister of Nigeria was:", o: ["Nnamdi Azikiwe", "Tafawa Balewa", "Obafemi Awolowo", "Ahmadu Bello"], a: 1 },
+    { q: "The first President of Nigeria was:", o: ["Tafawa Balewa", "Yakubu Gowon", "Nnamdi Azikiwe", "Olusegun Obasanjo"], a: 2 },
+    { q: "Which political party was associated with Obafemi Awolowo?", o: ["NPC", "NCNC", "AG", "SDP"], a: 2 },
+    { q: "The NCNC was led by:", o: ["Ahmadu Bello", "Tafawa Balewa", "Nnamdi Azikiwe", "Yakubu Gowon"], a: 2 },
+    { q: "The Northern People’s Congress was dominant in:", o: ["Western Region", "Eastern Region", "Northern Region", "Mid-West Region"], a: 2 },
+    { q: "Nigeria operates a:", o: ["Monarchy", "Federal system", "Socialist system", "Communist system"], a: 1 },
+    { q: "The first military coup in Nigeria took place in:", o: ["1960", "1963", "1966", "1975"], a: 2 },
+    { q: "The January 1966 coup led to the death of:", o: ["Tafawa Balewa", "Ahmadu Bello", "Samuel Akintola", "All of the above"], a: 3 },
+    { q: "The first military Head of State in Nigeria was:", o: ["Yakubu Gowon", "Aguiyi-Ironsi", "Murtala Mohammed", "Buhari"], a: 1 },
+    { q: "The Nigerian Civil War began in:", o: ["1963", "1966", "1967", "1970"], a: 2 },
+    { q: "The Nigerian Civil War ended in:", o: ["1968", "1969", "1970", "1971"], a: 2 },
+    { q: "The leader of Biafra during the Civil War was:", o: ["Yakubu Gowon", "Odumegwu Ojukwu", "Murtala Mohammed", "Aguiyi-Ironsi"], a: 1 },
+    { q: "The slogan “No victor, no vanquished” was declared by:", o: ["Buhari", "Gowon", "Babangida", "Shagari"], a: 1 },
+    { q: "One major cause of the Nigerian Civil War was:", o: ["Religious pilgrimage", "Ethnic tension", "Sports rivalry", "Tourism"], a: 1 },
+    { q: "The policy introduced after the Civil War was known as:", o: ["Reconstruction, Rehabilitation and Reconciliation", "Industrialization and Tourism", "Federal Character", "Operation Feed the Nation"], a: 0 },
+    { q: "The Biafran secession was declared in:", o: ["Hardcore", "Lagos", "Enugu", "Ibadan"], a: 2 },
+    { q: "General Yakubu Gowon ruled Nigeria from:", o: ["1960–1963", "1966–1975", "1975–1979", "1983–1985"], a: 1 },
+    { q: "The regime of Murtala Mohammed began in:", o: ["1966", "1975", "1979", "1983"], a: 1 },
+    { q: "Murtala Mohammed was assassinated in:", o: ["1975", "1976", "1979", "1985"], a: 1 },
+    { q: "Olusegun Obasanjo first became Head of State in:", o: ["1966", "1976", "1985", "1999"], a: 1 },
+    { q: "The Second Republic started in:", o: ["1963", "1979", "1983", "1993"], a: 1 },
+    { q: "Nigeria’s presidential system was adopted in:", o: ["First Republic", "Second Republic", "Colonial era", "Civil War period"], a: 1 },
+    { q: "The first executive president of Nigeria was:", o: ["Nnamdi Azikiwe", "Shehu Shagari", "Buhari", "Babangida"], a: 1 },
+    { q: "The military overthrew Shehu Shagari in:", o: ["1979", "1981", "1983", "1985"], a: 2 },
+    { q: "General Muhammadu Buhari first ruled Nigeria as military Head of State from:", o: ["1975–1976", "1979–1983", "1983–1985", "1985–1993"], a: 2 },
+    { q: "Buhari’s regime was overthrown by:", o: ["Abacha", "Gowon", "Babangida", "Obasanjo"], a: 2 },
+    { q: "The Structural Adjustment Programme (SAP) was introduced by:", o: ["Buhari", "Babangida", "Shagari", "Gowon"], a: 1 },
+    { q: "SAP was mainly aimed at:", o: ["Cultural promotion", "Economic restructuring", "Sports development", "Tourism"], a: 1 },
+    { q: "The June 12, 1993 election was believed to have been won by:", o: ["Shehu Yar’Adua", "MKO Abiola", "Babangida", "Buhari"], a: 1 },
+    { q: "The annulment of June 12 election caused:", o: ["National celebration", "Political crisis", "Economic boom", "Military withdrawal immediately"], a: 1 },
+    { q: "General Sani Abacha came to power in:", o: ["1985", "1990", "1993", "1999"], a: 2 },
+    { q: "One characteristic of military rule is:", o: ["Democratic elections", "Suspension of constitution", "Judicial independence", "Multiparty system"], a: 1 },
+    { q: "The transition to civilian rule in 1999 brought in:", o: ["Third Republic", "Fourth Republic", "First Republic", "Second Republic"], a: 1 },
+    { q: "Nigeria returned to democratic rule in:", o: ["1993", "1998", "1999", "2003"], a: 2 },
+    { q: "The president elected in 1999 was:", o: ["Buhari", "Yar’Adua", "Obasanjo", "Jonathan"], a: 2 },
+    { q: "Federal Character principle in Nigeria aims at:", o: ["Military expansion", "Equal representation", "Foreign investment", "Religious promotion"], a: 1 },
+    { q: "Which of the following is a challenge to Nigerian unity?", o: ["Ethnicity", "National integration", "Patriotism", "Education"], a: 0 },
+    { q: "The National Youth Service Corps (NYSC) was established to:", o: ["Promote national unity", "Encourage military rule", "Support colonialism", "Promote monarchy"], a: 0 },
+    { q: "The Nigerian coat of arms symbolizes:", o: ["Colonial rule", "National identity", "Tribal conflict", "Military authority"], a: 1 },
+    { q: "Democracy is best defined as:", o: ["Rule by soldiers", "Rule by the people", "Rule by kings", "Rule by judges"], a: 1 },
+    { q: "Which arm of government interprets the law?", o: ["Executive", "Legislature", "Judiciary", "Military"], a: 2 },
+    { q: "The legislature in Nigeria is called the:", o: ["Supreme Court", "National Assembly", "Federal Council", "Executive Council"], a: 1 },
+    { q: "Nigeria practices how many arms of government?", o: ["One", "Two", "Three", "Four"], a: 2 },
+    { q: "Corruption negatively affects:", o: ["National development", "Agriculture only", "Education only", "Tourism only"], a: 0 },
+    { q: "Which agency fights corruption in Nigeria?", o: ["NAFDAC", "EFCC", "JAMB", "PHCN"], a: 1 },
+    { q: "One effect of colonialism in Africa was:", o: ["Introduction of Western education", "Total unity", "End of trade", "Elimination of culture"], a: 0 },
+    { q: "Pan-Africanism promotes:", o: ["Division among Africans", "African unity", "Colonialism", "Military dictatorship"], a: 1 },
+    { q: "One major Nigerian export is:", o: ["Cotton", "Oil", "Timber only", "Cocoa only"], a: 1 },
+    { q: "Which sector contributes greatly to Nigeria’s economy?", o: ["Petroleum sector", "Textile sector", "Tourism only", "Fishing only"], a: 0 },
+    { q: "A constitution is:", o: ["A cultural dance", "The body of laws guiding a state", "A political party", "A military decree only"], a: 1 },
+    { q: "Human rights include the right to:", o: ["Life", "Freedom of expression", "Education", "All of the above"], a: 3 },
+    { q: "Which of the following is NOT a feature of democracy?", o: ["Free elections", "Rule of law", "Military dictatorship", "Fundamental human rights"], a: 2 },
+    { q: "Nationalism in Nigeria contributed to:", o: ["Independence struggle", "Colonial expansion", "Slave trade", "Civil war only"], a: 0 },
+    { q: "Which of these leaders was a nationalist?", o: ["Herbert Macaulay", "Nnamdi Azikiwe", "Obafemi Awolowo", "All of the above"], a: 3 },
+    { q: "The main aim of government is to:", o: ["Exploit citizens", "Maintain law and order", "Promote tribalism", "Encourage conflict"], a: 1 },
+    { q: "Peace and unity in Nigeria can best be achieved through:", o: ["Ethnic discrimination", "Religious intolerance", "National integration", "Political violence"], a: 2 }
+];
+
+const gst108Database = [
+    { q: "The theory that explains the origin of the state through family expansion is called", o: ["Social contract theory", "Force theory", "Evolutionary theory", "Divine theory"], a: 2 },
+    { q: "The divine theory states that the state originated from", o: ["People’s agreement", "God’s will", "Economic struggle", "Military conquest"], a: 1 },
+    { q: "The social contract theory was supported by", o: ["Karl Marx", "Thomas Hobbes", "Charles Darwin", "Aristotle"], a: 1 },
+    { q: "Which theory explains that strong individuals forced others into obedience?", o: ["Force theory", "Divine theory", "Patriarchal theory", "Evolutionary theory"], a: 0 },
+    { q: "The modern state is characterized by", o: ["Nomadic lifestyle", "Permanent population", "Hunting activities", "Tribal migration"], a: 1 },
+    { q: "Sovereignty means", o: ["Religious authority", "Supreme power of a state", "Economic control", "Military strength only"], a: 1 },
+    { q: "One essential feature of a state is", o: ["Religion", "Territory", "Language", "Culture only"], a: 1 },
+    { q: "A nation differs from a state because a nation mainly refers to", o: ["Government", "Shared identity", "Military power", "Constitution"], a: 1 },
+    { q: "Which institution makes laws in a state?", o: ["Judiciary", "Executive", "Legislature", "Police"], a: 2 },
+    { q: "The executive arm of government is responsible for", o: ["Making laws", "Implementing laws", "Interpreting laws", "Conducting elections"], a: 1 },
+    { q: "The judiciary is responsible for", o: ["Law interpretation", "Law execution", "Tax collection", "Military service"], a: 0 },
+    { q: "Democracy is a system where power belongs to", o: ["Soldiers", "Monarchs", "The people", "Judges"], a: 2 },
+    { q: "A state with one ruler who has absolute power is called", o: ["Democracy", "Monarchy", "Republic", "Federation"], a: 1 },
+    { q: "Federalism involves division of powers between", o: ["Courts and citizens", "Federal and state governments", "Military and police", "Traditional rulers and chiefs"], a: 1 },
+    { q: "The oldest form of political organization was the", o: ["Clan system", "Republic", "Federation", "Empire"], a: 0 },
+    { q: "Colonialism affected African states mainly by", o: ["Encouraging unity", "Introducing foreign control", "Ending trade", "Promoting local industries"], a: 1 },
+    { q: "Nationalism in Africa contributed to", o: ["Colonial rule", "Independence movements", "Slave trade", "Military dictatorship"], a: 1 },
+    { q: "The process through which colonies gained independence is known as", o: ["Imperialism", "Democratization", "Decolonization", "Civilization"], a: 2 },
+    { q: "Political power in a state is exercised through", o: ["Government", "Family", "Religion", "Culture"], a: 0 },
+    { q: "Citizenship refers to", o: ["Ownership of land", "Legal membership of a state", "Military service", "Traditional title"], a: 1 },
+    { q: "The concept of separation of powers was developed by", o: ["Montesquieu", "Hobbes", "Locke", "Rousseau"], a: 0 },
+    { q: "Which of the following is NOT a feature of a state?", o: ["Sovereignty", "Population", "Territory", "Kinship only"], a: 3 },
+    { q: "A constitution is", o: ["A religious law", "Fundamental law guiding a state", "Military decree", "Customary belief"], a: 1 },
+    { q: "The primary aim of government is to", o: ["Increase religion", "Maintain order and welfare", "Promote warfare", "Encourage migration"], a: 1 },
+    { q: "Political socialization refers to", o: ["Learning political values", "Farming activities", "Religious worship", "Industrialization"], a: 0 },
+    { q: "Rule of law means", o: ["Rule by military", "Supremacy of law", "Rule by kings", "Rule by judges"], a: 1 },
+    { q: "The concept of rule of law was popularized by", o: ["A.V. Dicey", "Karl Marx", "Aristotle", "Rousseau"], a: 0 },
+    { q: "Equality before the law means", o: ["Only leaders obey the law", "Laws apply equally to all citizens", "Rich people are superior", "Judges are above the law"], a: 1 },
+    { q: "One principle of rule of law is", o: ["Arbitrary government", "Fundamental human rights", "Military dictatorship", "Tribal authority"], a: 1 },
+    { q: "Fundamental human rights are protected by the", o: ["Constitution", "Market", "Community leaders", "Trade unions"], a: 0 },
+    { q: "Which of the following violates rule of law?", o: ["Fair hearing", "Arbitrary arrest", "Equality before law", "Independent judiciary"], a: 1 },
+    { q: "Habeas corpus protects individuals from", o: ["Illegal detention", "Poverty", "Ignorance", "Elections"], a: 0 },
+    { q: "The judiciary promotes rule of law through", o: ["Law interpretation", "Election campaigns", "Military actions", "Trade activities"], a: 0 },
+    { q: "Rule of law discourages", o: ["Justice", "Accountability", "Abuse of power", "Equality"], a: 2 },
+    { q: "An independent judiciary means judges are free from", o: ["Education", "Political control", "Religion", "Culture"], a: 1 },
+    { q: "Fair hearing means", o: ["Only one side speaks", "Both parties are heard", "Judges decide secretly", "Lawyers are unnecessary"], a: 1 },
+    { q: "Which arm of government interprets the law?", o: ["Legislature", "Executive", "Judiciary", "Police"], a: 2 },
+    { q: "Constitutional supremacy means", o: ["The president is supreme", "The constitution is highest law", "Military is supreme", "Parliament is supreme"], a: 1 },
+    { q: "Rule of law is best practiced in a", o: ["Dictatorship", "Democracy", "Military regime", "Monarchy only"], a: 1 },
+    { q: "Human rights include", o: ["Right to life", "Right to oppress", "Right to corruption", "Right to violence"], a: 0 },
+    { q: "The police enforce laws to maintain", o: ["Disorder", "Peace and security", "Tribalism", "Migration"], a: 1 },
+    { q: "Corruption weakens", o: ["Education", "Rule of law", "Agriculture", "Religion"], a: 1 },
+    { q: "Judicial independence helps to ensure", o: ["Bias", "Justice", "Dictatorship", "Oppression"], a: 1 },
+    { q: "Which is NOT part of rule of law?", o: ["Equality before law", "Supremacy of law", "Arbitrary rule", "Fair trial"], a: 2 },
+    { q: "Rule of law promotes", o: ["Stability", "Violence", "Anarchy", "Tribal conflict"], a: 0 },
+    { q: "A person accused of a crime is presumed", o: ["Guilty", "Innocent until proven guilty", "Wicked", "Convicted automatically"], a: 1 },
+    { q: "Emergency powers may sometimes limit", o: ["Human rights", "Agriculture", "Trade", "Education"], a: 0 },
+    { q: "Rule of law ensures government actions are", o: ["Legal", "Secretive", "Violent", "Tribalistic"], a: 0 },
+    { q: "Which institution can declare laws unconstitutional?", o: ["Executive", "Judiciary", "Police", "Media"], a: 1 },
+    { q: "Democracy and rule of law are closely related because both promote", o: ["Freedom and justice", "Oppression", "Colonialism", "Slaver"], a: 0 },
+    { q: "Social stratification refers to", o: ["Equal distribution of wealth", "Ranking of people into classes", "Farming systems", "Religious worship"], a: 1 },
+    { q: "Social mobility means", o: ["Movement from one social class to another", "Physical movement only", "Migration to villages", "Population growth"], a: 0 },
+    { q: "Upward mobility occurs when a person", o: ["Loses status", "Improves social position", "Changes religion", "Becomes unemployed"], a: 1 },
+    { q: "Downward mobility means", o: ["Increase in status", "Reduction in social status", "Political participation", "Migration abroad"], a: 1 },
+    { q: "Education can promote", o: ["Social mobility", "Tribalism", "Corruption", "Conflict"], a: 0 },
+    { q: "Caste system is an example of", o: ["Open stratification", "Closed stratification", "Democracy", "Equality"], a: 1 },
+    { q: "A class system allows", o: ["Social mobility", "No movement between classes", "Slavery only", "Political dictatorship"], a: 0 },
+    { q: "Karl Marx linked social classes mainly to", o: ["Ownership of means of production", "Religion", "Education", "Tribe"], a: 1 },
+    { q: "Social change refers to", o: ["Permanent traditions only", "Alteration in society over time", "Climate conditions", "Population decline only"], a: 1 },
+    { q: "Industrialization often leads to", o: ["Social change", "Isolation", "Tribal wars", "Cultural extinction only"], a: 0 },
+    { q: "Which of the following is an agent of socialization?", o: ["Family", "Stone", "River", "Forest"], a: 0 },
+    { q: "Poverty is often associated with", o: ["High social class", "Low social status", "Equality", "Political stability"], a: 1 },
+    { q: "Urbanization refers to", o: ["Growth of rural areas", "Growth of towns and cities", "Decline in industries", "Religious expansion"], a: 1 },
+    { q: "Social inequality can result in", o: ["Stability only", "Conflict and tension", "Equality", "Unity only"], a: 1 },
+    { q: "Prestige refers to", o: ["Social respect and status", "Wealth alone", "Religious authority", "Tribal marks"], a: 0 },
+    { q: "Slavery system is a form of", o: ["Open stratification", "Closed stratification", "Democracy", "Equality"], a: 1 },
+    { q: "Which factor can influence social mobility?", o: ["Education", "Occupation", "Wealth", "All of the above"], a: 3 },
+    { q: "Social institutions include", o: ["Family", "School", "Religion", "All of the above"], a: 3 },
+    { q: "Technology contributes to", o: ["Social change", "Isolation only", "Traditionalism only", "Tribal conflict only"], a: 0 },
+    { q: "Social norms are", o: ["Expected patterns of behavior", "Government laws only", "Economic activities", "Religious books only"], a: 0 },
+    { q: "Culture shock occurs when", o: ["Someone experiences unfamiliar culture", "People remain isolated", "Traditions never change", "Society rejects education"], a: 0 },
+    { q: "Which social class is associated with professionals and skilled workers?", o: ["Upper class", "Middle class", "Slave class", "Peasant class"], a: 1 },
+    { q: "Achieved status is obtained through", o: ["Birth only", "Personal effort", "Tradition", "Family inheritance only"], a: 1 },
+    { q: "Ascribed status is based on", o: ["Achievement", "Birth or family background", "Education", "Occupation"], a: 1 },
+    { q: "Social stratification exists in", o: ["All societies", "Rural areas only", "Cities only", "Industrial societies only"], a: 0 },
+    { q: "Environment refers to", o: ["Natural and social surroundings", "Religion only", "Government only", "Customs only"], a: 0 },
+    { q: "Culture is the", o: ["Total way of life of a people", "Government policy", "Economic activity only", "Religious law only"], a: 0 },
+    { q: "Material culture includes", o: ["Beliefs", "Language", "Tools and buildings", "Customs only"], a: 2 },
+    { q: "Non-material culture includes", o: ["Cars", "Machines", "Beliefs and values", "Roads"], a: 2 },
+    { q: "Cultural diffusion means", o: ["Isolation of culture", "Spread of cultural elements", "Destruction of culture", "Tribal conflict"], a: 1 },
+    { q: "Which of the following is part of culture?", o: ["Language", "Religion", "Dressing", "All of the above"], a: 3 },
+    { q: "Environmental pollution affects", o: ["Human health", "Animals", "Plants", "All of the above"], a: 3 },
+    { q: "Deforestation means", o: ["Planting trees", "Cutting down trees excessively", "Irrigation", "Fishing"], a: 1 },
+    { q: "Climate change is mainly caused by", o: ["Human activities", "Moonlight", "Rivers", "Traditional rulers"], a: 0 },
+    { q: "Culture is learned through", o: ["Socialization", "Isolation", "Migration only", "Farming only"], a: 0 },
+    { q: "Customs and traditions are examples of", o: ["Culture", "Government", "Economy", "Politics"], a: 0 },
+    { q: "Environmental conservation aims at", o: ["Protecting natural resources", "Destroying forests", "Encouraging pollution", "Reducing education"], a: 0 },
+    { q: "Which environmental problem results from improper waste disposal?", o: ["Pollution", "Industrialization", "Urbanization", "Democracy"], a: 0 },
+    { q: "Cultural relativism means", o: ["Judging cultures fairly within their context", "Rejecting all cultures", "Promoting violence", "Supporting tribalism"], a: 0 },
+    { q: "Ethnocentrism refers to", o: ["Respecting all cultures equally", "Seeing one’s culture as superior", "Learning languages", "Environmental protection"], a: 1 },
+    { q: "Language is important because it", o: ["Promotes communication", "Prevents education", "Causes pollution", "Discourages unity"], a: 0 },
+    { q: "Festivals help to preserve", o: ["Culture", "Pollution", "Industrial conflict", "Social inequality"], a: 0 },
+    { q: "Environmental sanitation helps to", o: ["Prevent diseases", "Increase pollution", "Destroy wildlife", "Reduce education"], a: 0 },
+    { q: "Cultural change may occur through", o: ["Education", "Technology", "Migration", "All of the above"], a: 3 },
+    { q: "Which of the following is a renewable resource?", o: ["Coal", "Petroleum", "Solar energy", "Natural gas"], a: 2 },
+    { q: "Overpopulation can lead to", o: ["Pressure on resources", "Increased pollution", "Housing problems", "All of the above"], a: 3 },
+    { q: "A multicultural society contains", o: ["One culture only", "Different cultural groups", "One language only", "One religion only"], a: 1 },
+    { q: "Environmental degradation refers to", o: ["Improvement of environment", "Destruction of natural environment", "Cultural unity", "Industrial growth only"], a: 1 },
+    { q: "Values are", o: ["Shared standards of behavior", "Government laws only", "Economic systems", "Religious buildings"], a: 0 },
+    { q: "The relationship between environment and culture shows that", o: ["Humans and surroundings influence each other", "Culture has no effect on environment", "Environment has no effect on people", "Society is independent of nature"], a: 0 }
+];
+
 let activeExam = [];
 let timeLeft = 1800; 
 let timer;
+let totalExamQuestions = 40;
 
 function initLoader() {
-    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 2000);
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1500);
 }
 
-function startExam() {
-    activeExam = [...fullDatabase].sort(() => 0.5 - Math.random()).slice(0, 40);
+function startExam(sub) {
+    let selectedDb;
+    
+    if (sub === 'PHY102') {
+        selectedDb = phyDatabase;
+        totalExamQuestions = 40;
+        timeLeft = 1800; 
+    } else if (sub === 'COS102') {
+        selectedDb = cosDatabase;
+        totalExamQuestions = 40;
+        timeLeft = 1800; 
+    } else if (sub === 'GST110') {
+        selectedDb = gst110Database;
+        totalExamQuestions = Math.min(60, gst110Database.length); 
+        timeLeft = 1200; 
+    } else if (sub === 'GST108') {
+        selectedDb = gst108Database;
+        totalExamQuestions = Math.min(60, gst108Database.length); 
+        timeLeft = 1200; 
+    }
+    
+    activeExam = [...selectedDb].sort(() => 0.5 - Math.random()).slice(0, totalExamQuestions);
+    
     document.getElementById('main-hub').style.display = 'none';
-    document.getElementById('exam-container').style.display = 'block';
+    document.getElementById('exam-container').style.display = 'grid'; 
+    
     renderQuestions();
+    buildStatusPanel();
     startTimer();
 }
 
 function renderQuestions() {
     const list = document.getElementById('question-list');
     list.innerHTML = activeExam.map((item, idx) => `
-        <div class="question-block">
+        <div class="question-block" id="block-q${idx}">
             <p><strong>${idx + 1}. ${item.q}</strong></p>
             <div class="options-group">
                 ${item.o.map((opt, i) => `
-                    <label><input type="radio" name="q${idx}" value="${i}"> ${opt}</label>
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${opt}</label>
                 `).join('')}
             </div>
         </div>
     `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < totalExamQuestions; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="scrollToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) {
+        targetDot.classList.add('answered');
+    }
+}
+
+function scrollToQuestion(idx) {
+    const element = document.getElementById(`block-q${idx}`);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 }
 
 function startTimer() {
@@ -166,22 +546,25 @@ function startTimer() {
 function submitExam() {
     clearInterval(timer);
     let score = 0;
-    let reviewHTML = `<h2>Review</h2>`;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
     activeExam.forEach((item, idx) => {
         const sel = document.querySelector(`input[name="q${idx}"]:checked`);
         const userVal = sel ? parseInt(sel.value) : null;
         const correct = userVal === item.a;
         if(correct) score++;
+
         reviewHTML += `
-            <div class="question-block" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 10px; text-align: left;">
+            <div class="question-block" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left;">
                 <p><strong>${idx + 1}. ${item.q}</strong></p>
-                <p style="color: ${correct ? '#38761d' : '#d32f2f'}">You: ${userVal !== null ? item.o[userVal] : 'No Answer'}</p>
-                ${!correct ? `<p style="color: #38761d;">Correct: ${item.o[item.a]}</p>` : ''}
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${item.o[item.a]}</p>` : ''}
             </div>`;
     });
+
     document.getElementById('exam-container').style.display = 'none';
     document.getElementById('result-screen').style.display = 'block';
-    document.getElementById('score-text').innerText = `${score} / 40`;
+    document.getElementById('score-text').innerText = `${score} / ${totalExamQuestions}`;
     document.getElementById('review-area').innerHTML = reviewHTML;
     window.scrollTo(0,0);
 }
