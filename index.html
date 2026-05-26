@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elite Exam Hub | Kelvin</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
         :root {
             --navy: #001f3f;
@@ -13,17 +13,27 @@
             --light-bg: #f4f7f6;
             --error: #d32f2f;
             --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%);
+            --sidebar-width: 260px;
+            --card-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
             font-family: 'Poppins', sans-serif;
             background-color: var(--light-bg);
-            margin: 0;
-            padding: 20px;
             color: var(--navy);
+            display: flex;
+            min-height: 100vh;
             overflow-x: hidden;
         }
 
+        /* --- WELCOME OVERLAY --- */
         #welcome-overlay {
             position: fixed;
             top: 0;
@@ -31,14 +41,13 @@
             width: 100%;
             height: 100%;
             background: white;
-            z-index: 2000;
+            z-index: 3000;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
             padding: 20px;
-            box-sizing: border-box;
         }
 
         .welcome-content {
@@ -52,6 +61,7 @@
             background: var(--gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            font-weight: 800;
         }
 
         .step-box {
@@ -59,7 +69,7 @@
             padding: 15px;
             margin: 10px 0;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: var(--card-shadow);
             border-left: 5px solid var(--green);
             text-align: left;
         }
@@ -75,60 +85,184 @@
             cursor: pointer;
             margin-top: 30px;
             box-shadow: 0 10px 20px rgba(56, 118, 29, 0.3);
-            transition: 0.3s;
+            transition: var(--transition);
             animation: pulse 2s infinite;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-            100% { transform: scale(1); }
+        /* --- SIDEBAR LAYOUT --- */
+        aside {
+            width: var(--sidebar-width);
+            background: var(--navy);
+            color: white;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            transition: var(--transition);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .sidebar-brand {
+            padding: 30px 20px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            background: var(--gradient);
         }
 
-        .container { max-width: 800px; margin: auto; }
+        .sidebar-menu {
+            list-style: none;
+            padding: 20px 0;
+            flex-grow: 1;
+        }
+
+        .sidebar-item a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: rgba(255,255,255,0.75);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+            font-size: 0.95rem;
+        }
+
+        .sidebar-item a:hover, .sidebar-item.active a {
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+            border-left-color: var(--green);
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            font-size: 0.8rem;
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* --- MAIN WRAPPER COMPONENT --- */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 20px;
+            flex-grow: 1;
+        }
 
         header {
-            text-align: center;
-            padding: 30px 0;
-            background: var(--gradient);
-            color: white;
-            border-radius: 25px;
+            background: white;
+            padding: 25px 35px;
+            border-radius: 20px;
             margin-bottom: 30px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
+        .header-title h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        .header-title p {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .user-badge {
+            background: #e8f5e9;
+            color: var(--green);
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border: 1px solid rgba(56, 118, 29, 0.15);
+        }
+
+        /* Stats Panels */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 18px;
+            box-shadow: var(--card-shadow);
+            border-bottom: 4px solid var(--navy);
+        }
+
+        .stat-card.accent {
+            border-bottom-color: var(--green);
+        }
+
+        .stat-card h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #777;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card p {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-top: 5px;
+            color: var(--navy);
+        }
+
+        /* Subject Grids */
         .subject-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
         }
 
         .subject-card {
             background: white;
-            padding: 35px 10px;
+            padding: 40px 20px;
             text-align: center;
             border-radius: 20px;
             font-weight: 800;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: var(--card-shadow);
             cursor: pointer;
-            transition: 0.3s;
+            transition: var(--transition);
             border: 2px solid transparent;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
         }
 
         .subject-card:hover {
             border-color: var(--green);
-            transform: translateY(-8px);
-            background: #f0fdf4;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(56, 118, 29, 0.15);
+            background: #fdfdfd;
         }
 
-        /* Styling for the See More Button */
         .more-btn {
-            grid-column: 1 / -1; /* Makes it span across the full width */
+            grid-column: 1 / -1;
             background: var(--navy);
             color: white;
             padding: 20px;
@@ -136,47 +270,77 @@
             text-decoration: none;
             text-align: center;
             font-weight: 800;
-            transition: 0.3s;
+            transition: var(--transition);
             margin-top: 10px;
+            box-shadow: var(--card-shadow);
         }
 
         .more-btn:hover {
             background: var(--green);
-            transform: scale(1.02);
+            transform: translateY(-2px);
         }
 
-        #exam-container { display: none; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        /* --- EXAM FRAMEWORK CONTAINER --- */
+        #exam-container {
+            display: none;
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+        }
         
         .timer-bar {
             position: sticky;
-            top: 10px;
+            top: 20px;
             background: var(--green);
             color: white;
-            padding: 12px;
+            padding: 15px;
             border-radius: 50px;
             text-align: center;
-            font-weight: bold;
+            font-weight: 700;
             z-index: 100;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(56, 118, 29, 0.25);
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
         }
 
-        .question-block { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-        .question-text { font-weight: 600; margin-bottom: 15px; display: block; line-height: 1.5; }
+        .question-block {
+            margin-bottom: 35px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 25px;
+        }
+
+        .question-text {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 18px;
+            display: block;
+            line-height: 1.6;
+        }
         
         .options-group label {
             display: block;
-            background: #f9f9f9;
-            padding: 15px;
-            margin: 10px 0;
+            background: #f8fafc;
+            padding: 16px 20px;
+            margin: 12px 0;
             border-radius: 12px;
             cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid #eee;
+            transition: var(--transition);
+            border: 1px solid #e2e8f0;
+            font-weight: 500;
         }
 
-        .options-group label:hover { background: #e8f5e9; border-color: var(--green); }
-        input[type="radio"] { margin-right: 10px; transform: scale(1.2); }
+        .options-group label:hover {
+            background: #f0fdf4;
+            border-color: var(--green);
+        }
+
+        input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.25);
+            accent-color: var(--green);
+        }
 
         .btn-action {
             width: 100%;
@@ -187,14 +351,86 @@
             border-radius: 15px;
             font-weight: 700;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 25px;
             font-size: 1rem;
+            transition: var(--transition);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
-        .btn-home { background: #666; margin-bottom: 10px; }
+        .btn-action:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+        }
 
-        #result-screen { display: none; text-align: center; padding: 50px 20px; }
-        .review-section { text-align: left; margin-top: 40px; border-top: 2px solid var(--navy); padding-top: 20px; }
+        .btn-home {
+            background: #475569;
+            margin-bottom: 15px;
+            margin-top: 0;
+        }
+
+        /* --- RESULTS SCREEN --- */
+        #result-screen {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 30px;
+        }
+
+        .review-section {
+            text-align: left;
+            margin-top: 40px;
+            border-top: 2px solid var(--navy);
+            padding-top: 30px;
+        }
+
+        /* --- THE FOOTER --- */
+        footer {
+            background: white;
+            padding: 25px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #718096;
+            border-top: 1px solid #e2e8f0;
+            margin-top: auto;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.02);
+        }
+
+        footer strong {
+            color: var(--navy);
+        }
+
+        /* --- RE-ALIGNMENT KEYFRAMES & RESPONSIVENESS --- */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            aside {
+                transform: translateX(-100%);
+            }
+            .main-wrapper {
+                margin-left: 0;
+            }
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -202,41 +438,81 @@
 <div id="welcome-overlay">
     <div class="welcome-content">
         <h1>Welcome to <br>Elite Exam Hub</h1>
-        <p>Your journey to academic excellence starts here.</p>
-        <div class="step-box"><strong></strong></div>
-        <div class="step-box"><strong></strong></div>
+        <p style="color:#666; margin-bottom: 20px;">Your journey to academic excellence starts here.</p>
+        <div class="step-box">⚡ <strong>Real-time Countdown Engine</strong> configured directly for your localized testing layout parameters.</div>
+        <div class="step-box">📚 <strong>Preserved Questions Engine</strong> protecting complete course sets dynamically.</div>
         <button class="btn-get-started" onclick="closeTutorial()">GET STARTED →</button>
     </div>
 </div>
 
-<div class="container" id="main-hub">
-    <header>
-        <h1 style="margin:0; font-size: 1.8rem;">ELITE EXAM HUB</h1>
-        <p style="margin:5px 0 0; font-size: 0.9rem; opacity: 0.9;">Excellence through Practice</p>
-    </header>
-    <div class="subject-grid">
-        <div class="subject-card" onclick="startExam('GST102')">GST102</div>
-        <div class="subject-card" onclick="startExam('CHM102')">CHM102</div>
-        <div class="subject-card" onclick="startExam('GST104')">GST104</div>
-        <div class="subject-card" onclick="startExam('ENT102')">ENT102</div>
-        
-        <a href="more.html" class="more-btn">SEE MORE SUBJECTS →</a>
+<aside>
+    <div>
+        <div class="sidebar-brand">ELITE EXAM HUB</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item active"><a href="#" onclick="location.reload()">🏠 Dashboard Home</a></li>
+            <li class="sidebar-item"><a href="#" onclick="startExam('GST102')">📝 GST102 Examination</a></li>
+            <li class="sidebar-item"><a href="#" onclick="startExam('CHM102')">🧪 CHM102 Examination</a></li>
+            <li class="sidebar-item"><a href="#" onclick="startExam('GST104')">🌍 GST104 Examination</a></li>
+            <li class="sidebar-item"><a href="#" onclick="startExam('ENT102')">💼 ENT102 Examination</a></li>
+        </ul>
     </div>
-</div>
+    <div class="sidebar-footer">
+        Designed by Kelvin<br>V 2.1.0
+    </div>
+</aside>
 
-<div class="container" id="exam-container">
-    <div class="timer-bar" id="timer">Time Remaining: --:--</div>
-    <button class="btn-action btn-home" onclick="location.reload()">Quit Exam</button>
-    <div id="question-list"></div>
-    <button class="btn-action" onclick="submitExam()">Submit Exam</button>
-</div>
+<div class="main-wrapper">
+    
+    <div class="container" id="main-hub">
+        <header>
+            <div class="header-title">
+                <h1>ELITE EXAM HUB</h1>
+                <p>Excellence through Practice &bull; Secure Station Layout</p>
+            </div>
+            <div class="user-badge">STUDENTS PLACE TO LEARN</div>
+        </header>
 
-<div class="container" id="result-screen">
-    <div style="font-size: 3rem;">GO AND READ😂</div>
-    <h1 id="score-text"></h1>
-    <p id="grade-comment"></p>
-    <button class="btn-action" onclick="location.reload()">Back to Menu</button>
-    <div id="review-area" class="review-section"></div>
+        <div class="stats-bar">
+            <div class="stat-card">
+                <h3>Available Courses</h3>
+                <p>9</p>
+            </div>
+            <div class="stat-card accent">
+                <h3>AVAILABLE LEVEL</h3>
+                <p>100 Lvl</p>
+            </div>
+        </div>
+
+        <div class="subject-grid">
+            <div class="subject-card" onclick="startExam('GST102')">GST102</div>
+            <div class="subject-card" onclick="startExam('CHM102')">CHM102</div>
+            <div class="subject-card" onclick="startExam('GST104')">GST104</div>
+            <div class="subject-card" onclick="startExam('ENT102')">ENT102</div>
+            
+            <a href="more.html" class="more-btn">SEE MORE SUBJECTS →</a>
+        </div>
+    </div>
+
+    <div class="container" id="exam-container">
+        <div class="timer-bar" id="timer">Time Remaining: --:--</div>
+        <button class="btn-action btn-home" onclick="location.reload()">❌ Quit & Return to Menu</button>
+        <div id="question-list"></div>
+        <button class="btn-action" style="background: var(--green);" onclick="submitExam()">📤 Submit Examination</button>
+    </div>
+
+    <div class="container" id="result-screen">
+        <div class="result-card">
+            <div style="font-size: 3rem; margin-bottom: 10px;">GO AND READ😂</div>
+            <h1 id="score-text" style="font-size: 3.5rem; color: var(--navy); font-weight: 800; margin: 15px 0;"></h1>
+            <p id="grade-comment" style="font-size: 1.2rem; font-weight: 600; color: var(--green);"></p>
+            <button class="btn-action" onclick="location.reload()">Back to Main Menu</button>
+        </div>
+        <div id="review-area" class="review-section"></div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 <strong>Elite Exam Hub</strong>. Built & Designed by <strong>Kelvin the designer</strong>. All Rights Reserved.more details at the next page</p>
+    </footer>
 </div>
 
 <script>
@@ -660,13 +936,7 @@ function startExam(subject) {
     if(subject === 'CHM102') {
         activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, 40);
         timeLeft = 1800; // 30 MINUTES
-    } else if(subject === 'GST102') {
-        activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, 60);
-        timeLeft = 1200; // 20 MINUTES
-    } else if(subject === 'GST104') {
-        activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, 60);
-        timeLeft = 1200; // 20 MINUTES
-    } else if(subject === 'ENT102') {
+    } else {
         activeQuestions = examDatabase[subject].sort(() => 0.5 - Math.random()).slice(0, 60);
         timeLeft = 1200; // 20 MINUTES
     }
