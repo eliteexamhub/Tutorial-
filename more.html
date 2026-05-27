@@ -43,11 +43,22 @@
 
         #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
         .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
-        .question-block { margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px; text-align: left; }
+        
+        /* Modified for single-view architecture */
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
         .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
         .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
         .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
         .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        /* Navigation Controls styling */
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
         .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
         .btn-action:hover { background: #002d5c; }
         .btn-action:active { transform: scale(0.99); }
@@ -59,7 +70,9 @@
         .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
         .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
         .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
 
         #result-screen { display: none; text-align: center; padding: 50px 20px; }
         
@@ -98,6 +111,12 @@
     <div id="exam-main">
         <div class="timer-bar" id="timer">Time Remaining: 30:00</div>
         <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
         <button class="btn-action" onclick="submitExam()">Submit Exam</button>
     </div>
     
@@ -461,6 +480,7 @@ let activeExam = [];
 let timeLeft = 1800; 
 let timer;
 let totalExamQuestions = 40;
+let currentQuestionIndex = 0; // Addition tracking item index pointer
 
 function initLoader() {
     setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1500);
@@ -489,11 +509,13 @@ function startExam(sub) {
     
     activeExam = [...selectedDb].sort(() => 0.5 - Math.random()).slice(0, totalExamQuestions);
     
+    currentQuestionIndex = 0; // Reset index upon initialization
     document.getElementById('main-hub').style.display = 'none';
     document.getElementById('exam-container').style.display = 'grid'; 
     
     renderQuestions();
     buildStatusPanel();
+    showQuestion(currentQuestionIndex); // Render specific single layout block context
     startTimer();
 }
 
@@ -515,22 +537,55 @@ function buildStatusPanel() {
     const panelGrid = document.getElementById('status-panel-grid');
     let dotsHTML = '';
     for(let i = 0; i < totalExamQuestions; i++) {
-        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="scrollToQuestion(${i})">${i + 1}</div>`;
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
     }
     panelGrid.innerHTML = dotsHTML;
+}
+
+// Shows specific target index item block interface
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => {
+        if(idx === index) {
+            block.classList.add('active');
+        } else {
+            block.classList.remove('active');
+        }
+    });
+
+    // Handle tracker highlighting
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => {
+        if(idx === index) {
+            dot.classList.add('current');
+        } else {
+            dot.classList.remove('current');
+        }
+    });
+
+    // Navigation button visual state handling
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === totalExamQuestions - 1);
+}
+
+// Handler functions for directional pagination actions
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    if (currentQuestionIndex < 0) currentQuestionIndex = 0;
+    if (currentQuestionIndex >= totalExamQuestions) currentQuestionIndex = totalExamQuestions - 1;
+    showQuestion(currentQuestionIndex);
+}
+
+// Sidepanel navigation click target handler assignment overrides
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
 }
 
 function updateTrackStatus(idx) {
     const targetDot = document.getElementById(`dot-q${idx}`);
     if (targetDot) {
         targetDot.classList.add('answered');
-    }
-}
-
-function scrollToQuestion(idx) {
-    const element = document.getElementById(`block-q${idx}`);
-    if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
 
@@ -554,8 +609,9 @@ function submitExam() {
         const correct = userVal === item.a;
         if(correct) score++;
 
+        // Render review items standard visible display stack blocks context overrides layout rules cleanly
         reviewHTML += `
-            <div class="question-block" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left;">
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
                 <p><strong>${idx + 1}. ${item.q}</strong></p>
                 <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? item.o[userVal] : 'No Answer'}</p>
                 ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${item.o[item.a]}</p>` : ''}
