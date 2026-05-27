@@ -309,6 +309,12 @@
             margin-bottom: 35px;
             border-bottom: 1px solid #edf2f7;
             padding-bottom: 25px;
+            display: none; /* Controlled via JS pagination */
+        }
+
+        .question-block.active-question {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
         }
 
         .question-text {
@@ -342,6 +348,13 @@
             accent-color: var(--green);
         }
 
+        /* Paginated Navigation Layout */
+        .navigation-bar {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
         .btn-action {
             width: 100%;
             padding: 18px;
@@ -351,7 +364,6 @@
             border-radius: 15px;
             font-weight: 700;
             cursor: pointer;
-            margin-top: 25px;
             font-size: 1rem;
             transition: var(--transition);
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -360,6 +372,14 @@
         .btn-action:hover {
             opacity: 0.95;
             transform: translateY(-2px);
+        }
+
+        .btn-action:disabled {
+            background: #cbd5e1;
+            color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .btn-home {
@@ -390,6 +410,32 @@
             padding-top: 30px;
         }
 
+        /* --- WHATSAPP FLOATING BUTTON --- */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #25D366;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            box-shadow: 0 8px 20px rgba(37, 211, 102, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+            transition: var(--transition);
+        }
+
+        .whatsapp-float:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(37, 211, 102, 0.5);
+            background-color: #20ba5a;
+        }
+
         /* --- THE FOOTER --- */
         footer {
             background: white;
@@ -400,6 +446,7 @@
             border-top: 1px solid #e2e8f0;
             margin-top: auto;
             box-shadow: 0 -4px 10px rgba(0,0,0,0.02);
+            padding-bottom: 90px; /* Offset space for the floating button on mobile views */
         }
 
         footer strong {
@@ -429,6 +476,12 @@
                 flex-direction: column;
                 gap: 15px;
                 text-align: center;
+            }
+            .whatsapp-float {
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                font-size: 0.85rem;
             }
         }
     </style>
@@ -460,6 +513,10 @@
         Designed by Kelvin<br>V 2.1.0
     </div>
 </aside>
+
+<a href="https://wa.me/2349032320783?text=Hello%20Kelvin,%20I%20am%20using%20the%20Elite%20Exam%20Hub%20app." class="whatsapp-float" target="_blank">
+    💬 Message the Developer
+</a>
 
 <div class="main-wrapper">
     
@@ -496,8 +553,14 @@
     <div class="container" id="exam-container">
         <div class="timer-bar" id="timer">Time Remaining: --:--</div>
         <button class="btn-action btn-home" onclick="location.reload()">❌ Quit & Return to Menu</button>
+        
         <div id="question-list"></div>
-        <button class="btn-action" style="background: var(--green);" onclick="submitExam()">📤 Submit Examination</button>
+
+        <div class="navigation-bar">
+            <button id="btn-prev" class="btn-action" style="background: #475569;" onclick="changeQuestion(-1)">← Previous</button>
+            <button id="btn-next" class="btn-action" style="background: var(--navy);" onclick="changeQuestion(1)">Next →</button>
+            <button id="btn-submit" class="btn-action" style="background: var(--green); display: none;" onclick="submitExam()">📤 Submit Examination</button>
+        </div>
     </div>
 
     <div class="container" id="result-screen">
@@ -511,7 +574,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2026 <strong>Elite Exam Hub</strong>. Built & Designed by <strong>Kelvin the designer</strong>. All Rights Reserved.more details at the next page</p>
+        <p>&copy; 2026 <strong>Elite Exam Hub</strong>. Built & Designed by <strong>Kelvin the designer</strong>. All Rights Reserved. More details at the next page</p>
     </footer>
 </div>
 
@@ -926,6 +989,7 @@ const examDatabase = {
 let activeQuestions = [];
 let timeLeft = 0;
 let timer;
+let currentQuestionIndex = 0; // State variable tracking current pagination position
 
 function startExam(subject) {
     if (!examDatabase[subject]) return;
@@ -941,14 +1005,16 @@ function startExam(subject) {
         timeLeft = 1200; // 20 MINUTES
     }
 
+    currentQuestionIndex = 0; // Reset question pagination index
     renderExam();
+    updateQuestionVisibility();
     startTimer();
 }
 
 function renderExam() {
     const list = document.getElementById('question-list');
     list.innerHTML = activeQuestions.map((item, idx) => `
-        <div class="question-block">
+        <div class="question-block" id="q-block-${idx}">
             <span class="question-text">${idx + 1}. ${item.q}</span>
             <div class="options-group">
                 ${item.o.map((opt, i) => `
@@ -957,6 +1023,39 @@ function renderExam() {
             </div>
         </div>
     `).join('');
+}
+
+// Controls visual visibility logic for paginated index layouts
+function updateQuestionVisibility() {
+    activeQuestions.forEach((_, idx) => {
+        const block = document.getElementById(`q-block-${idx}`);
+        if(idx === currentQuestionIndex) {
+            block.classList.add('active-question');
+        } else {
+            block.classList.remove('active-question');
+        }
+    });
+
+    // Control structural actions inside layout buttons
+    document.getElementById('btn-prev').disabled = (currentQuestionIndex === 0);
+    
+    if (currentQuestionIndex === activeQuestions.length - 1) {
+        document.getElementById('btn-next').style.display = 'none';
+        document.getElementById('btn-submit').style.display = 'block';
+    } else {
+        document.getElementById('btn-next').style.display = 'block';
+        document.getElementById('btn-submit').style.display = 'none';
+    }
+}
+
+// Execution parameters for page index modification loops
+function changeQuestion(direction) {
+    let nextIndex = currentQuestionIndex + direction;
+    if (nextIndex >= 0 && nextIndex < activeQuestions.length) {
+        currentQuestionIndex = nextIndex;
+        updateQuestionVisibility();
+        window.scrollTo(0,0);
+    }
 }
 
 function startTimer() {
@@ -979,7 +1078,7 @@ function submitExam() {
         const userSelection = sel ? parseInt(sel.value) : null;
         const isCorrect = userSelection === item.a;
         if (isCorrect) score++;
-        reviewHTML += `<div class="question-block" style="border-left: 5px solid ${isCorrect ? 'var(--green)' : 'var(--error)'}; padding-left: 15px;">
+        reviewHTML += `<div class="question-block" style="border-left: 5px solid ${isCorrect ? 'var(--green)' : 'var(--error)'}; padding-left: 15px; display: block;">
             <p><strong>${idx + 1}. ${item.q}</strong></p>
             <p style="color: var(--green);">Correct Answer: ${item.o[item.a]}</p>
             ${!isCorrect ? `<p style="color: var(--error);">Your Pick: ${userSelection !== null ? item.o[userSelection] : 'Skipped'}</p>` : ''}
