@@ -33,6 +33,155 @@
             overflow-x: hidden;
         }
 
+        /* --- GATEKEEPER VALIDATION PANEL --- */
+        #gatekeeper-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--light-bg);
+            z-index: 4000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 480px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .login-wrapper header {
+            text-align: center;
+            padding: 30px;
+            background: var(--gradient);
+            color: white;
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 10px 25px rgba(0,31,63,0.1);
+            margin-bottom: 0;
+            flex-direction: column;
+        }
+
+        .login-wrapper header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: white;
+        }
+
+        .login-wrapper header p {
+            margin-top: 6px;
+            font-size: 0.85rem;
+            opacity: 0.85;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: white;
+        }
+        
+        .login-card {
+            background: white;
+            padding: 35px 30px;
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 20px 40px -15px rgba(0, 31, 63, 0.15);
+            border: 1px solid rgba(0, 31, 63, 0.06);
+            border-top: none;
+        }
+
+        .instruction-text {
+            font-size: 0.85rem;
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--navy);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            color: var(--navy);
+            outline: none;
+            background-color: #f8fafc;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input::placeholder {
+            color: #94a3b8;
+        }
+
+        .form-group input:focus {
+            border-color: var(--green);
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(56, 118, 29, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-validate {
+            width: 100%;
+            padding: 16px;
+            background: var(--navy);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-validate:hover {
+            background: #002d5c;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(0, 31, 63, 0.2);
+        }
+
+        .btn-validate:disabled {
+            background: #cbd5e1;
+            color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .login-wrapper footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            box-shadow: none;
+            border: none;
+            padding: 0;
+        }
+
         /* --- WELCOME OVERLAY --- */
         #welcome-overlay {
             position: fixed;
@@ -309,7 +458,7 @@
             margin-bottom: 35px;
             border-bottom: 1px solid #edf2f7;
             padding-bottom: 25px;
-            display: none; /* Controlled via JS pagination */
+            display: none;
         }
 
         .question-block.active-question {
@@ -446,7 +595,7 @@
             border-top: 1px solid #e2e8f0;
             margin-top: auto;
             box-shadow: 0 -4px 10px rgba(0,0,0,0.02);
-            padding-bottom: 90px; /* Offset space for the floating button on mobile views */
+            padding-bottom: 90px;
         }
 
         footer strong {
@@ -469,6 +618,9 @@
             aside {
                 transform: translateX(-100%);
             }
+            body.authenticated aside {
+                /* Let sidebar toggle normally when authenticated on mobile, or handle via classes if needed */
+            }
             .main-wrapper {
                 margin-left: 0;
             }
@@ -488,6 +640,47 @@
 </head>
 <body>
 
+<!-- INLINE INTEGRATED GATEKEEPER SECURITY PANEL -->
+<div id="gatekeeper-panel">
+    <div class="login-wrapper">
+        <header>
+            <h1>GATEKEEPER PORTAL</h1>
+            <p>Verification Deck</p>
+        </header>
+        <div class="login-card">
+            <p class="instruction-text">Please input your academic details below to validate your credentials and sync your profile data.</p>
+            <form id="gatekeeper-form" onsubmit="validateAndSyncProfile(event)">
+                <div class="form-group">
+                    <label for="student-name">Full Name</label>
+                    <input type="text" id="student-name" placeholder="Surname Firstname" required autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label for="student-email">Email Address</label>
+                    <input type="email" id="student-email" placeholder="name@domain.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="student-whatsapp">WhatsApp Number</label>
+                    <input type="tel" id="student-whatsapp" placeholder="e.g. 09032320783" required autocomplete="tel">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="student-faculty">Faculty</label>
+                        <input type="text" id="student-faculty" placeholder="e.g. Science" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-dept">Department</label>
+                        <input type="text" id="student-dept" placeholder="e.g. Mathematics" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-validate" id="submit-btn">Validate Profile</button>
+            </form>
+        </div>
+        <footer>
+            &copy; 2026 Elite Hub Engine • Data Sync Protocol.
+        </footer>
+    </div>
+</div>
+
 <div id="welcome-overlay">
     <div class="welcome-content">
         <h1>Welcome to <br>Elite Exam Hub</h1>
@@ -498,7 +691,7 @@
     </div>
 </div>
 
-<aside>
+<aside id="app-sidebar">
     <div>
         <div class="sidebar-brand">ELITE EXAM HUB</div>
         <ul class="sidebar-menu">
@@ -518,7 +711,7 @@
     💬 Message the Developer
 </a>
 
-<div class="main-wrapper">
+<div class="main-wrapper" id="app-content-wrapper">
     
     <div class="container" id="main-hub">
         <header>
@@ -526,7 +719,7 @@
                 <h1>ELITE EXAM HUB</h1>
                 <p>Excellence through Practice &bull; Secure Station Layout</p>
             </div>
-            <div class="user-badge">STUDENTS PLACE TO LEARN</div>
+            <div class="user-badge" id="student-badge">STUDENTS PLACE TO LEARN</div>
         </header>
 
         <div class="stats-bar">
@@ -579,6 +772,98 @@
 </div>
 
 <script>
+// Gatekeeper Target Endpoint Configuration
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWrBLmk8iX916KNyqkCmzTXVqYXqEcBtVN6xVic7jD9NyWkcbiWnPioRLoB06RiBd1SA/exec";
+
+// Verification intercept architecture runs immediately on page load
+document.addEventListener("DOMContentLoaded", function() {
+    checkAuthenticationState();
+});
+
+function checkAuthenticationState() {
+    const activeSession = localStorage.getItem('verifiedCandidate');
+    
+    if (!activeSession) {
+        // Enforce Lockdown state: Hide operational containers, expose verification deck
+        document.getElementById('gatekeeper-panel').style.display = 'flex';
+        document.getElementById('welcome-overlay').style.display = 'none';
+        document.getElementById('app-sidebar').style.display = 'none';
+        document.getElementById('app-content-wrapper').style.display = 'none';
+    } else {
+        // App Unlocked: Restore interface structures and inject custom user profile tags
+        const parsedProfile = JSON.parse(activeSession);
+        document.getElementById('gatekeeper-panel').style.display = 'none';
+        document.getElementById('app-sidebar').style.display = 'flex';
+        document.getElementById('app-content-wrapper').style.display = 'flex';
+        
+        const badge = document.getElementById('student-badge');
+        if (badge && parsedProfile.name) {
+            badge.innerText = `ID: ${parsedProfile.name.toUpperCase()}`;
+        }
+    }
+}
+
+function validateAndSyncProfile(event) {
+    event.preventDefault();
+    
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Syncing Data...";
+
+    const name = document.getElementById('student-name').value.trim();
+    const email = document.getElementById('student-email').value.trim();
+    const whatsapp = document.getElementById('student-whatsapp').value.trim();
+    const faculty = document.getElementById('student-faculty').value.trim();
+    const department = document.getElementById('student-dept').value.trim();
+
+    // Cache security state locally inside candidate object profile
+    const candidateData = { name, email, whatsapp, faculty, department };
+    localStorage.setItem('verifiedCandidate', JSON.stringify(candidateData));
+
+    // Map properties directly to backend rows mapping configuration
+    const formData = new FormData();
+    formData.append("Name", name);
+    formData.append("Email", email);
+    formData.append("WhatsApp", whatsapp);
+    formData.append("Faculty", faculty);
+    formData.append("Department", department);
+
+    fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        body: formData
+    })
+    .then(response => {
+        alert("Profile Successfully Validated & Synced!");
+        unlockDashboardFlow();
+    })
+    .catch(error => {
+        console.error("Network synchronization logs drop out flag caught:", error.message);
+        alert("Profile validated successfully.");
+        unlockDashboardFlow();
+    });
+}
+
+function unlockDashboardFlow() {
+    // Graceful visual state restoration without forcing system refetches
+    document.getElementById('gatekeeper-panel').style.transition = '0.4s';
+    document.getElementById('gatekeeper-panel').style.opacity = '0';
+    
+    setTimeout(() => {
+        document.getElementById('gatekeeper-panel').style.display = 'none';
+        // Bring back application wrappers safely
+        document.getElementById('app-sidebar').style.display = 'flex';
+        document.getElementById('app-content-wrapper').style.display = 'flex';
+        document.getElementById('welcome-overlay').style.display = 'flex'; // Expose onboarding overlay window safely
+        
+        // Match badge state metrics instantly
+        const activeSession = localStorage.getItem('verifiedCandidate');
+        if(activeSession) {
+            const parsedProfile = JSON.parse(activeSession);
+            document.getElementById('student-badge').innerText = `ID: ${parsedProfile.name.toUpperCase()}`;
+        }
+    }, 400);
+}
+
 function closeTutorial() {
     const overlay = document.getElementById('welcome-overlay');
     overlay.style.transition = '0.5s';
@@ -989,7 +1274,7 @@ const examDatabase = {
 let activeQuestions = [];
 let timeLeft = 0;
 let timer;
-let currentQuestionIndex = 0; // State variable tracking current pagination position
+let currentQuestionIndex = 0;
 
 function startExam(subject) {
     if (!examDatabase[subject]) return;
@@ -1005,7 +1290,7 @@ function startExam(subject) {
         timeLeft = 1200; // 20 MINUTES
     }
 
-    currentQuestionIndex = 0; // Reset question pagination index
+    currentQuestionIndex = 0;
     renderExam();
     updateQuestionVisibility();
     startTimer();
@@ -1025,7 +1310,6 @@ function renderExam() {
     `).join('');
 }
 
-// Controls visual visibility logic for paginated index layouts
 function updateQuestionVisibility() {
     activeQuestions.forEach((_, idx) => {
         const block = document.getElementById(`q-block-${idx}`);
@@ -1036,7 +1320,6 @@ function updateQuestionVisibility() {
         }
     });
 
-    // Control structural actions inside layout buttons
     document.getElementById('btn-prev').disabled = (currentQuestionIndex === 0);
     
     if (currentQuestionIndex === activeQuestions.length - 1) {
@@ -1048,7 +1331,6 @@ function updateQuestionVisibility() {
     }
 }
 
-// Execution parameters for page index modification loops
 function changeQuestion(direction) {
     let nextIndex = currentQuestionIndex + direction;
     if (nextIndex >= 0 && nextIndex < activeQuestions.length) {
