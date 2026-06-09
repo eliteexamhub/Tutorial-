@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - Portal Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .subject-grid { display: flex; justify-content: center; margin-bottom: 30px; }
+        .subject-card { background: white; padding: 40px 30px; text-align: center; border-radius: 20px; font-weight: 800; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.06); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; justify-content: center; align-items: center; max-width: 400px; width: 100%; border-top: 5px solid var(--green); }
+        .subject-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 31, 63, 0.1); border-color: rgba(0,31,63,0.15); }
+        .back-btn { display: block; background: #475569; color: white; padding: 16px; border-radius: 16px; text-decoration: none; text-align: center; margin-top: 25px; font-weight: 600; transition: background 0.2s; }
+        .back-btn:hover { background: #334155; }
+        
+        .exam-layout { display: none; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initLoader()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading Integrated Exam Matrix...</p>
+</div>
+
+<div class="container" id="main-hub">
+    <header>
+        <h1>EXAMINATION PORTAL</h1>
+        <p>Elite Exam Hub • BIO 102 General Pool Engine</p>
+    </header>
+    <div class="subject-grid">
+        <div class="subject-card" onclick="startExam()">
+            <span style="font-size: 1.4rem;">START EXAM</span>
+            <span style="font-size:0.85rem; font-weight:400; color:#64748b; margin-top:5px;">60 Randomly Shuffled Questions</span>
+            <span style="font-size:0.8rem; font-weight:600; color:var(--green); margin-top:5px;">Porifera to Chordata Pool • 15 Mins</span>
+        </div>
+    </div>
+    <a href="index.html" class="back-btn">← BACK TO MAIN ENGINE</a>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 15:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">GO AND READ😂</div>
+    <h1 id="score-text"></h1>
+    <div id="review-area"></div>
+    <button class="btn-action" onclick="location.reload()">Try Again</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+// Master question bank holding all questions from every category without exclusions
+const masterBioPool = [
+    // --- Coelenterata (Cnidaria) (1-60) ---
+    { q: "Coelenterata is also known as", o: ["Platyhelminthes", "Cnidaria", "Arthropoda", "Mollusca"], a: 1 },
+    { q: "Coelenterates are mainly", o: ["Terrestrial", "Freshwater only", "Marine", "Desert animals"], a: 2 },
+    { q: "The body of coelenterates shows", o: ["Bilateral symmetry", "Radial symmetry", "Asymmetry", "Spherical symmetry"], a: 1 },
+    { q: "The body wall of coelenterates is", o: ["Triploblastic", "Diploblastic", "Acoelomate", "Segmented"], a: 1 },
+    { q: "The cavity present in coelenterates is called", o: ["Coelom", "Pseudocoelom", "Gastrovascular cavity", "Haemocoel"], a: 2 },
+    { q: "The stinging cells of coelenterates are called", o: ["Flame cells", "Choanocytes", "Cnidocytes", "Nephridia"], a: 2 },
+    { q: "The stinging capsules inside cnidocytes are known as", o: ["Nematocysts", "Trichocysts", "Spicules", "Setae"], a: 0 },
+    { q: "Coelenterates belong to the level of organization known as", o: ["Organ-system level", "Tissue level", "Cellular level", "Protoplasmic level"], a: 1 },
+    { q: "The mouth in coelenterates is surrounded by", o: ["Parapodia", "Tentacles", "Suckers", "Setae"], a: 1 },
+    { q: "Which of the following is a freshwater coelenterate?", o: ["Jellyfish", "Sea anemone", "Hydra", "Coral"], a: 2 },
+    { q: "The two basic body forms of coelenterates are", o: ["Polyp and medusa", "Scolex and proglottid", "Head and trunk", "Cephalothorax and abdomen"], a: 0 },
+    { q: "The polyp form is usually", o: ["Free-swimming", "Sessile", "Parasitic", "Segmented"], a: 1 },
+    { q: "The medusa form is usually", o: ["Sessile", "Attached", "Free-swimming", "Parasitic"], a: 2 },
+    { q: "The outer body layer of coelenterates is called", o: ["Mesoderm", "Epidermis", "Gastrodermis", "Cuticle"], a: 1 },
+    { q: "The inner body layer is called", o: ["Epidermis", "Endoderm", "Gastrodermis", "Mesoglea"], a: 2 },
+    { q: "The non-cellular layer between epidermis and gastrodermis is", o: ["Coelom", "Mesoglea", "Blastocoel", "Haemocoel"], a: 1 },
+    { q: "Digestion in coelenterates is both", o: ["Mechanical and external", "Intracellular and extracellular", "Internal and parasitic", "Chemical and parasitic"], a: 1 },
+    { q: "Respiration in coelenterates occurs through", o: ["Gills", "Lungs", "Diffusion", "Tracheae"], a: 2 },
+    { q: "Excretion in coelenterates occurs mainly by", o: ["Nephridia", "Flame cells", "Diffusion", "Malpighian tubules"], a: 2 },
+    { q: "The opening of the gastrovascular cavity serves as", o: ["Mouth only", "Anus only", "Both mouth and anus", "Excretory pore"], a: 2 },
+    { q: "Asexual reproduction in Hydra occurs mainly through", o: ["Binary fission", "Budding", "Conjugation", "Fragmentation"], a: 1 },
+    { q: "Sexual reproduction in coelenterates involves formation of", o: ["Spores", "Gametes", "Buds", "Gemmules"], a: 1 },
+    { q: "The larval stage common in many coelenterates is", o: ["Trochophore larva", "Planula larva", "Nauplius larva", "Veliger larva"], a: 1 },
+    { q: "Corals belong to class", o: ["Hydrozoa", "Scyphozoa", "Anthozoa", "Trematoda"], a: 2 },
+    { q: "Hydra belongs to class", o: ["Hydrozoa", "Anthozoa", "Scyphozoa", "Cubozoa"], a: 0 },
+    { q: "Jellyfish belong mainly to class", o: ["Hydrozoa", "Scyphozoa", "Anthozoa", "Oligochaeta"], a: 1 },
+    { q: "Sea anemones belong to class", o: ["Hydrozoa", "Anthozoa", "Scyphozoa", "Cestoda"], a: 1 },
+    { q: "The body cavity of coelenterates is not a true coelom because they are", o: ["Pseudocoelomates", "Acoelomates", "Segmented", "Triploblastic"], a: 1 },
+    { q: "Coelenterates lack", o: ["Nervous system", "Digestive cavity", "Specialized circulatory system", "Tentacles"], a: 2 },
+    { q: "The nervous system in coelenterates is called", o: ["Brain system", "Nerve ring", "Nerve net", "Ventral cord"], a: 2 },
+    { q: "Coral reefs are formed mainly by", o: ["Sponges", "Corals", "Hydra", "Flatworms"], a: 1 },
+    { q: "The skeleton of corals is mainly composed of", o: ["Silica", "Chitin", "Calcium carbonate", "Keratin"], a: 2 },
+    { q: "Which of the following exhibits alternation of generations?", o: ["Hydra", "Obelia", "Earthworm", "Amoeba"], a: 1 },
+    { q: "Alternation between polyp and medusa forms is called", o: ["Metagenesis", "Metamorphosis", "Budding", "Encystment"], a: 0 },
+    { q: "Obelia colony consists mainly of", o: ["Polyps", "Medusae", "Segments", "Tentacles only"], a: 0 },
+    { q: "Coelenterates are mostly", o: ["Unicellular", "Microscopic", "Aquatic", "Terrestrial"], a: 2 },
+    { q: "The tentacles help mainly in", o: ["Respiration", "Feeding and defense", "Excretion", "Locomotion only"], a: 1 },
+    { q: "The cnidocytes are mainly used for", o: ["Reproduction", "Defense and capturing prey", "Respiration", "Digestion only"], a: 1 },
+    { q: "Hydra reproduces sexually during", o: ["Favorable conditions", "Unfavorable conditions", "Summer only", "Dry season only"], a: 1 },
+    { q: "Which of the following lacks medusa stage?", o: ["Obelia", "Aurelia", "Hydra", "Jellyfish"], a: 2 },
+    { q: "The mesoglea in jellyfish is usually", o: ["Thin", "Thick and jelly-like", "Absent", "Calcified"], a: 1 },
+    { q: "Coelenterates possess which type of symmetry?", o: ["Bilateral", "Radial", "Spherical", "Asymmetrical"], a: 1 },
+    { q: "Which class contains only polyp forms?", o: ["Anthozoa", "Hydrozoa", "Scyphozoa", "Cubozoa"], a: 0 },
+    { q: "Sea anemones are examples of", o: ["Hydrozoans", "Anthozoans", "Scyphozoans", "Cestodes"], a: 1 },
+    { q: "The medusa stage resembles", o: ["Worm", "Umbrella", "Cylinder", "Star"], a: 1 },
+    { q: "The gastrovascular cavity helps in", o: ["Circulation and digestion", "Excretion only", "Respiration only", "Reproduction only"], a: 0 },
+    { q: "Coelenterates do not possess", o: ["Tissue organization", "Mouth", "True organs", "Tentacles"], a: 2 },
+    { q: "The simplest cnidarian commonly studied is", o: ["Hydra", "Obelia", "Aurelia", "Coral"], a: 0 },
+    { q: "Which of the following is colonial?", o: ["Hydra", "Obelia", "Sea anemone", "Aurelia"], a: 1 },
+    { q: "The fertilized egg of coelenterates develops into", o: ["Trochophore", "Planula", "Nauplius", "Veliger"], a: 1 },
+    { q: "The digestive system of coelenterates is", o: ["Complete", "Incomplete", "Absent", "Highly developed"], a: 1 },
+    { q: "Coelenterates are regarded as eumetazoans because they possess", o: ["True tissues", "True coelom", "Segmentation", "Jointed appendages"], a: 0 },
+    { q: "The study of jellyfish belongs under phylum", o: ["Mollusca", "Cnidaria", "Nematoda", "Arthropoda"], a: 1 },
+    { q: "Which of these is NOT a coelenterate?", o: ["Hydra", "Aurelia", "Obelia", "Planaria"], a: 3 },
+    { q: "The locomotory form in coelenterates is usually the", o: ["Polyp", "Medusa", "Larva only", "Bud"], a: 1 },
+    { q: "The sessile form in coelenterates is the", o: ["Medusa", "Polyp", "Planula", "Larva"], a: 1 },
+    { q: "The mouth of Hydra is located on the", o: ["Basal disc", "Hypostome", "Tentacle base", "Pedal disc"], a: 1 },
+    { q: "Coelenterates capture prey mainly using", o: ["Hooks", "Nematocysts", "Suckers", "Teeth"], a: 1 },
+    { q: "The phylum Cnidaria derives its name from", o: ["Cilia", "Cnidoblasts", "Coelom", "Tentacles"], a: 1 },
+    { q: "Which of the following is an economic importance of coelenterates?", o: ["Formation of coral reefs", "Nitrogen fixation", "Pollination", "Soil aeration"], a: 0 },
+
+    // --- Nematoda (61-120) ---
+    { q: "Members of phylum Nematoda are commonly called:", o: ["Flatworms.", "Segmented worms.", "Roundworms.", "Ribbon worms."], a: 2 },
+    { q: "Nematodes are:", o: ["Acoelomates.", "Pseudocoelomates.", "Coelomates.", "Diploblastic animals."], a: 1 },
+    { q: "The body of nematodes is:", o: ["Segmented.", "Flattened.", "Cylindrical and unsegmented.", "Radially symmetrical."], a: 2 },
+    { q: "Nematodes exhibit:", o: ["Radial symmetry.", "Bilateral symmetry.", "Asymmetry.", "Pentamerous symmetry."], a: 1 },
+    { q: "The outer covering of nematodes is called:", o: ["Epidermis.", "Mantle.", "Cuticle.", "Shell."], a: 2 },
+    { q: "The cuticle of nematodes is mainly made of:", o: ["Chitin.", "Keratin.", "Collagen-like protein.", "Cellulose."], a: 2 },
+    { q: "Nematodes moult because:", o: ["They possess shells.", "Their cuticle cannot expand continuously.", "They are segmented.", "They possess parapodia."], a: 1 },
+    { q: "The body cavity of nematodes is:", o: ["True coelom.", "Haemocoel.", "Pseudocoel.", "Gastrovascular cavity."], a: 2 },
+    { q: "Nematodes are:", o: ["Diploblastic.", "Triploblastic.", "Tetraploblastic.", "None of the above."], a: 1 },
+    { q: "The digestive system of nematodes is:", o: ["Incomplete.", "Absent.", "Complete.", "Branched."], a: 2 },
+    { q: "The mouth of nematodes opens into a:", o: ["Crop.", "Pharynx.", "Gizzard.", "Cloaca only."], a: 1 },
+    { q: "Excretion in nematodes occurs mainly through:", o: ["Flame cells.", "Nephridia.", "Renette cells.", "Malpighian tubules."], a: 2 },
+    { q: "Respiration in nematodes is mainly:", o: ["Through lungs.", "Through gills.", "By diffusion.", "Through spiracles."], a: 2 },
+    { q: "Nematodes lack:", o: ["Digestive system.", "Nervous system.", "Circulatory and respiratory systems.", "Reproductive organs."], a: 2 },
+    { q: "The nervous system of nematodes consists mainly of:", o: ["Brain and spinal cord.", "Nerve ring and longitudinal nerves.", "Ganglia only.", "Diffused network."], a: 1 },
+    { q: "Most nematodes are:", o: ["Hermaphrodites.", "Monoecious.", "Dioecious.", "Asexual."], a: 2 },
+    { q: "Sexual dimorphism in nematodes means:", o: ["Both sexes are identical.", "Male and female differ in form.", "They reproduce asexually.", "They lack reproductive organs."], a: 1 },
+    { q: "Male nematodes are usually:", o: ["Larger than females.", "Smaller than females.", "Flattened.", "Segmented."], a: 1 },
+    { q: "Fertilization in nematodes is generally:", o: ["External.", "Internal.", "Budding.", "Fragmentation."], a: 1 },
+    { q: "Development in many nematodes includes:", o: ["Trochophore larva.", "Veliger larva.", "Several moulting stages.", "Planula larva."], a: 2 },
+    { q: "The locomotion of nematodes is aided by:", o: ["Circular muscles only.", "Longitudinal muscles only.", "Parapodia.", "Tube feet."], a: 1 },
+    { q: "Nematodes move with:", o: ["Ciliary motion.", "Undulating movement.", "Jet propulsion.", "Muscular foot movement."], a: 1 },
+    { q: "Which of the following is a free-living nematode?", o: ["Ascaris.", "Wuchereria.", "Caenorhabditis.", "Enterobius."], a: 2 },
+    { q: "Which of the following is a parasitic nematode?", o: ["Hydra.", "Taenia.", "Ascaris lumbricoides.", "Nereis."], a: 2 },
+    { q: "Ascaris lumbricoides lives in the:", o: ["Liver.", "Large intestine.", "Small intestine.", "Stomach."], a: 2 },
+    { q: "Infection by Ascaris occurs mainly through:", o: ["Mosquito bite.", "Contaminated food and water.", "Skin contact only.", "Sexual contact."], a: 1 },
+    { q: "Hookworm belongs to phylum:", o: ["Platyhelminthes.", "Annelida.", "Nematoda.", "Arthropoda."], a: 2 },
+    { q: "Hookworms feed mainly on:", o: ["Mucus", "Blood.", "Cell sap.", "Bone marrow."], a: 1 },
+    { q: "The disease caused by Wuchereria bancrofti is:", o: ["Malaria.", "Elephantiasis.", "Typhoid.", "Cholera."], a: 1 },
+    { q: "Wuchereria bancrofti is transmitted by:", o: ["Housefly.", "Tsetse fly.", "Mosquito.", "Snail."], a: 2 },
+    { q: "Enterobius vermicularis is commonly called:", o: ["Tapeworm.", "Liver fluke.", "Pinworm.", "Hookworm."], a: 2 },
+    { q: "Trichinella spiralis causes:", o: ["Trichinosis.", "Filariasis.", "Amoebiasis.", "Schistosomiasis."], a: 0 },
+    { q: "Nematodes are abundant in:", o: ["Marine habitats only.", "Freshwater only.", "Soil and aquatic habitats.", "Desert only."], a: 2 },
+    { q: "The pseudocoel in nematodes functions mainly in:", o: ["Digestion only.", "Circulation and support.", "Respiration only.", "Reproduction only."], a: 1 },
+    { q: "The body wall of nematodes consists of:", o: ["Epidermis and cuticle.", "Circular muscles only.", "Longitudinal muscles only.", "Shell and mantle."], a: 0 },
+    { q: "Nematodes lack:", o: ["Longitudinal muscles.", "Circular muscles.", "Nervous system.", "Reproductive system."], a: 1 },
+    { q: "The hydrostatic skeleton of nematodes is formed by:", o: ["Blood pressure.", "Pseudocoelomic fluid.", "Bones.", "Shell."], a: 1 },
+    { q: "The alimentary canal of nematodes ends in:", o: ["Mouth.", "Anus.", "Nephridiopore.", "Flame cell."], a: 1 },
+    { q: "Nematodes are ecologically important because:", o: ["They help in decomposition.", "They produce flowers.", "They fix nitrogen directly.", "They build reefs."], a: 0 },
+    { q: "Plant parasitic nematodes attack:", o: ["Animal tissues.", "Plant roots.", "Fish gills.", "Bird feathers."], a: 1 },
+    { q: "The larval stages of nematodes are separated by:", o: ["Binary fission.", "Moulting.", "Budding.", "Sporulation."], a: 1 },
+    { q: "Which structure prevents digestion of parasitic nematodes by host enzymes?", o: ["Pseudocoel.", "Cuticle.", "Pharynx.", "Nerve ring."], a: 1 },
+    { q: "The excretory pore in nematodes is usually located:", o: ["Posteriorly.", "Anteriorly.", "Mid-dorsally.", "On the tail."], a: 1 },
+    { q: "Nematodes belong to the kingdom:", o: ["Protista.", "Plantae.", "Animalia.", "Fungi."], a: 2 },
+    { q: "Nematodes are usually:", o: ["Microscopic only.", "Macroscopic only.", "Elongated worms tapering at both ends.", "Flattened dorsoventrally."], a: 2 },
+    { q: "The egg of Ascaris is protected by:", o: ["Thin membrane only.", "Thick resistant shell.", "Cilia.", "Flagella."], a: 1 },
+    { q: "A nematode with separate sexes is described as:", o: ["Hermaphroditic.", "Dioecious.", "Monoecious.", "Colonial."], a: 1 },
+    { q: "The body cavity of nematodes is not completely lined by:", o: ["Mesoderm.", "Ectoderm.", "Endoderm.", "Epidermis."], a: 0 },
+    { q: "Nematodes belong to a moulting group called:", o: ["Lophotrochozoa.", "Ecdysozoa.", "Deuterostomia.", "Radiata."], a: 1 },
+    { q: "Which of the following is not a nematode?", o: ["Ascaris.", "Ancylostoma.", "Taenia.", "Wuchereria."], a: 2 },
+    { q: "Ancylostoma is commonly known as:", o: ["Pinworm.", "Hookworm.", "Threadworm.", "Whipworm."], a: 1 },
+    { q: "The female Ascaris is usually:", o: ["Smaller than male.", "Larger than male.", "Equal in size to male.", "Segmented."], a: 1 },
+    { q: "Nematodes reproduce mainly by:", o: ["Budding.", "Binary fission.", "Sexual reproduction.", "Regeneration."], a: 2 },
+    { q: "The pseudocoelomic fluid helps in:", o: ["Photosynthesis.", "Movement and transport.", "Flight.", "Calcification."], a: 1 },
+    { q: "The infective stage of many parasitic nematodes is:", o: ["Adult stage.", "Egg or larval stage.", "Pupa.", "Trochophore."], a: 1 },
+    { q: "Nematodes can survive harsh conditions due to:", o: ["Their shell.", "Resistant cuticle and eggs.", "Presence of lungs.", "Segmentation."], a: 1 },
+    { q: "The pharynx of nematodes is:", o: ["Muscular.", "Non-functional.", "Ciliated.", "Segmented."], a: 0 },
+    { q: "Which of the following diseases is caused by nematodes?", o: ["Filariasis.", "Tuberculosis.", "Measles.", "Rabies."], a: 0 },
+    { q: "The locomotory muscles of nematodes are attached to:", o: ["Exoskeleton.", "Cuticle.", "Bones.", "Gills."], a: 1 },
+    { q: "One major economic importance of nematodes is that they:", o: ["Pollinate flowers.", "Cause diseases in plants and animals.", "Produce silk.", "Build coral reefs."], a: 1 },
+
+    // --- Mollusca (121-160) ---
+    { q: "Mollusca are commonly known as:", o: ["Segmented worms", "Soft-bodied animals", "Jointed animals", "Spiny-skinned animals"], a: 1 },
+    { q: "The hard protective structure in most Mollusca is called:", o: ["Shell", "Spine", "Cuticle", "Test"], a: 0 },
+    { q: "The rasping tongue-like organ in Mollusca is:", o: ["Radula", "Proboscis", "Mandible", "Palp"], a: 0 },
+    { q: "Snails belong to which class?", o: ["Gastropoda", "Pelecypoda", "Cephalopoda", "Scaphopoda"], a: 0 },
+    { q: "Oysters and clams belong to which class?", o: ["Gastropoda", "Pelecypoda", "Cephalopoda", "Monoplacophora"], a: 1 },
+    { q: "Octopus and squid belong to which class?", o: ["Gastropoda", "Pelecypoda", "Cephalopoda", "Amphineura"], a: 2 },
+    { q: "The body cavity in Mollusca is called:", o: ["Coelom", "Pseudocoelom", "Acoelom", "Hemocoel"], a: 3 },
+    { q: "The blood pigment in most Mollusca is:", o: ["Hemoglobin", "Hemocyanin", "Chlorocruorin", "Myoglobin"], a: 1 },
+    { q: "The respiratory organ in aquatic Mollusca is:", o: ["Lungs", "Gills", "Skin", "Tracheal"], a: 1 },
+    { q: "Pearl is formed by which class of Mollusca?", o: ["Gastropoda", "Pelecypoda", "Cephalopoda", "Scaphopoda"], a: 1 },
+    { q: "The mantle secretes the:", o: ["Foot", "Shell", "Radula", "Gills"], a: 1 },
+    { q: "Which Mollusca has no shell?", o: ["Snail", "Slug", "Oyster", "Clam"], a: 1 },
+    { q: "The larval stage of Mollusca is called:", o: ["Trochophore", "Nauplius", "Miracidium", "Planula"], a: 0 },
+    { q: "The heart of Mollusca typically has:", o: ["One auricle and one ventricle", "Two auricles and one ventricle", "Three chambers", "Four chambers"], a: 1 },
+    { q: "The excretory organ in Mollusca is:", o: ["Nephridia", "Malpighian tubules", "Flame cells", "Kidneys"], a: 0 },
+    { q: "Which Mollusca is a predator?", o: ["Oyster", "Clam", "Squid", "Snail"], a: 2 },
+    { q: "The mode of nutrition in Mollusca is:", o: ["Autotrophic", "Heterotrophic", "Saprophytic", "Parasitic"], a: 1 },
+    { q: "The ink gland is found in:", o: ["Gastropoda", "Pelecypoda", "Cephalopoda", "Scaphopoda"], a: 2 },
+    { q: "Which Mollusca is terrestrial?", o: ["Oyster", "Clam", "Snail", "Squid"], a: 2 },
+    { q: "The body of Mollusca is divided into:", o: ["Head, thorax, abdomen", "Head, foot, visceral mass", "Head, trunk, tail", "None"], a: 1 },
+    { q: "The radula is absent in:", o: ["Gastropoda", "Pelecypoda", "Cephalopoda", "Amphineura"], a: 1 },
+    { q: "The blood circulation in Mollusca is:", o: ["Open", "Closed", "Both", "None"], a: 0 },
+    { q: "The coelom in Mollusca is reduced to:", o: ["Pericardial cavity", "Gonad cavity", "Both", "None"], a: 2 },
+    { q: "Which is a bivalve Mollusca?", o: ["Snail", "Clam", "Octopus", "Slug"], a: 1 },
+    { q: "The eyes in Cephalopoda are similar to:", o: ["Insects", "Vertebrates", "Annelids", "Nematodes"], a: 1 },
+    { q: "Mollusca reproduce by:", o: ["Asexual only", "Sexual only", "Both", "No reproduction"], a: 1 },
+    { q: "The foot in Gastropoda is modified for:", o: ["Swimming", "Crawling", "Digging", "Flying"], a: 1 },
+    { q: "The main excretory product in Mollusca is:", o: ["Ammonia", "Urea", "Uric acid", "Guanine"], a: 1 },
+    { q: "The shell in Cephalopoda is usually:", o: ["External", "Internal", "Absent", "Both B and C"], a: 3 },
+    { q: "Which is a filter feeder?", o: ["Snail", "Oyster", "Octopus", "Squid"], a: 1 },
+    { q: "Mollusca are:", o: ["Diploblastic", "Triploblastic", "Monoblastic", "None"], a: 1 },
+    { q: "The nervous system of Mollusca consists of:", o: ["Nice ring", "Ganglia", "Both", "None"], a: 2 },
+    { q: "The alimentary canal in Mollusca is:", o: ["Incomplete", "Complete", "Absent", "Branched"], a: 1 },
+    { q: "Which Mollusca has a well-developed brain?", o: ["Gastropoda", "Pelecypoda", "Cephalopoda", "Amphineura"], a: 2 },
+    { q: "The type of symmetry in Mollusca is:", o: ["Radial", "Bilateral", "Asymmetrical", "Spherical"], a: 1 },
+    { q: "Which Mollusca is used as food by humans?", o: ["Snail", "Clam", "Oyster", "All of the above"], a: 3 },
+    { q: "The shell of Mollusca is made of:", o: ["Chitin", "Calcium carbonate", "Silica", "Cellulose"], a: 1 },
+    { q: "The foot in Pelecypoda is adapted for:", o: ["Swimming", "Burrowing", "Crawling", "Jumping"], a: 1 },
+    { q: "Which is an example of Gastropoda?", o: ["Snail", "Clam", "Squid", "Octopus"], a: 0 },
+    { q: "The body wall of Mollusca consists of:", o: ["Cuticle", "Epidermis", "Mantle", "All of the above"], a: 3 },
+
+    // --- Platyhelminthes (Newly Added) ---
+    { q: "Platyhelminthes are commonly known as:", o: ["Roundworms", "Flatworms", "Segmented worms", "Annelids"], a: 1 },
+    { q: "The body symmetry in Platyhelminthes is:", o: ["Radial", "Bilateral", "Asymmetrical", "Spherical"], a: 1 },
+    { q: "Platyhelminthes are:", o: ["Diploblastic", "Triploblastic", "Monoblastic", "Acoelomate"], a: 1 },
+    { q: "The body cavity in Platyhelminthes is:", o: ["True coelom", "Pseudocoelom", "Acoelom", "Hemocoel"], a: 2 },
+    { q: "The body is dorsoventrally flattened in:", o: ["Nematoda", "Annelida", "Platyhelminthes", "Arthropoda"], a: 2 },
+    { q: "The excretory organs in Platyhelminthes are called:", o: ["Nephridia", "Malpighian tubules", "Flame cells", "Kidneys"], a: 2 },
+    { q: "Flame cells are part of which system?", o: ["Nervous", "Digestive", "Excretory", "Reproductive"], a: 2 },
+    { q: "The digestive system in most Platyhelminthes is:", o: ["Complete", "Incomplete", "Absent", "Branched"], a: 1 },
+    { q: "Which Platyhelminth has no digestive system in adult stage?", o: ["Planaria", "Liver fluke", "Tapeworm", "Schistosoma"], a: 2 },
+    { q: "The mode of nutrition in tapeworm is:", o: ["Autotrophic", "Holozoic", "Saprophytic", "Parasitic"], a: 3 },
+    { q: "The adhesive organs in tapeworm are:", o: ["Suckers and hooks", "Claws", "Cilia", "Flagella"], a: 0 },
+    { q: "The free-living Platyhelminth is:", o: ["Taenia solium", "Fasciola hepatica", "Planaria", "Schistosoma"], a: 2 },
+    { q: "The parasitic Platyhelminth in liver is:", o: ["Taenia", "Fasciola hepatica", "Planaria", "Ascaris"], a: 1 },
+    { q: "The disease caused by Schistosoma is:", o: ["Malaria", "Typhoid", "Schistosomiasis", "Filariasis"], a: 2 },
+    { q: "The intermediate host of Taenia solium is:", o: ["Mosquito", "Snail", "Pig", "Dog"], a: 2 },
+    { q: "The intermediate host of Fasciola hepatica is:", o: ["Fish", "Snail", "Cattle", "Mosquito"], a: 1 },
+    { q: "The larval stage of tapeworm in pig is called:", o: ["Miracidium", "Cercaria", "Cysticercus", "Oncosphere"], a: 2 },
+    { q: "The larval stage of liver fluke that infects snail is:", o: ["Miracidium", "Redia", "Cercaria", "Metacercaria"], a: 0 },
+    { q: "Platyhelminthes are mostly:", o: ["Oviparous", "Viviparous", "Hermaphroditic", "Parthenogenetic"], a: 2 },
+    { q: "The nervous system in Platyhelminthes consists of:", o: ["Nerve net", "Ventral nerve cord", "Brain and ventral nerve cords", "Dorsal nerve cord"], a: 2 },
+    { q: "Locomotion in Planaria is by:", o: ["Parapodia", "Cilia and muscle contraction", "Pseudopodia", "Jointed appendages"], a: 1 },
+    { q: "The body wall of Platyhelminthes consists of:", o: ["Epidermis only", "Endoderm only", "Epidermis, mesoderm, endoderm", "Cuticle"], a: 2 },
+    { q: "The class of Platyhelminthes that includes tapeworms is:", o: ["Turbellaria", "Trematoda", "Cestoda", "Monogenea"], a: 2 },
+    { q: "The class of Platyhelminthes that includes liver flukes is:", o: ["Turbellaria", "Trematoda", "Cestoda", "Nematoda"], a: 1 },
+    { q: "The class of Platyhelminthes that includes Planaria is:", o: ["Turbellaria", "Trematoda", "Cestoda", "Monogenea"], a: 0 },
+    { q: "The respiratory system in Platyhelminthes is:", o: ["Gills", "Lungs", "Trachea", "Absent, diffusion occurs"], a: 3 },
+    { q: "The circulatory system in Platyhelminthes is:", o: ["Closed", "Open", "Absent", "Hemocoel"], a: 2 },
+    { q: "The proglottids are found in:", o: ["Planaria", "Liver fluke", "Tapeworm", "Schistosoma"], a: 2 },
+    { q: "The scolex is present in:", o: ["Planaria", "Liver fluke", "Tapeworm", "Fluke"], a: 2 },
+    { q: "The main excretory product in Platyhelminthes is:", o: ["Ammonia", "Urea", "Uric acid", "Guanine"], a: 0 },
+    { q: "Platyhelminthes are:", o: ["Acoelomate, triploblastic", "Coelomate, diploblastic", "Pseudocoelomate", "Acoelomate, diploblastic"], a: 0 },
+    { q: "The disease caused by Taenia saginata is:", o: ["Taeniasis", "Fascioliasis", "Schistosomiasis", "Ascariasis"], a: 0 },
+    { q: "The human infection by eating undercooked pork occurs with:", o: ["Taenia saginata", "Taenia solium", "Fasciola", "Planaria"], a: 1 },
+    { q: "The human infection by eating undercooked beef occurs with:", o: ["Taenia solium", "Taenia saginata", "Schistosoma", "Ascaris"], a: 1 },
+    { q: "The regenerative power is high in:", o: ["Tapeworm", "Liver fluke", "Planaria", "Schistosoma"], a: 2 },
+    { q: "The eggs of Schistosoma are excreted with:", o: ["Sputum", "Urine and feces", "Sweat", "Saliva"], a: 1 },
+    { q: "The body covering in Platyhelminthes is:", o: ["Cuticle", "Chitin", "Tegument with cilia", "Scales"], a: 2 },
+    { q: "Which of these is NOT a characteristic of Platyhelminthes?", o: ["Bilateral symmetry", "Triploblastic", "Coelom present", "Hermaphroditic"], a: 2 },
+    { q: "The habitat of most Platyhelminthes is:", o: ["Marine only", "Freshwater only", "Terrestrial only", "Aquatic and parasitic in animals"], a: 3 },
+    { q: "The infective stage of liver fluke to human is:", o: ["Miracidium", "Cercaria", "Metacercaria", "Redia"], a: 2 },
+
+    // --- Chordata (Newly Added) ---
+    { q: "Chordata are characterized by the presence of:", o: ["Exoskeleton", "Notochord", "Shell", "Scales"], a: 1 },
+    { q: "The notochord is later replaced by in vertebrates:", o: ["Nerve cord", "Vertebral column", "Dorsal fin", "Gill slits"], a: 1 },
+    { q: "Which is NOT a subphylum of Chordata?", o: ["Urochordata", "Cephalochordata", "Hemichordata", "Vertebrata"], a: 2 },
+    { q: "Amphioxus belongs to which subphylum?", o: ["Urochordata", "Cephalochordata", "Vertebrata", "Agnatha"], a: 1 },
+    { q: "Tunicates belong to which subphylum?", o: ["Urochordata", "Cephalochordata", "Vertebrata", "Cyclostomata"], a: 0 },
+    { q: "The dorsal hollow nerve cord in Chordata is located:", o: ["Ventrally", "Dorsally", "Laterally", "Centrally"], a: 1 },
+    { q: "Gill slits in Chordata are present in:", o: ["Embryonic stage only", "Adult stage only", "Both embryonic and adult", "None"], a: 2 },
+    { q: "Which is a jawless vertebrate?", o: ["Shark", "Lamprey", "Frog", "Lizard"], a: 1 },
+    { q: "The class Pisces includes:", o: ["Frogs", "Fishes", "Lizards", "Birds"], a: 1 },
+    { q: "The class Amphibia includes:", o: ["Fishes", "Frogs", "Birds", "Mammals"], a: 1 },
+    { q: "The class Reptilia includes:", o: ["Snakes", "Frogs", "Birds", "Whales"], a: 0 },
+    { q: "The class Aves includes:", o: ["Bats", "Birds", "Bats and Birds", "None"], a: 1 },
+    { q: "The class Mammalia includes:", o: ["Whale", "Shark", "Frog", "Snake"], a: 0 },
+    { q: "The respiratory organ in fishes is:", o: ["Lungs", "Gills", "Skin", "Tracheal"], a: 1 },
+    { q: "The respiratory organ in mammals is:", o: ["Gills", "Lungs", "Skin", "Tracheal"], a: 1 },
+    { q: "The heart of fish has:", o: ["Two chambers", "Three chambers", "Four chambers", "Five chambers"], a: 0 },
+    { q: "The heart of amphibians has:", o: ["Two chambers", "Three chambers", "Four chambers", "Five chambers"], a: 1 },
+    { q: "The heart of birds and mammals has:", o: ["Two chambers", "Three chambers", "Four chambers", "Five chambers"], a: 2 },
+    { q: "The main excretory product in mammals is:", o: ["Ammonia", "Urea", "Uric acid", "Guanine"], a: 1 },
+    { q: "The main excretory product in birds and reptiles is:", o: ["Ammonia", "Urea", "Uric acid", "Guanine"], a: 2 },
+    { q: "The type of fertilization in birds is:", o: ["External", "Internal", "Both", "None"], a: 1 },
+    { q: "The egg of birds is:", o: ["Amniotic", "Non-amniotic", "Both", "None"], a: 0 },
+    { q: "Which is a cold-blooded animal?", o: ["Bird", "Mammal", "Reptile", "Human"], a: 2 },
+    { q: "Which is a warm-blooded animal?", o: ["Frog", "Lizard", "Bird", "Snake"], a: 2 },
+    { q: "The skin of mammals is covered by:", o: ["Scales", "Feathers", "Hair", "Shell"], a: 2 },
+    { q: "The skin of birds is covered by:", o: ["Scales", "Feathers", "Hair", "Shell"], a: 1 },
+    { q: "The skin of reptiles is covered by:", o: ["Scales", "Feathers", "Hair", "Shell"], a: 0 },
+    { q: "The blood circulation in mammals is:", o: ["Single", "Double", "Triple", "None"], a: 1 },
+    { q: "The vertebral column is absent in:", o: ["Vertebrata", "Cephalochordata", "Urochordata", "Both B and C"], a: 3 },
+    { q: "The tail in Chordata is present in:", o: ["Embryonic stage only", "Adult stage only", "Both embryonic and adult", "None"], a: 2 },
+    { q: "Which is an example of Urochordata?", o: ["Amphioxus", "Ascidian", "Lamprey", "Frog"], a: 1 },
+    { q: "Which is an example of Cephalochordata?", o: ["Ascidian", "Amphioxus", "Shark", "Frog"], a: 1 },
+    { q: "The class Cyclostomata includes:", o: ["Lamprey", "Shark", "Frog", "Lizard"], a: 0 },
+    { q: "The scales of fishes are made of:", o: ["Chitin", "Calcium carbonate", "Bone", "Keratin"], a: 2 },
+    { q: "The diaphragm is present in:", o: ["Birds", "Mammals", "Reptiles", "Amphibians"], a: 1 },
+    { q: "The mode of nutrition in Chordata is:", o: ["Autotrophic", "Heterotrophic", "Saprophytic", "Parasitic"], a: 1 },
+    { q: "The type of symmetry in Chordata is:", o: ["Radial", "Bilateral", "Asymmetrical", "Spherical"], a: 1 },
+    { q: "The body cavity in Chordata is:", o: ["Acoelom", "Pseudocoelom", "Coelom", "Hemocoel"], a: 2 },
+    { q: "The appendages in Chordata are:", o: ["Jointed", "Non-jointed", "Absent", "Both A and C"], a: 3 },
+    { q: "The largest class of Chordata is:", o: ["Amphibia", "Reptilia", "Aves", "Mammalia"], a: 3 },
+
+    // --- Arthropoda (Newly Added) ---
+    { q: "Arthropoda are commonly known as:", o: ["Segmented worms", "Jointed-legged animals", "Soft-bodied animals", "Spiny-skinned animals"], a: 1 },
+    { q: "The body covering of Arthropoda is called:", o: ["Cuticle", "Exoskeleton", "Endoskeleton", "Epidermis"], a: 1 },
+    { q: "The exoskeleton of Arthropoda is made of:", o: ["Calcium carbonate", "Chitin", "Cellulose", "Keratin"], a: 1 },
+    { q: "The body of Arthropoda is divided into:", o: ["Two parts", "Three parts", "Many segments", "No division"], a: 2 },
+    { q: "Which is NOT a class of Arthropoda?", o: ["Insecta", "Crustacea", "Arachnida", "Amphibia"], a: 3 },
+    { q: "Cockroach belongs to which class?", o: ["Insecta", "Crustacea", "Arachnida", "Myriapoda"], a: 0 },
+    { q: "Spider belongs to which class?", o: ["Insecta", "Crustacea", "Arachnida", "Chilopoda"], a: 2 },
+    { q: "Crab belongs to which class?", o: ["Insecta", "Crustacea", "Arachnida", "Diplopoda"], a: 1 },
+    { q: "The respiratory organ in insects is:", o: ["Gills", "Lungs", "Trachea", "Skin"], a: 2 },
+    { q: "The respiratory organ in crustaceans is:", o: ["Trachea", "Lungs", "Gills", "Skin"], a: 2 },
+    { q: "The excretory organ in insects is:", o: ["Nephridia", "Malpighian tubules", "Flame cells", "Kidneys"], a: 1 },
+    { q: "The blood circulation in Arthropoda is:", o: ["Closed", "Open", "Both", "None"], a: 1 },
+    { q: "The blood pigment in most Arthropoda is:", o: ["Hemoglobin", "Hemocyanin", "Chlorocruorin", "Myoglobin"], a: 1 },
+    { q: "The body cavity in Arthropoda is called:", o: ["Coelom", "Pseudocoelom", "Acoelom", "Hemocoel"], a: 3 },
+    { q: "The larval stage of mosquito is called:", o: ["Nauplius", "Trochophore", "Larva", "Nymph"], a: 3 },
+    { q: "Which Arthropoda has two pairs of antennae?", o: ["Insecta", "Crustacea", "Arachnida", "Myriapoda"], a: 1 },
+    { q: "The compound eyes are found in:", o: ["Insecta", "Arachnida", "Crustacea", "Both A and C"], a: 3 },
+    { q: "The mode of nutrition in Arthropoda is:", o: ["Autotrophic", "Heterotrophic", "Saprophytic", "Parasitic"], a: 1 },
+    { q: "The jointed appendages are used for:", o: ["Respiration", "Locomotion", "Digestion", "Excretion"], a: 1 },
+    { q: "The development in insects with complete metamorphosis includes:", o: ["Egg → Larva → Pupa → Adult", "Egg → Nymph → Adult", "Egg → Adult", "None"], a: 0 },
+    { q: "The silk is produced by:", o: ["Honeybee", "Silkworm", "Mosquito", "Cockroach"], a: 1 },
+    { q: "Which is a blood-sucking insect?", o: ["Butterfly", "Mosquito", "Housefly", "Termite"], a: 1 },
+    { q: "The body of insects is divided into:", o: ["Head and trunk", "Head, thorax, abdomen", "Head and abdomen", "None"], a: 1 },
+    { q: "The number of legs in insects is:", o: ["Four", "Six", "Eight", "Ten"], a: 1 },
+    { q: "The number of legs in spiders is:", o: ["Six", "Eight", "Ten", "Twelve"], a: 1 },
+    { q: "The main excretory product in insects is:", o: ["Ammonia", "Urea", "Uric acid", "Guanine"], a: 2 },
+    { q: "The nervous system of Arthropoda consists of:", o: ["Dorsal nerve cord", "Ventral nerve cord", "Radial nerves", "None"], a: 1 },
+    { q: "Which Arthropoda is a vector of malaria?", o: ["Housefly", "Mosquito", "Cockroach", "Termite"], a: 1 },
+    { q: "The appendages in crustaceans are:", o: ["Uniramous", "Biramous", "Triramous", "None"], a: 1 },
+    { q: "The molting process in Arthropoda is called:", o: ["Metamorphosis", "Ecdysis", "Regeneration", "Segmentation"], a: 1 },
+    { q: "Which class has many legs and one pair per segment?", o: ["Chilopoda", "Diplopoda", "Insecta", "Arachnida"], a: 0 },
+    { q: "Which class has two pairs of legs per segment?", o: ["Chilopoda", "Diplopoda", "Insecta", "Arachnida"], a: 1 },
+    { q: "The antennae in insects are organs of:", o: ["Touch and smell", "Hearing", "Taste", "Sight"], a: 0 },
+    { q: "The heart in Arthropoda is located:", o: ["Ventrally", "Dorsally", "Laterally", "Centrally"], a: 1 },
+    { q: "The alimentary canal in Arthropoda is:", o: ["Incomplete", "Complete", "Absent", "Branched"], a: 1 },
+    { q: "The type of symmetry in Arthropoda is:", o: ["Radial", "Bilateral", "Asymmetrical", "Spherical"], a: 1 },
+    { q: "Which Arthropoda causes typhoid?", o: ["Mosquito", "Housefly", "Cockroach", "Termite"], a: 1 },
+    { q: "The wings of insects are outgrowths of:", o: ["Head", "Thorax", "Abdomen", "Legs"], a: 1 },
+    { q: "The arthropods that live in water are:", o: ["Insects", "Crustaceans", "Arachnids", "Myriapods"], a: 1 },
+    { q: "The economic importance of bees is:", o: ["Pollination", "Honey production", "Both", "None"], a: 2 },
+
+    // --- Echinodermata (Newly Added) ---
+    { q: "Echinodermata are commonly known as:", o: ["Jointed animals", "Spiny-skinned animals", "Soft-bodied animals", "Segmented worms"], a: 1 },
+    { q: "The body symmetry in adult Echinodermata is:", o: ["Bilateral", "Radial", "Asymmetrical", "Spherical"], a: 1 },
+    { q: "The larval stage of Echinodermata shows:", o: ["Radial symmetry", "Bilateral symmetry", "Asymmetrical", "No symmetry"], a: 1 },
+    { q: "The water vascular system is characteristic of:", o: ["Mollusca", "Arthropoda", "Echinodermata", "Chordata"], a: 2 },
+    { q: "The water vascular system is used for:", o: ["Respiration", "Locomotion", "Excretion", "Digestion"], a: 1 },
+    { q: "The tube feet in Echinodermata are part of:", o: ["Digestive system", "Water vascular system", "Nervous system", "Circulatory system"], a: 1 },
+    { q: "Starfish belongs to which class?", o: ["Asteroidea", "Ophiuroidea", "Echinoidea", "Holothuroidea"], a: 0 },
+    { q: "Sea urchin belongs to which class?", o: ["Asteroidea", "Ophiuroidea", "Echinoidea", "Crinoidea"], a: 2 },
+    { q: "Sea cucumber belongs to which class?", o: ["Asteroidea", "Ophiuroidea", "Holothuroidea", "Echinoidea"], a: 2 },
+    { q: "Brittle star belongs to which class?", o: ["Asteroidea", "Ophiuroidea", "Echinoidea", "Holothuroidea"], a: 1 },
+    { q: "Feather star belongs to which class?", o: ["Asteroidea", "Crinoidea", "Echinoidea", "Holothuroidea"], a: 1 },
+    { q: "The body wall of Echinodermata contains:", o: ["Chitin", "Calcium carbonate plates", "Silica", "Cellulose"], a: 1 },
+    { q: "The excretory system in Echinodermata is:", o: ["Well developed", "Absent", "Nephridia", "Malpighian tubules"], a: 1 },
+    { q: "The circulatory system in Echinodermata is:", o: ["Open", "Closed", "Absent", "Both open and closed"], a: 2 },
+    { q: "The respiratory organ in Echinodermata is:", o: ["Gills", "Lungs", "Skin gills and tube feet", "Trachea"], a: 2 },
+    { q: "The nervous system in Echinodermata is:", o: ["Well developed", "Primitive with nerve ring", "Dorsal nerve cord", "Absent"], a: 1 },
+    { q: "The mode of nutrition in Echinodermata is:", o: ["Autotrophic", "Heterotrophic", "Saprophytic", "Parasitic"], a: 1 },
+    { q: "The mouth in starfish is located:", o: ["Dorsally", "Ventrally", "Laterally", "Terminally"], a: 1 },
+    { q: "The anus in starfish is located:", o: ["Dorsally", "Ventrally", "Laterally", "Absent"], a: 0 },
+    { q: "The regeneration ability is well seen in:", o: ["Mollusca", "Echinodermata", "Nematoda", "Platyhelminthes"], a: 1 },
+    { q: "The skeleton of Echinodermata is called:", o: ["Exoskeleton", "Endoskeleton", "Hydrostatic skeleton", "None"], a: 1 },
+    { q: "The madreporite is an opening of:", o: ["Digestive system", "Water vascular system", "Reproductive system", "Excretory system"], a: 1 },
+    { q: "The type of fertilization in Echinodermata is:", o: ["Internal", "External", "Both", "None"], a: 1 },
+    { q: "The larval stage of starfish is called:", o: ["Trochophore", "Bipinnaria", "Nauplius", "Planula"], a: 1 },
+    { q: "The body cavity in Echinodermata is:", o: ["Acoelom", "Pseudocoelom", "Coelom", "Hemocoel"], a: 2 },
+    { q: "The pedicellariae are used for:", o: ["Locomotion", "Defense and cleaning", "Respiration", "Digestion"], a: 1 },
+    { q: "The spines on the body of sea urchin are used for:", o: ["Locomotion", "Defense", "Digestion", "Respiration"], a: 1 },
+    { q: "The class with arms not distinct from the body is:", o: ["Asteroidea", "Ophiuroidea", "Echinoidea", "Holothuroidea"], a: 2 },
+    { q: "The class with long slender arms is:", o: ["Asteroidea", "Ophiuroidea", "Echinoidea", "Holothuroidea"], a: 1 },
+    { q: "The class with soft elongated body is:", o: ["Asteroidea", "Ophiuroidea", "Echinoidea", "Holothuroidea"], a: 3 },
+    { q: "The class with stalked body is:", o: ["Asteroidea", "Ophiuroidea", "Crinoidea", "Holothuroidea"], a: 2 },
+    { q: "The blood pigment in Echinodermata is:", o: ["Hemoglobin", "Hemocyanin", "Absent", "Chlorocruorin"], a: 2 },
+    { q: "The main excretory product in Echinodermata is:", o: ["Ammonia", "Urea", "Uric acid", "Guanine"], a: 0 },
+    { q: "The development in Echinodermata is:", o: ["Direct", "Indirect", "Both", "None"], a: 1 },
+    { q: "The habitat of Echinodermata is:", o: ["Freshwater", "Terrestrial", "Marine", "Both land and water"], a: 2 },
+    { q: "The tube feet function in starfish for:", o: ["Feeding", "Locomotion", "Both A and B", "None"], a: 2 },
+    { q: "The spiny skin of Echinodermata is due to:", o: ["Chitin", "Calcareous ossicles", "Scales", "Feathers"], a: 1 },
+    { q: "The nervous system in Echinodermata consists of:", o: ["Dorsal nerve cord", "Nerve ring and radial nerves", "Ventral nerve cord", "None"], a: 1 },
+    { q: "The heart in Echinodermata is:", o: ["Present", "Absent", "Four-chambered", "Two-chambered"], a: 1 },
+    { q: "The economic importance of Echinodermata includes:", o: ["Food", "Medicine", "Both A and B", "None"], a: 2 },
+
+    // --- Porifera (Newly Added) ---
+    { q: "Porifera are commonly known as:", o: ["Worms.", "Sponges.", "Jellyfish.", "Corals."], a: 1 },
+    { q: "The body of sponges is mainly perforated by:", o: ["Gills.", "Nephridia.", "Pores.", "Tentacles."], a: 2 },
+    { q: "The opening at the top of a sponge is called:", o: ["Mouth.", "Ostium.", "Osculum.", "Siphon."], a: 2 },
+    { q: "The body cavity of a sponge is known as:", o: ["Coelom.", "Spongocoel.", "Gastrovascular cavity.", "Pseudocoel."], a: 1 },
+    { q: "Porifera are mostly:", o: ["Terrestrial.", "Aquatic.", "Aerial.", "Amphibious."], a: 1 },
+    { q: "The majority of sponges are found in:", o: ["Freshwater.", "Soil.", "Marine water.", "Desert."], a: 2 },
+    { q: "The cells responsible for water current in sponges are:", o: ["Amoebocytes.", "Pinacocytes.", "Choanocytes.", "Cnidocytes."], a: 2 },
+    { q: "Choanocytes are also called:", o: ["Flame cells.", "Collar cells.", "Gland cells.", "Nerve cells."], a: 1 },
+    { q: "The skeleton of sponges may be made of:", o: ["Bone only.", "Chitin only.", "Spicules or spongin fibres.", "Keratin."], a: 2 },
+    { q: "Spicules in Porifera are composed mainly of:", o: ["Calcium carbonate or silica.", "Cellulose.", "Protein only.", "Lipids."], a: 0 },
+    { q: "Porifera show which level of organization?", o: ["Organ system.", "Tissue.", "Cellular.", "Organ."], a: 2 },
+    { q: "Sponges are:", o: ["Triploblastic.", "Diploblastic.", "Acoelomate.", "Coelomate."], a: 1 },
+    { q: "Porifera are generally:", o: ["Motile.", "Sessile.", "Parasitic.", "Flying."], a: 1 },
+    { q: "Food digestion in sponges is:", o: ["Extracellular.", "Intracellular.", "Both intracellular and extracellular.", "Absent."], a: 1 },
+    { q: "The pores through which water enters the sponge are called:", o: ["Oscula.", "Ostia.", "Tentacles.", "Papillae."], a: 1 },
+    { q: "Sponges reproduce asexually by:", o: ["Binary fission.", "Budding.", "Conjugation.", "Fragmentation only."], a: 1 },
+    { q: "Internal buds in freshwater sponges are called:", o: ["Gemmules.", "Larvae.", "Polyps.", "Statocysts."], a: 0 },
+    { q: "The larva of sponges is:", o: ["Sessile.", "Motile.", "Parasitic.", "Absent."], a: 1 },
+    { q: "The canal system in Porifera helps in:", o: ["Respiration only.", "Feeding only.", "Circulation of water.", "Reproduction only."], a: 2 },
+    { q: "Which of the following is a freshwater sponge?", o: ["Sycon.", "Euspongia.", "Spongilla.", "Euplectella."], a: 2 },
+    { q: "Sycon belongs to class:", o: ["Calcarea.", "Hexactinellida.", "Demospongiae.", "Hydrozoa."], a: 0 },
+    { q: "The simplest canal system in sponges is:", o: ["Syconoid.", "Leuconoid.", "Asconoid.", "Radial."], a: 2 },
+    { q: "The most complex canal system is:", o: ["Asconoid.", "Syconoid.", "Leuconoid.", "Amoeboid."], a: 2 },
+    { q: "The outer layer of sponge body is:", o: ["Epidermis.", "Pinacoderm.", "Mesoglea.", "Gastrodermis."], a: 1 },
+    { q: "The gelatinous matrix in sponges is called:", o: ["Mesohyl.", "Mesoderm.", "Blastocoel.", "Endoderm."], a: 0 },
+    { q: "Amoebocytes help in:", o: ["Locomotion only.", "Digestion and transport.", "Reproduction only.", "Respiration only."], a: 1 },
+    { q: "Sponges lack:", o: ["Water canal system.", "Nervous system.", "Collar cells.", "Skeleton."], a: 1 },
+    { q: "The study of sponges is called:", o: ["Helminthology.", "Entomology.", "Parazoology.", "Poriferology."], a: 2 },
+    { q: "Porifera belongs to the kingdom:", o: ["Plantae.", "Protista.", "Animalia.", "Fungi."], a: 2 },
+    { q: "Which of these is called Venus flower basket?", o: ["Sycon.", "Euplectella.", "Spongilla.", "Grantia."], a: 1 },
+    { q: "The body symmetry of most sponges is:", o: ["Bilateral.", "Radial.", "Asymmetrical.", "Spherical."], a: 2 },
+    { q: "Sponges obtain food by:", o: ["Herbivory.", "Predation.", "Filter feeding.", "Parasitism."], a: 2 },
+    { q: "Respiration in sponges occurs through:", o: ["Gills.", "Lungs.", "Diffusion.", "Trea."], a: 2 },
+    { q: "Excretion in Porifera occurs by:", o: ["Nephridia.", "Flame cells.", "Diffusion.", "Malpighian tubules."], a: 2 },
+    { q: "The movement of water in sponges is caused by:", o: ["Flagella of choanocytes.", "Muscles.", "Cilia of epidermis.", "Tentacles."], a: 0 },
+    { q: "Porifera are considered primitive because they:", o: ["Have organs.", "Lack true tissues.", "Have coelom.", "Have segmentation."], a: 1 },
+    { q: "Which class has siliceous spicules with six rays?", o: ["Calcarea.", "Demospongiae.", "Hexactinellida.", "Hydrozoa."], a: 2 },
+    { q: "Commercial bath sponges belong to:", o: ["Calcarea.", "Demospongiae.", "Hexactinellida.", "Turbellaria."], a: 1 },
+    { q: "The free-swimming larva of sponges helps in:", o: ["Feeding.", "Respiration.", "Dispersal.", "Excretion."], a: 2 },
+    { q: "Sponges reproduce sexually through:", o: ["Gamete formation.", "Binary fission.", "Regeneration only.", "Fragmentation only."], a: 0 },
+    { q: "Most sponges are:", o: ["Solitary only.", "Colonial only.", "Sessile filter feeders.", "Free swimming predators."], a: 2 },
+    { q: "The canal system increases:", o: ["Surface area for water flow.", "Speed of movement.", "Body temperature.", "Nervous coordination."], a: 0 },
+    { q: "The skeleton in bath sponge is mainly:", o: ["Calcium carbonate.", "Chitin.", "Spongin fibres.", "Silica only."], a: 2 },
+    { q: "Which of the following lacks true organs?", o: ["Earthworm.", "Sponge.", "Cockroach.", "Fish."], a: 1 },
+    { q: "Sponges belong to subkingdom:", o: ["Protozoa.", "Parazoa.", "Metazoa.", "Vertebrata."], a: 1 },
+    { q: "The osculum is mainly for:", o: ["Food intake.", "Water exit.", "Respiration only.", "Reproduction."], a: 1 },
+    { q: "Which sponge class contains most species?", o: ["Calcarea.", "Hexactinellida.", "Demospongiae.", "Hydrozoa."], a: 2 },
+    { q: "Pinacocytes are:", o: ["Reproductive cells.", "Outer body cells.", "Feeding cells.", "Skeletal cells."], a: 1 },
+    { q: "The water current in sponge helps in:", o: ["Feeding.", "Respiration.", "Excretion.", "All of the above."], a: 3 },
+    { q: "Sponges digest food mainly inside:", o: ["Stomach.", "Coelom.", "Cells.", "Intestine."], a: 2 },
+    { q: "Which of these is NOT a sponge?", o: ["Sycon.", "Grantia.", "Hydra.", "Spongilla."], a: 2 },
+    { q: "Porifera possess:", o: ["True tissues.", "Organ systems.", "Cellular level organization.", "Segmented body."], a: 2 },
+    { q: "The middle layer in sponges contains:", o: ["Mesohyl.", "Nerve cells.", "Muscles.", "Blood vessels."], a: 0 },
+    { q: "Which of these is characteristic of Porifera?", o: ["Segmentation.", "Jointed appendages.", "Canal system.", "Closed circulation."], a: 2 },
+    { q: "A sponge can regenerate because of:", o: ["Amoebocytes.", "Choanocytes.", "Spicules.", "Osculum."], a: 0 },
+    { q: "The body wall of sponge is:", o: ["Thick and muscular.", "Thin with pores.", "Covered with scales.", "Segmented."], a: 1 },
+    { q: "Porifera are important commercially as:", o: ["Food crops.", "Bath sponges.", "Medicines only.", "Fertilizers."], a: 1 },
+    { q: "The canal system is absent in:", o: ["Earthworm.", "Sponge.", "Hydra.", "Cockroach."], a: 0 },
+    { q: "The scientific name of freshwater sponge is:", o: ["Sycon.", "Euplectella.", "Spongilla.", "Grantia."], a: 2 },
+    { q: "Which of these statements is correct?", o: ["Sponges have organ systems.", "Sponges are free-living terrestrial animals.", "Sponges have pores all over the body.", "Sponges possess a true coelom."], a: 2 },
+
+    // --- Annelida (Newly Added) ---
+    { q: "Annelids are commonly known as:", o: ["Flatworms", "Roundworms", "Segmented worms", "Sponges"], a: 2 },
+    { q: "The body cavity in Annelida is called:", o: ["Pseudocoelom", "Coelom", "Acoelom", "Hemocoel"], a: 1 },
+    { q: "Which class of Annelida includes earthworms?", o: ["Polychaeta", "Oligochaeta", "Hirudinea", "Archiannelida"], a: 1 },
+    { q: "The bristle-like structures in Annelida are called:", o: ["Cilia", "Flagella", "Chaetae", "Setae"], a: 3 },
+    { q: "Blood circulation in Annelida is:", o: ["Open", "Closed", "Absent", "Half-open"], a: 1 },
+    { q: "The process of regeneration is well seen in:", o: ["Mollusca", "Annelida", "Nematoda", "Platyhelminthes"], a: 1 },
+    { q: "Leeches belong to which class?", o: ["Polychaeta", "Oligochaeta", "Hirudinea", "Monoplacophora"], a: 2 },
+    { q: "The excretory organs in Annelida are:", o: ["Flame cells", "Nephridia", "Malpighian tubules", "Kidneys"], a: 1 },
+    { q: "Which is a marine annelid?", o: ["Earthworm", "Leech", "Nereis", "Tapeworm"], a: 2 },
+    { q: "Segmentation in Annelida is called:", o: ["Metamerism", "Polymorphism", "Dimorphism", "Symmetry"], a: 0 },
+    { q: "The nervous system of Annelida consists of:", o: ["Dorsal nerve cord", "Ventral nerve cord", "Radial nerves", "None"], a: 1 },
+    { q: "Earthworm respires through:", o: ["Gills", "Lungs", "Skin", "Trachea"], a: 2 },
+    { q: "The clitellum in earthworm is used for:", o: ["Locomotion", "Respiration", "Reproduction", "Excretion"], a: 2 },
+    { q: "Which is NOT a characteristic of Annelida?", o: ["Bilateral symmetry", "Triploblastic", "Radial symmetry", "Coelomate"], a: 2 },
+    { q: "The head region in Polychaeta is called:", o: ["Prostomium", "Peristomium", "Pygidium", "Metastomium"], a: 0 },
+    { q: "Parapodia are found in:", o: ["Oligochaeta", "Polychaeta", "Hirudinea", "All Annelida"], a: 1 },
+    { q: "The blood pigment in earthworm is:", o: ["Hemocyanin", "Hemoglobin", "Chlorocruorin", "Myoglobin"], a: 1 },
+    { q: "Fertilization in earthworm is:", o: ["Internal", "External", "Both", "None"], a: 1 },
+    { q: "The larval stage of Polychaeta is called:", o: ["Miracidium", "Trochophore", "Planula", "Nauplius"], a: 1 },
+    { q: "Which of these is a parasitic annelid?", o: ["Nereis", "Earthworm", "Leech", "Ragworm"], a: 2 },
+    { q: "The alimentary canal in Annelida is:", o: ["Incomplete", "Complete", "Absent", "Branched"], a: 1 },
+    { q: "Annelida exhibits which type of symmetry?", o: ["Radial", "Bilateral", "Asymmetrical", "Spherical"], a: 1 },
+    { q: "The body of Annelida is divided into:", o: ["Two parts", "Three parts", "Many segments", "No division"], a: 2 },
+    { q: "Which sense organ is well developed in Polychaeta?", o: ["Eyes", "Antennae", "Both", "None"], a: 2 },
+    { q: "The type of fertilization in leech is:", o: ["External", "Internal", "No fertilization", "Asexual"], a: 1 },
+    { q: "Annelida is:", o: ["Diploblastic", "Triploblastic", "Monoblastic", "None"], a: 1 },
+    { q: "The locomotory organ of earthworm is:", o: ["Parapodia", "Setae", "Pseudopodia", "Flagella"], a: 1 },
+    { q: "Which is a fresh water annelid?", o: ["Nereis", "Tubifex", "Leech", "Both B and C"], a: 3 },
+    { q: "The digestive system in Annelida has:", o: ["One opening", "Two openings", "No opening", "Multiple openings"], a: 1 },
+    { q: "The heart in earthworm is called:", o: ["Aortic arch", "Ventricle", "Auricle", "Pulsating vessel"], a: 0 },
+    { q: "Annelida shows:", o: ["Asexual reproduction only", "Sexual reproduction only", "Both", "No reproduction"], a: 2 },
+    { q: "The body wall of Annelida consists of:", o: ["Cuticle", "Epidermis", "Muscles", "All of the above"], a: 3 },
+    { q: "Which class has no setae?", o: ["Polychaeta", "Oligochaeta", "Hirudinea", "None"], a: 2 },
+    { q: "The main excretory product in Annelida is:", o: ["Ammonia", "Urea", "Uric acid", "Guanine"], a: 1 },
+    { q: "The mode of nutrition in Annelida is:", o: ["Autotrophic", "Heterotrophic", "Saprophytic", "Parasitic"], a: 1 },
+    { q: "The blood vascular system in Annelida consists of:", o: ["Dorsal vessel", "Ventral vessel", "Capillaries", "All of the above"], a: 3 },
+    { q: "The development in Annelida is:", o: ["Direct", "Indirect", "Both", "None"], a: 2 },
+    { q: "Which is a hermaphrodite?", o: ["Nereis", "Earthworm", "Leech", "Both B and C"], a: 3 },
+    { q: "The cuticle in Annelida is secreted by:", o: ["Epidermis", "Dermis", "Muscle layer", "Coelom"], a: 0 },
+    { q: "The respiratory pigment chlorocruorin is found in:", o: ["Earthworm", "Nereis", "Leech", "Tubifex"], a: 3 }
+];
+
+let activeExam = [];
+let timeLeft = 900; // Hardcoded strictly to 15 minutes (900 seconds)
+let timer;
+let currentQuestionIndex = 0;
+
+function initLoader() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1200);
+}
+
+// Knuth-Fisher-Yates Shuffle Engine
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function startExam() {
+    if (masterBioPool.length === 0) {
+        alert("The global question array configuration matrix is completely empty.");
+        return;
+    }
+    
+    // Select 60 unique questions out of the full master pool after shuffling
+    let shuffledFullPool = shufflePool([...masterBioPool]);
+    activeExam = shuffledFullPool.slice(0, 60);
+    
+    timeLeft = 900; 
+    currentQuestionIndex = 0; 
+    
+    document.getElementById('main-hub').style.display = 'none';
+    document.getElementById('exam-container').style.display = 'grid'; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    startTimer();
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < activeExam.length; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => {
+        block.classList.toggle('active', idx === index);
+    });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => {
+        dot.classList.toggle('current', idx === index);
+    });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === activeExam.length - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${item.o[item.a]}</p>` : ''}
+            </div>`;
+    });
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    document.getElementById('score-text').innerText = `${score} / ${activeExam.length}`;
+    document.getElementById('review-area').innerHTML = reviewHTML;
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
