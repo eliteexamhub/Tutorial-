@@ -231,11 +231,18 @@
             font-size: 1.2rem;
             font-weight: 800;
             border-radius: 50px;
-            cursor: pointer;
+            cursor: not-allowed;
             margin-top: 30px;
             box-shadow: 0 10px 20px rgba(56, 118, 29, 0.3);
             transition: var(--transition);
-            animation: pulse 2s infinite;
+            opacity: 0.5;
+        }
+
+        /* Active state layout for when button is unlocked */
+        .btn-get-started:not(:disabled) {
+            opacity: 1 !important;
+            cursor: pointer !important;
+            animation: pulse 2s infinite !important;
         }
 
         /* --- SIDEBAR LAYOUT --- */
@@ -640,7 +647,6 @@
 </head>
 <body>
 
-<!-- INLINE INTEGRATED GATEKEEPER SECURITY PANEL -->
 <div id="gatekeeper-panel">
     <div class="login-wrapper">
         <header>
@@ -687,7 +693,19 @@
         <p style="color:#666; margin-bottom: 20px;">Your journey to academic excellence starts here.</p>
         <div class="step-box">⚡ <strong>Real-time Countdown Engine</strong> configured directly for your localized testing layout parameters.</div>
         <div class="step-box">📚 <strong>Preserved Questions Engine</strong> protecting complete course sets dynamically.</div>
-        <button class="btn-get-started" onclick="closeTutorial()">GET STARTED →</button>
+        
+        <div class="step-box" style="border-left-color: #25D366; background: #f0fdf4;">
+            📢 <strong>MANDATORY STEP:</strong> You must follow our official WhatsApp channel to unlock access to the examinations.
+            <a href="https://whatsapp.com/channel/0029Vb8JIobGZNCkdFuLKp3S" 
+               target="_blank" 
+               id="whatsapp-gate-link" 
+               style="display: block; text-align: center; margin-top: 12px; background: #25D366; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.9rem;" 
+               onclick="unlockGetStartedButton()">
+               👉 CLICK HERE TO FOLLOW CHANNEL
+            </a>
+        </div>
+
+        <button class="btn-get-started" id="btn-start-app" onclick="closeTutorial()" disabled>GET STARTED →</button>
     </div>
 </div>
 
@@ -862,6 +880,15 @@ function unlockDashboardFlow() {
             document.getElementById('student-badge').innerText = `ID: ${parsedProfile.name.toUpperCase()}`;
         }
     }, 400);
+}
+
+function unlockGetStartedButton() {
+    const startBtn = document.getElementById('btn-start-app');
+    startBtn.disabled = false;
+    
+    const gateLink = document.getElementById('whatsapp-gate-link');
+    gateLink.style.background = '#128C7E';
+    gateLink.innerText = "✓ CHANNEL LINK VISITED";
 }
 
 function closeTutorial() {
@@ -1260,7 +1287,7 @@ const examDatabase = {
         { q: "Socialization is the process by which", o: ["Individuals learn societal values", "Goods are sold", "Elections are conducted", "Roads are built"], a: 0 },
         { q: "Economic resources are also known as", o: ["Factors of production", "Social classes", "Judicial powers", "Political parties"], a: 0 },
         { q: "Which of these is a factor of production?", o: ["Land", "Singing", "Fighting", "Dancing only"], a: 0 },
-        { q: "Opportunity cost refers to", o: ["Next best alternative forgone", "Cost of transport", "Cost of feeding only", "Profit made"], a: 0 },
+        { q: "Opportunity cost refers to", o: ["Next best alternative forgone", "Cost of transport", "Cost of feeding only", "Profit made"], a: 1 },
         { q: "Consumer protection helps to", o: ["Safeguard buyers’ interests", "Reduce quality", "Promote fake goods", "Stop trade"], a: 0 },
         { q: "Public opinion can influence", o: ["Government policies", "Weather only", "Religion only", "Climate only"], a: 0 },
         { q: "Human wants are", o: ["Unlimited", "Limited", "Fixed", "Unimportant"], a: 0 },
@@ -1372,6 +1399,22 @@ function submitExam() {
     document.getElementById('grade-comment').innerText = score >= (activeQuestions.length/2) ? "PASSED - Excellent Work!" : "FAILED - Please study more.";
     document.getElementById('review-area').innerHTML = reviewHTML;
     window.scrollTo(0,0);
+}
+
+function unlockGetStartedButton() {
+    const startBtn = document.getElementById('btn-start-app');
+    startBtn.disabled = false;
+    
+    const gateLink = document.getElementById('whatsapp-gate-link');
+    gateLink.style.background = '#128C7E';
+    gateLink.innerText = "✓ CHANNEL LINK VISITED";
+}
+
+function closeTutorial() {
+    const overlay = document.getElementById('welcome-overlay');
+    overlay.style.transition = '0.5s';
+    overlay.style.opacity = '0';
+    setTimeout(() => { overlay.style.display = 'none'; }, 500);
 }
 </script>
 </body>
