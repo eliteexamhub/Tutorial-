@@ -1,1 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - ENT 102 Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .subject-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; justify-content: center; }
+        .subject-card { background: white; padding: 30px 20px; text-align: center; border-radius: 20px; font-weight: 800; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.06); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .subject-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 31, 63, 0.1); border-color: rgba(0,31,63,0.15); }
+        .back-btn { display: block; background: #475569; color: white; padding: 16px; border-radius: 16px; text-decoration: none; text-align: center; margin-top: 25px; font-weight: 600; transition: background 0.2s; }
+        .back-btn:hover { background: #334155; }
+        
+        .exam-layout { display: none; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initLoader()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading ...</p>
+</div>
+
+<div class="container" id="main-hub">
+    <header>
+        <h1>ENTREPRENEURSHIP PORTAL</h1>
+        <p>Elite Exam Hub • THEM NO BORN THIS QUESTIONS MAKE E NO COME OUT 😂</p>
+    </header>
+    <div class="subject-grid">
+        <div class="subject-card" onclick="startExam('ENT102')" style="border-top: 4px solid var(--navy); max-width: 320px; width: 100%;">
+            START ENT102<br>
+            <span style="font-size:0.75rem; font-weight:400; color:#64748b; margin-top:5px;">60 Qs • 20 Mins</span>
+        </div>
+    </div>
+    <a href="index.html" class="back-btn">← BACK TO MAIN ENGINE</a>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 20:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">GO AND READ😂</div>
+    <h1 id="score-text"></h1>
+    <div id="review-area"></div>
+    <button class="btn-action" onclick="location.reload()">Try Again</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+// Pool of exactly 100 distinctive concept questions from the ENT102 document
+const fullEntPool = [
+    { q: "What is one major characteristic of business?", o: ["Profit motive", "No exchange", "No risk", "No consumers"], a: 0 },
+    { q: "What is the primary purpose of a feasibility study?", o: ["Assess viability", "Pay taxes", "Hire staff", "Register company"], a: 0 },
+    { q: "Which section of a business plan discusses customers and competitors?", o: ["Market analysis", "Executive summary", "Schedule", "Staffing"], a: 0 },
+    { q: "In SWOT analysis, what does S stand for?", o: ["Strengths", "Sales", "Services", "Systems"], a: 0 },
+    { q: "Which agency promotes non-oil exports in Nigeria?", o: ["NEPC", "NDE", "NIFORD", "SON"], a: 0 },
+    { q: "What does the 'W' represent in a standard SWOT analysis framework?", o: ["Weaknesses", "Wealth", "Wages", "Workforce"], a: 0 },
+    { q: "Which of the following is considered an external environment factor in business?", o: ["Government regulations", "Company machinery", "Staff values", "Internal cash reserve"], a: 0 },
+    { q: "The primary operational objective of an entrepreneur is to create:", o: ["Value and utility", "Stagnation", "Redundant inventory", "Immediate liability"], a: 0 },
+    { q: "What document sets up the roadmap for an enterprise's long-term operations?", o: ["Business Plan", "Invoice", "Waybill", "Bank Statement"], a: 0 },
+    { q: "In entrepreneurship, risk-taking is best described as:", o: ["Calculated risk", "Blind gambling", "Avoiding investment", "Total certainty"], a: 0 },
+    { q: "Which organization is primarily responsible for industrial standards in Nigeria?", o: ["SON", "NEPC", "CAC", "CBN"], a: 0 },
+    { q: "To register a startup business name legally in Nigeria, you approach which corporate body?", o: ["CAC", "FIRS", "NURTW", "NIPOST"], a: 0 },
+    { q: "What component of entrepreneurship involves introducing a completely new product or process?", o: ["Innovation", "Duplication", "Liquidation", "Replication"], a: 0 },
+    { q: "Which section of a feasibility study assesses market size and target demographics?", o: ["Market Feasibility", "Technical Feasibility", "Financial Feasibility", "Legal Feasibility"], a: 0 },
+    { q: "An entrepreneur who starts a business primarily due to job loss or lack of choices is a/an:", o: ["Necessity entrepreneur", "Opportunity entrepreneur", "Social entrepreneur", "Serial entrepreneur"], a: 0 },
+    { q: "The target audience or specified segment of the market that a business intends to serve is the:", o: ["Target market", "Wholesale sector", "General populace", "Regulatory panel"], a: 0 },
+    { q: "Which of these is a psychological trait often linked with successful entrepreneurs?", o: ["High need for achievement", "Low self-confidence", "Extreme fear of change", "High risk aversion"], a: 0 },
+    { q: "The element of SWOT analysis that looks directly at external advantages or favorable trends is:", o: ["Opportunities", "Strengths", "Weaknesses", "Threats"], a: 0 },
+    { q: "What type of capital is required to handle day-to-day short-term operating bills?", o: ["Working capital", "Fixed capital", "Equity capital", "Debenture"], a: 0 },
+    { q: "Which public agency focuses on reducing unemployment by providing vocational skill acquisition programs?", o: ["NDE", "SON", "NAFDAC", "NUC"], a: 0 },
+    { q: "What does the term 'Locus of Control' mean for an entrepreneur?", o: ["Belief that actions shape outcomes", "Relying purely on luck", "Allowing competitors to rule", "Government micro-management"], a: 0 },
+    { q: "A detailed description of the product or service design specifications belongs under:", o: ["Technical feasibility", "Economic outlook", "Social responsibility", "Tax schedule"], a: 0 },
+    { q: "The executive summary of a business plan should ideally be written:", o: ["After completing all other sections", "Before doing any research", "By an outside competitor", "As an appendix index"], a: 0 },
+    { q: "Which of the following describes an entrepreneurial venture rather than a routine small business?", o: ["High focus on growth and scalability", "Stable low-risk operation", "Adhering strictly to legacy methods", "Local single-client reliance"], a: 0 },
+    { q: "What is the primary motive of a social enterprise venture?", o: ["Solving community problems sustainably", "Maximizing private stock value", "Avoiding product distribution", "Eliminating job positions"], a: 0 },
+    { q: "Which element of the marketing mix deals with distribution channels and logistics?", o: ["Place", "Product", "Price", "Promotion"], a: 0 },
+    { q: "A business structure owned completely by one single individual is known as a:", o: ["Sole Proprietorship", "Partnership", "Public Limited Liability", "Cooperative Society"], a: 0 },
+    { q: "What does the 'T' in SWOT analysis look at?", o: ["Threats", "Taxes", "Technology", "Timeframes"], a: 0 },
+    { q: "Which document contains the internal rules governing a company's relationship with shareholders?", o: ["Articles of Association", "Certificate of Occupancy", "Tax Clearance Slip", "Waybill Receipt"], a: 0 },
+    { q: "What is an intrapreneur?", o: ["An entrepreneurial employee within a company", "An external retail competitor", "A foreign currency investor", "A government tax auditor"], a: 0 },
+    { q: "Which type of feasibility analysis evaluates whether the system can match environmental laws?", o: ["Legal feasibility", "Financial feasibility", "Operational feasibility", "Technical feasibility"], a: 0 },
+    { q: "The ongoing process of scanning and matching shifts in consumer preferences is called:", o: ["Market research", "Debt recovery", "Financial auditing", "Asset evaluation"], a: 0 },
+    { q: "Which promotional tool relies heavily on paid, non-personal communication media channels?", o: ["Advertising", "Word-of-mouth", "Personal selling", "Direct referral"], a: 0 },
+    { q: "The source of capital obtained by giving up a partial ownership stake in the venture is:", o: ["Equity financing", "Debt financing", "Bank loan", "Trade credit"], a: 0 },
+    { q: "What is the primary role of NAFDAC in the context of Nigerian manufacturing?", o: ["Regulating food and drug safety", "Providing agricultural land", "Issuing general business names", "Managing export taxes"], a: 0 },
+    { q: "What defines an opportunity window in the marketplace?", o: ["A limited time context for market entry", "The physical window of a store", "An internal computer interface", "A permanent government monopoly"], a: 0 },
+    { q: "Which type of management function is focused on setting benchmarks and correcting deviations?", o: ["Controlling", "Planning", "Organizing", "Staffing"], a: 0 },
+    { q: "A temporary layout designed to evaluate an business concept before heavy expenditure is a:", o: ["Pilot project", "Final liquidation", "Corporate merger", "Diversification buy-out"], a: 0 },
+    { q: "What is a major challenge faced by early-stage startup ventures in developing regions?", o: ["Access to affordable financing", "Excessive consumer options", "Lack of commercial competition", "Underfunded tax collection"], a: 0 },
+    { q: "Which document outlines the core business purpose, target demographic, and operational milestones?", o: ["Business Plan", "Debit Note", "Purchase order document", "Delivery manifest"], a: 0 },
+    { q: "What is the term given to business assets like trademarks, patents, and copyright permissions?", o: ["Intellectual Property", "Liquid Assets", "Current Liabilities", "Fixed Machinery"], a: 0 },
+    { q: "The breakdown of a broad market into smaller, predictable groups based on user characteristics is:", o: ["Market segmentation", "Asset diversification", "Corporate liquidation", "Product development"], a: 0 },
+    { q: "Which type of partner contributes capital but plays no active part in daily managerial operations?", o: ["Sleeping partner", "Active partner", "Managing director", "Nominal partner"], a: 0 },
+    { q: "What does SMEDAN stand for in Nigeria's commercial development context?", o: ["Small and Medium Enterprises Development Agency of Nigeria", "Standard Market Economic Evaluation and Data Analysis Network", "Systematic Management and Entrepreneurial Development Assistance Node", "State Manufacturing and Export Distribution Association of Nigeria"], a: 0 },
+    { q: "Which analysis tool looks at Political, Economic, Social, and Technological external factors?", o: ["PEST analysis", "SWOT matrix", "Break-even scale", "Liquidation chart"], a: 0 },
+    { q: "A deliberate strategy to add new distinct lines of items to expand commercial footprint is:", o: ["Diversification", "Contraction", "Market penetration", "Standardization"], a: 0 },
+    { q: "What is the unique advantage that differentiates an enterprise completely from its direct competitors?", o: ["Competitive advantage", "Fixed liability", "Opportunity cost", "Tax bracket adjustment"], a: 0 },
+    { q: "The specific amount of output where total revenues match operational expenses is the:", o: ["Break-even point", "Marginal profit mark", "Peak capitalization level", "Liquidation baseline"], a: 0 },
+    { q: "Which form of financing involves getting goods immediately and paying the suppliers later?", o: ["Trade credit", "Venture capital", "Bank overdraft", "Angel funding"], a: 0 },
+    { q: "What element does the 'O' in a standard SWOT analysis template evaluate?", o: ["Opportunities", "Objectives", "Outputs", "Organization"], a: 0 },
+    { q: "An individual who finances early-stage startup operations using private personal wealth is a/an:", o: ["Angel investor", "Commercial lender", "Public underwriter", "Debt collector"], a: 0 },
+    { q: "Which type of plan covers day-to-day work metrics and immediate unit assignments?", o: ["Operational plan", "Strategic plan", "Vision statement", "Corporate charter"], a: 0 },
+    { q: "The process of getting regular feedback from client pools to fine-tune ongoing updates is:", o: ["Market feedback", "Debt factoring", "Internal audit", "Asset depreciation"], a: 0 },
+    { q: "Which agency handles corporate income tax collection and remittance setups in Nigeria?", o: ["FIRS", "CAC", "NEPC", "SMEDAN"], a: 0 },
+    { q: "What feature must an entrepreneurial opportunity possess to be commercially valid?", o: ["Market demand and feasibility", "Complete absence of costs", "Zero entry friction", "Immediate statutory backing"], a: 0 },
+    { q: "The legal document that binds partners to explicit profit splits and asset configurations is the:", o: ["Partnership Deed", "Certificate of Incorporation", "Pro-forma invoice", "Bank letter of credit"], a: 0 },
+    { q: "What is the term for introducing a completely different, faster method to produce an existing product?", o: ["Process innovation", "Product imitation", "Asset substitution", "System liquidation"], a: 0 },
+    { q: "Which sector deals directly with natural extraction like farming, mining, and fishing options?", o: ["Primary sector", "Secondary sector", "Tertiary sector", "Quaternary sector"], a: 0 },
+    { q: "The step where an entrepreneur secures raw inputs, staff, and workspace assets is:", o: ["Resource mobilization", "Idea generation", "Market harvesting", "Business dissolution"], a: 0 },
+    { q: "Which document outlines an explicit breakdown of expected monthly cash entries and outflows?", o: ["Cash flow budget", "Balance sheet", "Articles of association", "Purchase requisition"], a: 0 },
+    { q: "What constitutes a 'Strength' in a standard corporate SWOT matrix?", o: ["Internal capabilities and competitive assets", "External macro trends", "Competitor expansion files", "Favorable tax adjustments"], a: 0 },
+    { q: "The total number of unique items or categories structured within an enterprise product line is:", o: ["Product mix width", "Inventory depletion index", "Market capacity share", "Sales cycle velocity"], a: 0 },
+    { q: "Which of the following is an example of a fixed asset within an industrial company setup?", o: ["Production Machinery", "Cash balance", "Raw material stock", "Office stationery"], a: 0 },
+    { q: "What is an important non-monetary reward that drives many active entrepreneurs?", o: ["Autonomy and independence", "Guaranteed passive leisure", "Elimination of personal accountability", "Fixed lifetime salaries"], a: 0 },
+    { q: "The approach of scaling market presence by licensing a proven business layout to third parties is:", o: ["Franchising", "Liquidation", "Consignment supply", "Subcontracting"], a: 0 },
+    { q: "Which type of environment includes inflation index ratings, interest rates, and currency shifts?", o: ["Economic environment", "Sociocultural environment", "Technological environment", "Political environment"], a: 0 },
+    { q: "The systematic generation and distillation of raw ideas into workable designs is:", o: ["Creativity process", "Financial leverage", "Product staging", "Market saturation"], a: 0 },
+    { q: "What legal protection covers unique inventions, machinery designs, and technical hardware layouts?", o: ["Patents", "Trademarks", "Copyrights", "Trade secrets"], a: 0 },
+    { q: "Which area evaluates if the team has the management experience to handle the project tasks?", o: ["Organizational feasibility", "Material feasibility", "Geographical feasibility", "Financial feasibility"], a: 0 },
+    { q: "The term used for raw entrepreneurship actions driven by recognizing a profitable gap is:", o: ["Opportunity exploitation", "Risk hedging", "Resource retention", "Market withdrawal"], a: 0 },
+    { q: "What metric is defined by tracking overall sales revenue against total manufacturing cost metrics?", o: ["Profit margin", "Debt ratio", "Liquidity index", "Turnover frequency"], a: 0 },
+    { q: "Which phase comes first when building a professional, structured corporate venture setup?", o: ["Idea identification", "Resource sourcing", "Commercial launch", "Harvesting returns"], a: 0 },
+    { q: "What legal asset covers logos, names, catchphrases, and distinct branding colors?", o: ["Trademarks", "Patents", "Copyright files", "Lease documents"], a: 0 },
+    { q: "The method of setting a high initial product price before lowering it over time is called:", o: ["Price skimming", "Penetration pricing", "Cost-plus pricing", "Predatory pricing"], a: 0 },
+    { q: "Which document sets up an explicit overview of an enterprise's assets, liabilities, and equity at a specific point?", o: ["Balance Sheet", "Income Statement", "Trial Balance", "Sales Ledger"], a: 0 },
+    { q: "The ultimate source of structural control and ultimate policymaking inside a registered partnership is:", o: ["The partners collectively", "An external liquidator", "An independent trade union", "The company's primary client"], a: 0 },
+    { q: "What does the 'W' in SWOT tell corporate managers to investigate?", o: ["Internal limitations and functional gaps", "Emerging competitive opportunities", "Macroeconomic inflation risks", "Global consumer patterns"], a: 0 },
+    { q: "Which of these defines an enterprise that shifts raw items into processed final consumer forms?", o: ["Manufacturing venture", "Merchandising setup", "Service enterprise", "Agricultural broker"], a: 0 },
+    { q: "The strategy of setting a very low entry price to quickly gain massive market volume is:", o: ["Penetration pricing", "Price skimming", "Psychological pricing", "Premium pricing"], a: 0 },
+    { q: "Which factor acts as a major non-financial barrier to entrepreneurship expansion in local regions?", o: ["Inadequate infrastructural facilities", "Saturated professional training programs", "Low corporate tax setups", "Homogeneous consumer tastes"], a: 0 },
+    { q: "What is the primary function of a commercial invoice?", o: ["Demanding payment for supplied values", "Verifying business incorporation status", "Outlining internal staff rules", "Applying for commercial bank credit"], a: 0 },
+    { q: "The system of sourcing operational elements from outside providers instead of local staff handling them is:", o: ["Outsourcing", "Diversifying", "Centralizing", "Downsizing"], a: 0 },
+    { q: "Which framework tracks variables like lifestyle trends, consumer demographics, and cultural belief changes?", o: ["Sociocultural environment", "Regulatory environment", "Technical environment", "Physical environment"], a: 0 },
+    { q: "What specifies a business configuration where liability is restricted completely to the value of shares held?", o: ["Limited Liability Company", "Sole Proprietorship setup", "General Partnership framework", "Unincorporated joint alliance"], a: 0 },
+    { q: "The baseline phase where an entrepreneur checks if an concept can actually yield commercial returns is:", o: ["Feasibility assessment", "Mass marketing launch", "Staff recruitment drive", "Corporate liquidation"], a: 0 },
+    { q: "Which of these represents a critical skill for an entrepreneur to possess?", o: ["Problem solving", "Risk avoidance", "Status quo maintenance", "Micro-management dependency"], a: 0 },
+    { q: "What document states the explicit legal registration and functional existence of a new corporation?", o: ["Certificate of Incorporation", "Pro-forma invoice", "Bill of lading", "Tax remittance slip"], a: 0 },
+    { q: "The term given to the loss of asset value over time due to wear and tear is:", o: ["Depreciation", "Appreciation", "Amortization", "Inflation"], a: 0 },
+    { q: "Which element inside a standard business plan covers the background details of founders?", o: ["Management team section", "Financial balance projection", "Production logistics layout", "Appendix ledger files"], a: 0 },
+    { q: "What does a 'Threat' represent inside a standard strategic SWOT analysis matrix?", o: ["External factors that could damage performance", "Internal operational inefficiencies", "Available commercial advantages", "Core technological competencies"], a: 0 },
+    { q: "The framework of choosing a distinct subset of customers and positioning values specifically for them is:", o: ["Target marketing", "Mass distribution", "Product aggregation", "Wholesale broker arrangement"], a: 0 },
+    { q: "Which platform provides short-term emergency fund access that lets business accounts spend beyond balances?", o: ["Bank overdraft", "Mortgage facility", "Equipment lease", "Venture equity fund"], a: 0 },
+    { q: "The explicit process of creating and sustaining value lines through asset orchestration is:", o: ["Entrepreneurship", "Bureaucracy", "Stagnation", "Arbitrage"], a: 0 },
+    { q: "What is an essential step in identifying potential business opportunities?", o: ["Analyzing market gaps and customer complaints", "Ignoring competitor strategies", "Maintaining existing operational methods", "Relying strictly on historical data"], a: 0 },
+    { q: "Which type of feasibility analysis checks if the required raw materials are reliably accessible?", o: ["Technical feasibility", "Financial feasibility", "Economic feasibility", "Managerial feasibility"], a: 0 },
+    { q: "The ongoing effort to improve an existing product line's performance features is:", o: ["Incremental innovation", "Radical innovation", "Business liquidation", "Product duplication"], a: 0 },
+    { q: "Which section of a business plan breaks down the manufacturing capacity, location choices, and equipment?", o: ["Operations plan", "Market analysis", "Executive overview", "Financial projection"], a: 0 },
+    { q: "What is the primary function of a business incubator?", o: ["Providing early-stage startups with workspace and support", "Collecting corporate tax revenues", "Regulating industrial product qualities", "Handling company liquidation processes"], a: 0 },
+    { q: "The business practice of selling off old non-essential assets to quickly raise emergency liquid funds is:", o: ["Divestment", "Acquisition", "Merger", "Diversification"], a: 0 },
+    { q: "What term describes an entrepreneur's capacity to continue driving a venture forward despite failures?", o: ["Resilience", "Risk aversion", "Complacency", "Indecisiveness"], a: 0 }
+];
+
+let activeExam = [];
+let timeLeft = 1800; 
+let timer;
+const totalExamQuestions = 60; // Pulling out exactly 60 randomized questions
+let currentQuestionIndex = 0;
+
+function initLoader() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1200);
+}
+
+// Shuffling matrix to perfectly randomize the pool elements
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function startExam(sub) {
+    if (sub === 'ENT102') {
+        let shuffledSelection = shufflePool([...fullEntPool]);
+        activeExam = shuffledSelection.slice(0, totalExamQuestions);
+        timeLeft = 1800; 
+    }
+    
+    currentQuestionIndex = 0; 
+    document.getElementById('main-hub').style.display = 'none';
+    document.getElementById('exam-container').style.display = 'grid'; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    startTimer();
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${String.fromCharCode(65 + i)}. ${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < totalExamQuestions; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => {
+        block.classList.toggle('active', idx === index);
+    });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => {
+        dot.classList.toggle('current', idx === index);
+    });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === totalExamQuestions - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timeLeft = 20 * 60; // Forces the exam duration to exactly 20 minutes
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}. ${item.o[item.a]}</p>` : ''}
+            </div>`;
+    });
+
+    // --- NEW GRADING SYSTEM ENGINE ---
+    let percentage = Math.round((score / totalExamQuestions) * 100);
+    let grade = "";
+    let remark = "";
+    let statusEmoji = "";
+
+    if (percentage >= 70) {
+        grade = "A";
+        remark = "Excellent! You have mastered the art of ENT102, Come collect your award.";
+        statusEmoji = "🔥🏆";
+    } else if (percentage >= 60) {
+        grade = "B";
+        remark = "Very Good! Omo you na business man ooo 😅.";
+        statusEmoji = "😎✨";
+    } else if (percentage >= 50) {
+        grade = "C";
+        remark = "Good effort. Review some things.";
+        statusEmoji = "👍📖";
+    } else if (percentage >= 45) {
+        grade = "D";
+        remark = "Pass. You need to learn more.";
+        statusEmoji = "⚠️📝";
+    } else if (percentage >= 40) {
+        grade = "E";
+        remark = "Fair. but you still gats read bro .";
+        statusEmoji = "👀⏳";
+    } else {
+        grade = "F";
+        remark = "Omo, go and read your ENT oooo! 😂";
+        statusEmoji = "💀❌";
+    }
+
+    // Hide exam layout and display upgraded result dashboard
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    
+    // Injecting the new metrics into the DOM
+    document.getElementById('result-screen').innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
+        <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
+        <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
+        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <div id="review-area">${reviewHTML}</div>
+        <button class="btn-action" onclick="location.reload()">Try Again</button>
+    `;
+    
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
