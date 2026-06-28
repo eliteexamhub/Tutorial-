@@ -736,6 +736,50 @@
         <div class="subject-grid">
             <div class="subject-card" onclick="startExam('GST102')">GST102</div>
             <div class="subject-card" onclick="startExam('GST104')">GST104<br><p>Philosophy Of Science</p></div>
+            <!-- Tiny animation controller -->
+<style>
+    @keyframes mathathonGlowBounce {
+        0% {
+            transform: translateY(0) scale(1);
+            box-shadow: 0 0 15px rgba(56, 118, 29, 0.6), 0 0 30px rgba(0, 31, 63, 0.4);
+        }
+        50% {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(56, 118, 29, 0.9), 0 0 50px rgba(56, 118, 29, 0.6);
+        }
+        100% {
+            transform: translateY(0) scale(1);
+            box-shadow: 0 0 15px rgba(56, 118, 29, 0.6), 0 0 30px rgba(0, 31, 63, 0.4);
+        }
+    }
+</style>
+
+<!-- The Captivating Button -->
+<div style="text-align: center; margin: 35px 0;">
+    <a href="https://whatsapp.com/channel/0029Vb8JIobGZNCkdFuLKp3S" target="_blank" style="
+        display: inline-block;
+        padding: 20px 45px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #ffffff;
+        text-transform: uppercase;
+        text-decoration: none;
+        letter-spacing: 2px;
+        background: linear-gradient(135deg, #38761d 0%, #001f3f 50%, #38761d 100%);
+        background-size: 200% auto;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50px;
+        cursor: pointer;
+        animation: mathathonGlowBounce 2s infinite ease-in-out;
+        transition: filter 0.2s;
+    "
+    onmouseover="this.style.filter='brightness(1.2)';"
+    onmouseout="this.style.filter='brightness(1)';">
+        🚀 JOIN THE MATHATHON 🚀
+    </a>
+</div>
+            
             
             
             <a href="more.html" class="more-btn">SEE MORE COURSES →</a>
