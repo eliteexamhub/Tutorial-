@@ -1,1 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - Portal Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .subject-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; justify-content: center; }
+        .subject-card { background: white; padding: 30px 20px; text-align: center; border-radius: 20px; font-weight: 800; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.06); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .subject-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 31, 63, 0.1); border-color: rgba(0,31,63,0.15); }
+        .back-btn { display: block; background: #475569; color: white; padding: 16px; border-radius: 16px; text-decoration: none; text-align: center; margin-top: 25px; font-weight: 600; transition: background 0.2s; }
+        .back-btn:hover { background: #334155; }
+        
+        .exam-layout { display: none; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initLoader()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading ...</p>
+</div>
+
+<div class="container" id="main-hub">
+    <header>
+        <h1>EXAMINATION PORTAL</h1>
+        <p>Elite Exam Hub • Testing Database</p>
+    </header>
+    <div class="subject-grid">
+        <div class="subject-card" onclick="startExam('EXAM')" style="border-top: 4px solid var(--navy); max-width: 320px; width: 100%;">
+            START EXAMINATION<br>
+            <span style="font-size:0.75rem; font-weight:400; color:#64748b; margin-top:5px;">40 Qs • 30 Mins</span>
+        </div>
+    </div>
+    <a href="index.html" class="back-btn">← BACK TO MAIN ENGINE</a>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 30:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">GO AND READ😂</div>
+    <h1 id="score-text"></h1>
+    <div id="review-area"></div>
+    <button class="btn-action" onclick="location.reload()">Try Again</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+const fullMthPool = [
+    { q: "When a lump of calcium carbide is dropped in water, the gas produced is ___________", o: ["ethene", "ethyne", "ethane", "methane"], a: 1 },
+    { q: "Dehydration of 1-propanol with excess conc. H2SO4 at 140°C yields ___________", o: ["propene", "epoxypropane", "dipropyl ether", "propanal"], a: 2 },
+    { q: "Lucas reagent is a mixture of ___________", o: ["conc.HCl and anhydrous ZnCl2", "conc.HNO3 and anhydrous ZnCl2", "conc.HCl and hydrous ZnCl2", "conc.H2SO4 and anhydrous ZnCl2"], a: 0 },
+    { q: "The reaction of sodium ethoxide with ethyl iodide to form diethyl ether is known as ___________", o: ["Wurtz reaction", "Cannizzaro reaction", "Kolbe's reaction", "Williamson synthesis"], a: 3 },
+    { q: "Epoxides are also known as ___________", o: ["Oxitanes", "Oxiranes", "Oxetanes", "Dioxanes"], a: 1 },
+    { q: "Ozonolysis of 2-methylbutene gives ___________", o: ["Acetone and Ethanal", "Propanone and Propanal", "Ethanal and Propanal", "Butanone and Methanal"], a: 0 },
+    { q: "Phenol reacts with FeCl3 solution to give a ___________ color complex.", o: ["Red", "Green", "Violet", "Yellow"], a: 2 },
+    { q: "The standard method used for the structural determination of organic compounds is ___________", o: ["Spectroscopy", "Chromatography", "Distillation", "Crystallization"], a: 0 },
+    { q: "The basic principle of chromatography is ___________", o: ["Differential solubility", "Differential partition between phases", "Volatility differences", "Melting point differences"], a: 1 },
+    { q: "The mechanism of chlorination of methane in the presence of sunlight involves ___________", o: ["Carbanion intermediate", "Carbocation intermediate", "Free radical intermediate", "Carbene intermediate"], a: 2 },
+    { q: "Which of the following is an ortho-para-directing group in electrophilic aromatic substitution?", o: ["NO2", "COOH", "OCH3", "CHO"], a: 2 },
+    { q: "An organic compound contains 40% Carbon, 6.67% Hydrogen, and the rest Oxygen. What is its empirical formula?", o: ["CH2O", "CHO", "C2H4O2", "CH4O"], a: 0 },
+    { q: "The functional isomer of an alcohol is an ___________", o: ["Aldehyde", "Ketone", "Ether", "Ester"], a: 2 },
+    { q: "Which of the following statements is true about a meso compound?", o: ["It is optically active because it contains chiral centers.", "It is optically inactive due to external compensation.", "It contains chiral centers but is optically inactive due to an internal plane of symmetry.", "It contains no chiral centers."], a: 2 },
+    { q: "Which of the following compounds is a secondary 2°C amine?", o: ["Methylamine", "Dimethylamine", "Trimethylamine", "Aniline"], a: 1 },
+    { q: "What is the IUPAC name of the compound CH3CH2NHCH3?", o: ["Ethyl methyl amine", "N-methylethanamine", "N-ethylmethanamine", "Ethylmethylamine"], a: 1 },
+    { q: "The reaction of an amide with bromine and potassium hydroxide KOH to yield a primary amine with one less carbon atom is known as ___________", o: ["Gabriel phthalimide synthesis", "Hoffmann degradation", "Schmidt reaction", "Curtius rearrangement"], a: 1 },
+    { q: "Which of the following functional groups undergoes the Hinsberg test to yield a product that is soluble in alkali?", o: ["Primary amine", "Secondary amine", "Tertiary amine", "Amide"], a: 0 },
+    { q: "Diazotization of primary aromatic amines is carried out using nitrous acid HONO at what temperature range?", o: ["0°C - 5°C", "25°C - 30°C", "50°C - 60°C", "100°C"], a: 0 },
+    { q: "Carbohydrates that cannot be hydrolyzed into simpler carbohydrates are called ___________", o: ["Disaccharides", "Oligosaccharides", "Monosaccharides", "Polysaccharides"], a: 2 },
+    { q: "Which of the following is a non-reducing sugar?", o: ["Glucose", "Fructose", "Maltose", "Sucrose"], a: 3 },
+    { q: "Glucose and Fructose are ___________ of each other.", o: ["Epimers", "Functional isomers", "Anomers", "Enantiomers"], a: 1 },
+    { q: "The specific linkage that joins two monosaccharide units together to form a disaccharide is called a/an ___________", o: ["Peptide bond", "Ester linkage", "Glycosidic bond", "Phosphodiester bond"], a: 2 },
+    { q: "Which test can specifically be used to distinguish an aldose sugar from a ketose sugar?", o: ["Barfoed's test", "Seliwanoff's test", "Bial's test", "Iodine test"], a: 1 },
+    { q: "Which of the following carbohydrates is structurally classified as a polysaccharide?", o: ["Lactose", "Galactose", "Glycogen", "Ribose"], a: 2 },
+    { q: "Amino acids are linked together in proteins by ___________ bonds.", o: ["Glycosidic", "Peptide", "Ester", "Hydrogen"], a: 1 },
+    { q: "Which of the following amino acids contains a sulfur atom in its side chain?", o: ["Alanine", "Glycine", "Methionine", "Serine"], a: 2 },
+    { q: "The process of disrupting a protein's native three-dimensional structure without breaking its primary peptide bonds is called ___________", o: ["Hydrolysis", "Renaturation", "Denaturation", "Polymerization"], a: 2 },
+    { q: "One of the following is not a type of spectrum produced by spectroscopy ________", o: ["Continuous spectrum", "Metacstable spectrum", "Emission lines", "Absorption spectrum"], a: 1 },
+    { q: "When a lump of calcium carbide is dropped into water in a container and the gas produced is passed through a jet and then lighted, the flame produced is called_______", o: ["oxymethane flame", "oxyethane flame", "oxyethene flame", "oxyethyne flame"], a: 3 },
+    { q: "Which of the following compounds will not give a positive iodoform reaction?", o: ["CH3CHO", "CH3CH2COCH2CH3", "CH3COCH3", "CH3CH2OH"], a: 1 },
+    { q: "In organic chemistry, reaction mechanism entails a ---------------- reaction process of how reactants are converted to product", o: ["Step-by-step", "fast", "transformational", "bond breaking"], a: 0 },
+    { q: "Which of the following can be used to elongate a sugar chain?", o: ["NH2OH", "HCN", "NABH4", "A and B"], a: 1 },
+    { q: "The only non metal in group IV A is_______", o: ["C", "Si", "Ge", "Cl"], a: 0 },
+    { q: "Which of these components has the lowest boiling point Hexane, Butanone, 1-Decanol, 1-Pentanol, Methane_____", o: ["Hexane", "Methane", "butanone", "1 – Pentanol"], a: 1 },
+    { q: "An epoxide is much more reactive in nucleophilic substitution reactions compared to an ether because----", o: ["chain scissioning", "ring opening", "of the incoming electrophile", "of the strain in carbon-carbon bond"], a: 3 },
+    { q: "The rate determining step of an organic reaction is the ------ reaction rate?", o: ["slow", "fast", "intermediate", "equilibrium"], a: 0 },
+    { q: "The product of the following reaction is: C12H22O11 + Conc H2SO4", o: ["Carbon", "Water", "Carbon and water", "C2H6"], a: 2 },
+    { q: "The compound which forms methanol and sodium methanoate when treated with conc. NaOH is _________", o: ["Ethanal", "Methane", "Propanal", "Methanal"], a: 3 },
+    { q: "The test for reducing sugar with benedict solution is an example of_______", o: ["Addition / reduction reaction", "Oxidation reaction", "Condensation reaction", "Dehydration"], a: 1 },
+    { q: "Heating of sodalime with sodium ethanoate produces____", o: ["Methane", "Ethane", "Propane", "Butane"], a: 0 },
+    { q: "The polarity of ether can be attributed to_________", o: ["the hydrogen bond", "the steric effect", "the dipole moment", "the mesomeric effect"], a: 2 },
+    { q: "Uncontrolled hydrogenation of ethyne yields__", o: ["ethane", "ethene", "propane", "benzene"], a: 0 },
+    { q: "Which of the following favours alkylation of benzene________", o: ["Stability effect", "Electrophilic effect", "Carbonium effect", "inductive effect"], a: 2 },
+    { q: "The bonding system in most organic compound is________", o: ["covalent", "dative", "electrovalent", "hydrogen"], a: 0 },
+    { q: "Infrared spectroscopy is basically meant for the analysis of________", o: ["ions", "cations", "Functional group", "Wavelenght of organic compound"], a: 2 },
+    { q: "One mole of a hydrocarbon contains 8 g of hydrogen. If the relative molecular mass is 92, the hydrocarbon is______", o: ["aromatic", "an alkane", "an alkene", "an alkyne"], a: 0 },
+    { q: "The final product of the reaction of propyne with hydrogen bromide is__________", o: ["CH3–C(Br)=CH2", "CH3C(Br)2CH3", "CH3CH2CH(Br)2", "CH3CH(Br)CH2Br"], a: 1 },
+    { q: "The presence of carbon and hydrogen in an organic compound can be estimated by --------- method", o: ["Carius", "Kdjeldal", "Leibig combustion", "Robbinson anulation"], a: 2 },
+    { q: "Formation of ether from an organohalide and a deprotonated alcohol is referred to as?", o: ["alkoxidesynthesis", "organohalide synthesis", "Williamson ether synthesis", "Beckmann ether synthesis"], a: 2 },
+    { q: "A student obtains a solid compound that melts over a wide range (e.g., 105–112°C). This indicates that the compound is ______", o: ["Pure", "Impure", "Highly volatile", "A mixture of liquids"], a: 1 },
+    { q: "Consider the reaction: CH3CH2CH=CH2 → CH3CH2CH(OH)CH2OH. The reagent used for this conversion is_____", o: ["aqueous NH3", "aqueous NaOH", "dil. H2SO4", "acidified KMnO4"], a: 3 },
+    { q: "Secondary and aromatic amines react with HONO to yield_________", o: ["Alcohol and N2 gas", "Nitrosamine", "Salt", "B and C"], a: 1 },
+    { q: "If a compound has observed rotation +12°, concentration 2 g/mL, and path length 1 dm, its specific rotation is ___", o: ["+6°", "+12°", "+24°", "+3°"], a: 0 },
+    { q: "When isomers of the same compound have different functional groups, such is said to have undergone___________", o: ["skeletal isomerism", "functional isomerism", "positional isomerism", "optical isomerism"], a: 1 },
+    { q: "The general molecular formula of ethers is____", o: ["CnH2n+2O", "CnH2n+1O", "CnH2nO", "CnH2n-2O"], a: 0 },
+    { q: "The gas produced when sodium metal is dropped in water is____________", o: ["H2", "O2", "N2", "CO2"], a: 0 },
+    { q: "When one group of an ether has no simple name, the ether is named as an___", o: ["ethoxy derivative", "alkoxy derivative", "epoxy derivative", "ether derivative"], a: 1 },
+    { q: "The following are isomers of D-glucose except__________________", o: ["D-Sorbitol", "L-glucose", "D-galactose", "D-fructose"], a: 0 },
+    { q: "The product of elimination reaction in alcohol is________", o: ["alkyne", "alkene", "alkane", "alkanoate"], a: 1 },
+    { q: "Which of the following is a primary amine?", o: ["1,3-pentane diamine", "N – ethyl – N – Methylamine", "Triethylamine", "N,N,3,5-Tretrmethylamine"], a: 0 },
+    { q: "(CH3CO)2O is ____________", o: ["An ether", "An ester", "An anhydride", "An amide"], a: 2 },
+    { q: "The following are true except that group VIA contains____", o: ["a non metal", "a metal", "two semi metals", "two non metals"], a: 3 },
+    { q: "The maximum number of stereoisomers for a compound with 3 chiral centres is ___", o: ["4", "6", "8", "9"], a: 2 },
+    { q: "The most reactive among the following elements is______", o: ["Li", "Be", "B", "D"], a: 0 },
+    { q: "CH3CH2CH2C(CH3)2CH2OH is__________", o: ["2,2-dimethyl-1-butanol", "2-methyl-1-butan-1-ol", "2,2-dimethyl-2-butanol", "2,2-dimethyl-1-pentanol"], a: 3 },
+    { q: "The principle of Benedict's test is that when reducing sugars are heated in the presence of an alkali, they get converted to powerful reducing compounds known as enediols which reduce the cupric ions (Cu2+) present in the Benedict's reagent to cuprous ions (Cu+) which get precipitated. Select the option mapping this context accurately:", o: ["(i) an alkali, (ii) enediols (iii) cupric ions (Cu2+) (iv) cuprous ions (Cu+)", "(i) an acid (ii) ethylene (iii) cupric ions (Cu2+) (iv) cuprous ions (Cu+)", "(i) an alkali, (ii) ethylene (iii) cupric ions (Cu2+) (iv) cuprous ions (Cu+)", "(i) an acid, (ii) enediols (iii) cupric ions (Cu+) (iv) cuprous ions (Cu+2)"], a: 0 }
+];
+
+let activeExam = [];
+let timeLeft = 1800; 
+let timer;
+const totalExamQuestions = 40; 
+let currentQuestionIndex = 0;
+
+function initLoader() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1200);
+}
+
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function startExam(sub) {
+    if (fullMthPool.length === 0) {
+        alert("Please add questions into the database code matrix.");
+        return;
+    }
+    
+    let shuffledSelection = shufflePool([...fullMthPool]);
+    activeExam = shuffledSelection.slice(0, Math.min(totalExamQuestions, fullMthPool.length));
+    timeLeft = 1800; 
+    
+    currentQuestionIndex = 0; 
+    document.getElementById('main-hub').style.display = 'none';
+    document.getElementById('exam-container').style.display = 'grid'; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    startTimer();
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < activeExam.length; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => {
+        block.classList.toggle('active', idx === index);
+    });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => {
+        dot.classList.toggle('current', idx === index);
+    });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === activeExam.length - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${item.o[item.a]}</p>` : ''}
+            </div>`;
+    });
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    document.getElementById('score-text').innerText = `${score} / ${activeExam.length}`;
+    document.getElementById('review-area').innerHTML = reviewHTML;
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
