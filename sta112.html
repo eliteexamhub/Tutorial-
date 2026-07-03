@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - STA 112 Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .subject-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; justify-content: center; }
+        .subject-card { background: white; padding: 30px 20px; text-align: center; border-radius: 20px; font-weight: 800; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.06); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .subject-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 31, 63, 0.1); border-color: rgba(0,31,63,0.15); }
+        .back-btn { display: block; background: #475569; color: white; padding: 16px; border-radius: 16px; text-decoration: none; text-align: center; margin-top: 25px; font-weight: 600; transition: background 0.2s; }
+        .back-btn:hover { background: #334155; }
+        
+        .exam-layout { display: none; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initLoader()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading ...</p>
+</div>
+
+<div class="container" id="main-hub">
+    <header>
+        <h1>PROBABILITY & STATISTICS</h1>
+        <p>Elite Exam Hub • THEM NO BORN THIS QUESTIONS MAKE E NO COME OUT 😂</p>
+    </header>
+    <div class="subject-grid">
+        <div class="subject-card" onclick="startExam('STA112')" style="border-top: 4px solid var(--navy); max-width: 320px; width: 100%;">
+            START STA112<br>
+            <span style="font-size:0.75rem; font-weight:400; color:#64748b; margin-top:5px;">60 Qs • 20 Mins</span>
+        </div>
+    </div>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 20:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">GO AND READ😂</div>
+    <h1 id="score-text"></h1>
+    <div id="review-area"></div>
+    <button class="btn-action" onclick="location.reload()">Try Again</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+// Pool of all 104 distinctive configuration questions from the STA112 documentation
+const fullStaPool = [
+    { q: "What is the value of 0! plus 1!?", o: ["0", "1", "2", "6"], a: 2 },
+    { q: "In how many ways can 5 distinct books be arranged on a shelf?", o: ["5", "25", "120", "60"], a: 2 },
+    { q: "Find the number of permutations of 5 distinct objects taken 3 at a time (5P3).", o: ["10", "20", "60", "120"], a: 2 },
+    { q: "How many distinct 3-digit numbers can be formed using the digits 1, 2, and 3 if repetition of digits is allowed?", o: ["6", "9", "27", "81"], a: 2 },
+    { q: "How many distinct permutations can be made from the letters of the word STATISTICS?", o: ["10!", "10! / (3! 3! 2!)", "10! / (3! 2! 2!)", "7!"], a: 1 },
+    { q: "In how many distinct ways can 6 people be seated around a circular table if clockwise and anticlockwise arrangements are considered different?", o: ["720", "120", "24", "60"], a: 1 },
+    { q: "In how many ways can 5 people be arranged in a straight row if two specific individuals must always sit together?", o: ["120", "48", "24", "12"], a: 1 },
+    { q: "What is the main structural difference between a permutation and a combination?", o: ["Permutation does not use factorials", "Order matters in permutations, but order does not matter in combinations", "Combination is only for numbers", "Permutations always result in smaller values than combinations"], a: 1 },
+    { q: "Calculate the value of 6C4 (the number of combinations of 6 items taken 4 at a time).", o: ["15", "30", "360", "24"], a: 0 },
+    { q: "If nC3 = nC5, what is the value of n?", o: ["2", "4", "8", "15"], a: 2 },
+    { q: "If an event is absolutely certain to occur, its probability is equal to:", o: ["-1", "0", "0.5", "1"], a: 3 },
+    { q: "If two events A and B are mutually exclusive, what is P(A ∩ B)?", o: ["P(A) × P(B)", "P(A) + P(B)", "0", "1"], a: 2 },
+    { q: "For two independent events A and B, the multiplication law states that P(A ∩ B) equals:", o: ["P(A) + P(B)", "P(A) × P(B)", "P(A) / P(B)", "P(A) + P(B) - P(A ∩ B)"], a: 1 },
+    { q: "Which of the following is an example of a Discrete Random Variable?", o: ["The exact lifetime of a light bulb", "The height of students in a classroom", "The number of software bugs found in a program", "The daily rainfall in millimeters"], a: 2 },
+    { q: "Which of the following is a key requirement for a valid continuous Probability Density Function (PDF) f(x) over the real line?", o: ["The integral from -∞ to +∞ of f(x) dx must equal 1", "f(x) must be negative everywhere", "f(x) must be equal to 1 for all values of x", "The sum of f(x) must equal 0"], a: 0 },
+    { q: "For a discrete random variable X with a valid Probability Mass Function (PMF), what must the sum of all individual probabilities equal?", o: ["0", "0.5", "1", "Infinity"], a: 2 },
+    { q: "If a continuous random variable X is uniformly distributed between x = 1 and x = 2, what is its constant density function f(x) within this interval?", o: ["0.5", "1", "2", "x"], a: 1 },
+    { q: "The expected value E(X) of a discrete random variable is conceptually equivalent to which statistical measure?", o: ["The population variance", "The sample mode", "The arithmetic mean", "The median"], a: 2 },
+    { q: "If P(X = x) = kx for x = 1, 2, 3 is a valid probability mass function, determine the value of the constant k.", o: ["1/3", "1/6", "1/2", "1"], a: 1 },
+    { q: "What is the probability of obtaining a single specific exact value (e.g., P(X = 3.5)) for a purely continuous random variable?", o: ["0", "0.5", "1", "It depends entirely on the variance"], a: 0 },
+    { q: "Which pillar of inferential statistics is concerned with testing a specific claim about a population parameter?", o: ["Estimation", "Hypothesis Testing", "Descriptive Summary", "Cross-Tabulation"], a: 1 },
+    { q: "A fixed numerical characteristic of an entire population is called a parameter, while its corresponding sample counterpart is called a:", o: ["Variable", "Constant", "Statistic", "Estimator"], a: 2 },
+    { q: "Why is the denominator in the sample variance formula equal to (n - 1) instead of n?", o: ["To make the sample variance an unbiased estimator of the population variance", "To make calculations simpler manually", "To adjust for missing data points", "To ensure the value is always an integer"], a: 0 },
+    { q: "The standard deviation of the sampling distribution of a statistic is commonly referred to as the:", o: ["Variance Error", "Mean Deviation", "Standard Error", "Critical Margin"], a: 2 },
+    { q: "According to the Central Limit Theorem (CLT), the sampling distribution of the sample mean approaches a normal distribution as the sample size increases, provided n is at least:", o: ["5", "10", "30", "100"], a: 2 },
+    { q: "If a population has a mean μ and a variance σ², what is the variance of the sample mean (X̄) for a sample of size n drawn with replacement?", o: ["σ²", "σ / √n", "σ² / n", "n × σ²"], a: 2 },
+    { q: "When the population variance is unknown and the sample size is small (n < 30), which distribution is used to analyze the sample mean?", o: ["Standard Normal (Z) Distribution", "Student's t-distribution", "Poisson Distribution", "Geometric Distribution"], a: 1 },
+    { q: "What is the expected value of the sample proportion, E(p̂)?", o: ["p / n", "p", "pq / n", "√p"], a: 1 },
+    { q: "The standard error of the difference between two independent sample means when population variances are known uses which formula base?", o: ["√(σ₁²/n₁ + σ₂²/n₂)", "σ₁/n₁ + σ₂/n₂", "√(σ₁² + σ₂²)", "(σ₁ + σ₂) / √(n₁ + n₂)"], a: 0 },
+    { q: "If the sample size n increases, what happens to the Standard Error of the Mean?", o: ["It increases proportionally", "It remains completely unchanged", "It decreases", "It fluctuates randomly"], a: 2 },
+    { q: "Which distribution models a fixed number of independent trials (n) with a constant probability of success (p) on each trial?", o: ["Poisson", "Geometric", "Binomial", "Uniform"], a: 2 },
+    { q: "What is the formula for the mean of a Binomial distribution?", o: ["np(1-p)", "np", "√np", "p / n"], a: 1 },
+    { q: "The Geometric distribution models what specific scenario?", o: ["The number of successes in a fixed number of trials", "The number of independent events over a continuous time interval", "The number of independent trials required until the very first success occurs", "The area under a symmetric bell curve"], a: 2 },
+    { q: "In a Poisson distribution, which two statistical measures are exactly equal to each other?", o: ["Mean and Median", "Mean and Variance", "Variance and Standard Deviation", "Mode and Range"], a: 1 },
+    { q: "What are the theoretical values of Skewness and Kurtosis for a perfectly Standard Normal Distribution?", o: ["Skewness = 1, Kurtosis = 3", "Skewness = 0, Kurtosis = 3", "Skewness = 0, Kurtosis = 0", "Skewness = 3, Kurtosis = 0"], a: 1 },
+    { q: "According to the Empirical Rule, approximately what percentage of observations fall within two standard deviations of the mean in a normal distribution?", o: ["68%", "95%", "99.7%", "50%"], a: 1 },
+    { q: "What transformation formula is used to convert a normal random variable X into a Standard Normal variable Z?", o: ["Z = (X - μ) / σ", "Z = (X - σ) / μ", "Z = X - μ", "Z = (X - μ) / √n"], a: 0 },
+    { q: "If X follows a Poisson distribution with an average rate of λ = 4 occurrences per hour, what is the variance of X?", o: ["2", "4", "16", "1"], a: 1 },
+    { q: "What is the expected value E(X) for a Geometric distribution with success probability p?", o: ["p", "1 - p", "1 / p", "1 / p²"], a: 2 },
+    { q: "Which of the following cannot be modeled using a continuous distribution?", o: ["The time until a server crashes", "The exact count of students enrolled in FUOYE", "The temperature inside a modern greenhouse", "The length of a manufactured copper rod"], a: 1 },
+    { q: "What is the primary objective of Exploratory Data Analysis (EDA)?", o: ["To prove hypotheses with 100% certainty", "To maximize the presentation aesthetics of charts", "To maximize insight into a dataset, uncover underlying structures, and detect anomalies", "To skip data collection steps"], a: 2 },
+    { q: "An EDA classification that analyzes one variable without using graphs is called:", o: ["Univariate Graphical EDA", "Multivariate Non-Graphical EDA", "Univariate Non-Graphical EDA", "Bivariate Graphical EDA"], a: 2 },
+    { q: "Which measure of central tendency acts as the physical balance point or fulcrum of a symmetric distribution histogram?", o: ["Median", "Mean", "Mode", "Range"], a: 1 },
+    { q: "Why is the Median preferred over the Mean when analyzing highly skewed data containing extreme outliers?", o: ["The Median is always a larger number", "The Median is a robust measure that is not heavily pulled by outliers", "The Median takes less time to compute manually", "The Median is always equal to the Mode"], a: 1 },
+    { q: "What is the mathematical definition of the Interquartile Range (IQR)?", o: ["Q3 - Q1", "Q4 - Q1", "Maximum - Minimum", "Q3 + Q1"], a: 0 },
+    { q: "In a standard Boxplot, data points are flagged as outliers if they fall beyond how many times the IQR from the hinges?", o: ["1.0 times the IQR", "1.5 times the IQR", "3.0 times the IQR", "2.5 times the IQR"], a: 1 },
+    { q: "What type of plot displays exact raw data values along its rows while simultaneously preserving the visual shape of the sample distribution?", o: ["Histogram", "Scatter Plot", "Stem-and-Leaf Plot", "Boxplot"], a: 2 },
+    { q: "What is the primary function of a Quantile-Normal (Q-Q) Plot?", o: ["To display the correlation between two variables", "To visually assess if a dataset follows a normal distribution", "To calculate the sample mean", "To tabulate categorical data frequencies"], a: 1 },
+    { q: "If a distribution has a long tail pointing toward the right side of the graph, it is classified as having:", o: ["Negative Skewness", "Positive Skewness", "Zero Skewness", "High Excess Kurtosis"], a: 1 },
+    { q: "Cross-tabulation is a non-graphical tool primarily used to analyze relationships between which types of variables?", o: ["Continuous quantitative variables", "Categorical variables", "Complex random functions", "Normal Z-scores"], a: 1 },
+    { q: "Evaluate 5! / 3!", o: ["2", "10", "20", "60"], a: 2 },
+    { q: "In how many ways can a committee of 3 students be selected from a pool of 7 candidates?", o: ["35", "210", "7", "42"], a: 0 },
+    { q: "If a coin is flipped 3 times, what is the total number of outcomes in the sample space?", o: ["3", "6", "8", "9"], a: 2 },
+    { q: "Which statistical measure equals the square root of the variance?", o: ["Interquartile Range", "Standard Deviation", "Range", "Mean Absolute Deviation"], a: 1 },
+    { q: "A distribution that has two distinct peaks is explicitly called:", o: ["Unimodal", "Symmetric", "Bimodal", "Leptokurtic"], a: 2 },
+    { q: "What is the value of 4! × 2!?", o: ["8", "24", "48", "12"], a: 2 },
+    { q: "In how many distinct ways can the letters of the word ELITE be rearranged?", o: ["24", "60", "120", "5"], a: 1 },
+    { q: "Find the value of 8P2 (permutations of 8 items taken 2 at a time).", o: ["16", "56", "28", "64"], a: 1 },
+    { q: "In how many ways can a leadership team of a President and a Secretary be chosen from 10 eligible students?", o: ["45", "90", "100", "20"], a: 1 },
+    { q: "Calculate the value of 10C3.", o: ["120", "720", "30", "45"], a: 0 },
+    { q: "If nC(n-2) = 15, find the value of n.", o: ["5", "6", "7", "8"], a: 1 },
+    { q: "A bag contains 4 red balls and 6 blue balls. If one ball is drawn at random, what is the probability that it is not red?", o: ["0.4", "0.5", "0.6", "1.0"], a: 2 },
+    { q: "If P(A) = 0.35, P(B) = 0.45, and events A and B are mutually exclusive, find P(A ∪ B).", o: ["0.1575", "0.80", "0.10", "0.70"], a: 1 },
+    { q: "The set of all possible outcomes of a statistical experiment is explicitly called the:", o: ["Event Space", "Sample Space", "Population Matrix", "Probability Range"], a: 1 },
+    { q: "If P(A) = 0.4, P(B) = 0.5, and P(A ∩ B) = 0.2, then events A and B are structurally classified as:", o: ["Mutually Exclusive", "Independent", "Dependent", "Continuous"], a: 1 },
+    { q: "If X is a discrete random variable with PMF P(X=x) = kx² for x = 1, 2, 3, find the value of the constant k.", o: ["1/6", "1/14", "1/9", "1/3"], a: 1 },
+    { q: "For a continuous random variable X defined on [0, 2] with PDF f(x) = kx, what must the value of k be?", o: ["0.5", "1", "2", "0.25"], a: 0 },
+    { q: "If a continuous random variable has a PDF f(x) = 0.2e^(-0.2x) for x ≥ 0, what type of distribution does this model?", o: ["Uniform Distribution", "Normal Distribution", "Exponential Distribution", "Poisson Distribution"], a: 2 },
+    { q: "The cumulative distribution function (CDF), denoted as F(x), is mathematically defined as:", o: ["P(X = x)", "P(X ≤ x)", "P(X ≥ x)", "f'(x)"], a: 1 },
+    { q: "What is the value of the integration of a valid probability density function f(x) from x = a to x = a (i.e., P(X = a) for a continuous variable)?", o: ["1", "0.5", "0", "f(a)"], a: 2 },
+    { q: "If E(X) = 5, what is the expected value of the linear transformation E(3X + 2)?", o: ["15", "17", "7", "21"], a: 1 },
+    { q: "If the variance of a random variable X is Var(X) = 4, what is the variance of the transformed variable Var(2X)?", o: ["8", "16", "4", "2"], a: 1 },
+    { q: "For any independent random variables X and Y, the variance property Var(X - Y) is equal to:", o: ["Var(X) - Var(Y)", "Var(X) + Var(Y)", "Var(X) × Var(Y)", "Var(X) / Var(Y)"], a: 1 },
+    { q: "A random variable that can take on any real value within a specified interval or range is classified as:", o: ["Discrete", "Qualitative", "Continuous", "Bimodal"], a: 2 },
+    { q: "Which of the following is not a valid mathematical property of a discrete PMF?", o: ["P(X = x) ≥ 0 for all x", "∑ P(X = x) = 1", "P(X = x) can be greater than 1 for highly frequent values", "The values of X can be negative integers"], a: 2 },
+    { q: "The collection of all items or individuals under statistical study is called the:", o: ["Sample Subset", "Population", "Sample Matrix", "Focus Group"], a: 1 },
+    { q: "Which of the following statements about a population parameter is true?", o: ["It changes with every sample selected", "It is a fixed, usually unknown constant numerical value", "It is always calculated from sample standard deviations", "It is an estimate with an intrinsic standard error"], a: 1 },
+    { q: "A sampling method where every sample of size n has an equal chance of being selected from the population is called:", o: ["Stratified Sampling", "Simple Random Sampling", "Judgmental Sampling", "Quota Sampling"], a: 1 },
+    { q: "The sampling distribution of a sample statistic describes:", o: ["The layout of a single sample data set", "The probability distribution of the values a statistic takes across all possible samples of the same size", "The exact shape of the population histogram", "The error margins of manual data entry"], a: 1 },
+    { q: "If the sample size n is multiplied by 4, what happens to the Standard Error of the mean (σ / √n)?", o: ["It is doubled", "It is cut in half", "It remains completely unchanged", "It is multiplied by 4"], a: 1 },
+    { q: "For a sample size of n = 100 drawn from a population with variance σ² = 400, calculate the standard error of the sample mean.", o: ["4", "2", "40", "20"], a: 1 },
+    { q: "When constructing a Student's t-distribution for a single sample mean of size n, the degrees of freedom (df) are given by:", o: ["n", "n - 1", "n - 2", "√n"], a: 1 },
+    { q: "As the sample size n becomes very large, the Student's t-distribution visually and mathematically converges to the:", o: ["Poisson Distribution", "Standard Normal (Z) Distribution", "Binomial Distribution", "Uniform Distribution"], a: 1 },
+    { q: "If two independent samples have sizes n₁ = 15 and n₂ = 15, what are the total degrees of freedom used for a pooled-variance t-test?", o: ["30", "29", "28", "14"], a: 2 },
+    { q: "The variance of the sample proportion distribution is given by which mathematical formula?", o: ["pq", "pq / n", "√(pq/n)", "n × pq"], a: 1 },
+    { q: "In a Binomial distribution with n = 20 and p = 0.4, find the variance.", o: ["8", "4.8", "12", "2.4"], a: 1 },
+    { q: "If a fair six-sided die is rolled repeatedly, which distribution models the number of rolls needed to get the first '6'?", o: ["Binomial Distribution", "Poisson Distribution", "Geometric Distribution", "Normal Distribution"], a: 2 },
+    { q: "The Poisson distribution is most appropriate for modeling:", o: ["The proportion of male vs female students in a class", "The number of phone calls received by a call center per minute", "The exact weights of agricultural products", "The outcome of a single coin flip"], a: 1 },
+    { q: "If a random variable X follows a Normal distribution, what measure occupies the exact center point of peak symmetry?", o: ["The mean only", "The median only", "The mean, median, and mode simultaneously", "The standard deviation"], a: 2 },
+    { q: "What is the total area bounded under the standard normal curve y = f(z) above the horizontal axis?", o: ["0.5", "3.1416", "1.0", "Infinity"], a: 2 },
+    { q: "A normal distribution with a mean of 0 and a standard deviation of 1 is explicitly called the:", o: ["Central Limit Distribution", "Standard Normal Distribution", "Student's t-distribution", "Uniform Density Distribution"], a: 1 },
+    { q: "According to the empirical rule, approximately what percentage of data falls within 1 standard deviation of the mean in a normal distribution?", o: ["50%", "68%", "95%", "99.7%"], a: 1 },
+    { q: "If X ~ Poisson(λ = 2.5), what is the mean value of this distribution?", o: ["5.0", "2.5", "√2.5", "1.25"], a: 1 },
+    { q: "Which distribution is uniquely defined by a single parameter representing both its mean and its variance?", o: ["Binomial", "Geometric", "Poisson", "Normal"], a: 2 },
+    { q: "If the probability of success on a single trial is p = 0.20, what is the probability of failing on that trial?", o: ["0.20", "0.50", "0.80", "0.04"], a: 2 },
+    { q: "Sorting data arrays into summary counts using a table structure of rows and columns for categorical factors is called:", o: ["Normalization", "Cross-Tabulation", "Variance Pooling", "Linear Regression"], a: 1 },
+    { q: "Which type of EDA utilizes charts, plots, and graphs to inspect a single variable at a time?", o: ["Univariate Non-Graphical EDA", "Univariate Graphical EDA", "Multivariate Graphical EDA", "Multivariate Non-Graphical EDA"], a: 1 },
+    { q: "The arithmetic mean of a dataset can be severely distorted by the presence of:", o: ["Small sample sizes", "Large numbers of categories", "Extreme outliers", "Perfectly symmetric data points"], a: 2 },
+    { q: "Which metric partitions an ordered dataset into two equal halves so that 50% of values sit above it and 50% sit below it?", o: ["Arithmetic Mean", "Median", "Mode", "Range"], a: 1 },
+    { q: "If a dataset consists of values: 5, 5, 7, 10, 15, what is the mode?", o: ["5", "7", "8.4", "10"], a: 0 },
+    { q: "In a boxplot diagram, the central box itself stretches directly from which two data locations?", o: ["The Minimum to the Maximum", "The First Quartile (Q1) to the Third Quartile (Q3)", "Mean minus 1 Standard Deviation to Mean plus 1 Standard Deviation", "The Median to the Mode"], a: 1 },
+    { q: "The absolute difference between the largest value and the smallest value in a sample dataset is defined as the:", o: ["Variance", "Interquartile Range", "Range", "Deviation"], a: 2 },
+    { q: "A statistical measure of the asymmetry of a distribution's shape around its central mean is called:", o: ["Kurtosis", "Skewness", "Covariance", "Standard Deviation"], a: 1 },
+    { q: "A distribution with a sharp, highly elevated central peak and heavy, fat tails relative to a normal curve is described as:", o: ["Platykurtic", "Mesokurtic", "Leptokurtic", "Symmetric"], a: 2 }
+];
+
+let activeExam = [];
+let timeLeft = 1200; // Forces the countdown duration to exactly 20 minutes (20 * 60)
+let timer;
+const totalExamQuestions = 60; 
+let currentQuestionIndex = 0;
+
+function initLoader() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1200);
+}
+
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function startExam(sub) {
+    if (sub === 'STA112') {
+        let shuffledSelection = shufflePool([...fullStaPool]);
+        activeExam = shuffledSelection.slice(0, totalExamQuestions);
+        timeLeft = 1200; 
+    }
+    
+    currentQuestionIndex = 0; 
+    document.getElementById('main-hub').style.display = 'none';
+    document.getElementById('exam-container').style.display = 'grid'; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    startTimer();
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${String.fromCharCode(65 + i)}. ${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < totalExamQuestions; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => { block.classList.toggle('active', idx === index); });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => { dot.classList.toggle('current', idx === index); });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === totalExamQuestions - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}. ${item.o[item.a]}</p>` : ''}
+            </div>`;
+    });
+
+    let percentage = Math.round((score / totalExamQuestions) * 100);
+    let grade = "";
+    let remark = "";
+    let statusEmoji = "";
+
+    if (percentage >= 70) {
+        grade = "A"; remark = "Excellent! You have mastered the art of STA 112, Come collect your award."; statusEmoji = "🔥🏆";
+    } else if (percentage >= 60) {
+        grade = "B"; remark = "Very Good! Omo you na statistics guru ooo 😅."; statusEmoji = "😎✨";
+    } else if (percentage >= 50) {
+        grade = "C"; remark = "Good effort. Review some calculation configurations."; statusEmoji = "👍📖";
+    } else if (percentage >= 45) {
+        grade = "D"; remark = "Pass. You need to learn how factorials map out."; statusEmoji = "⚠️📝";
+    } else if (percentage >= 40) {
+        grade = "E"; remark = "Fair. but you still gats read bro, probability rules are strict."; statusEmoji = "👀⏳";
+    } else {
+        grade = "F"; remark = "Omo, go and read your STA oooo! 😂"; statusEmoji = "💀❌";
+    }
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    
+    document.getElementById('result-screen').innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
+        <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
+        <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
+        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <div id="review-area">${reviewHTML}</div>
+        <button class="btn-action" onclick="location.reload()">Try Again</button>
+    `;
+    
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
