@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - ECN 104 Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.1rem; font-weight: 800; letter-spacing: 1px; line-height: 1.3; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .exam-layout { display: none; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); flex-shrink: 0; }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        .review-card-item { border-left: 5px solid var(--navy); padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="autoStartExam()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy); letter-spacing: 1px;">LOADING QUESTIONS...</p>
+</div>
+
+<div class="container" id="main-header-area">
+    <header>
+        <h1>ECN 104</h1>
+        <p>Elite Exam Hub • ECN 104</p>
+    </header>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 20:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Progress Tracker</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div id="result-payload-mount"></div>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+const fullEcn104Pool = [
+    { q: "Which of the following is a linear function?", o: ["y = 2x + 5", "y = x² + 4", "y = 2ˣ", "y = log x"], a: 0 },
+    { q: "A quadratic function has the highest power of:", o: ["1", "2", "3", "4"], a: 1 },
+    { q: "Which of the following is an exponential function?", o: ["y = x + 5", "y = x²", "y = 2ˣ", "y = 1/x"], a: 2 },
+    { q: "Which of the following is a logarithmic function?", o: ["y = log x", "y = x²", "y = 4x", "y = x³"], a: 0 },
+    { q: "A polynomial function consists of:", o: ["Only logarithms", "Powers of variables with non-negative integer exponents", "Exponential terms only", "Fractions only"], a: 1 },
+    { q: "Which function is commonly used to represent consumers' demand?", o: ["Demand function", "Cosine function", "Tangent function", "Sine function"], a: 0 },
+    { q: "Total Revenue (TR) is calculated as:", o: ["Cost × Quantity", "Price × Quantity", "Profit × Quantity", "Price − Cost"], a: 1 },
+    { q: "A supply function shows the relationship between:", o: ["Price and Quantity Supplied", "Income and Savings", "Inflation and Employment", "Revenue and Cost"], a: 0 },
+    { q: "A cost function expresses the relationship between:", o: ["Cost and Output", "Demand and Price", "Profit and Sales", "Inflation and Tax"], a: 0 },
+    { q: "The graph of a linear function is a:", o: ["Circle", "Straight line", "Parabola", "Ellipse"], a: 1 },
+    { q: "Differentiation is mainly used to determine:", o: ["Area under a curve", "Rate of change", "Total value", "Average value"], a: 1 },
+    { q: "The derivative of a constant is:", o: ["1", "0", "x", "2"], a: 1 },
+    { q: "The derivative of x³ is:", o: ["3x²", "x²", "3x", "x⁴"], a: 0 },
+    { q: "Which rule is used to differentiate the product of two functions?", o: ["Chain Rule", "Product Rule", "Quotient Rule", "Power Rule"], a: 1 },
+    { q: "Which rule is used to differentiate f(x)/g(x)?", o: ["Product Rule", "Quotient Rule", "Power Rule", "Chain Rule"], a: 1 },
+    { q: "The Chain Rule is used when differentiating:", o: ["Composite functions", "Constant functions", "Linear functions only", "Matrix functions"], a: 0 },
+    { q: "The derivative of 5x is:", o: ["5", "x", "0", "10"], a: 0 },
+    { q: "The derivative of x⁵ is:", o: ["5x⁴", "x⁴", "4x⁵", "5x"], a: 0 },
+    { q: "Marginal Cost (MC) is obtained by differentiating the:", o: ["Total Cost function", "Demand function", "Revenue function", "Utility function"], a: 0 },
+    { q: "Marginal Revenue (MR) is the derivative of:", o: ["Total Revenue", "Total Cost", "Profit", "Demand"], a: 0 },
+    { q: "The Power Rule states that if y = xⁿ, then dy/dx =", o: ["nxⁿ⁻¹", "xⁿ⁺¹", "nxⁿ", "xⁿ⁻¹"], a: 0 },
+    { q: "The derivative of 7 is:", o: ["1", "7", "0", "x"], a: 2 },
+    { q: "Integration is the:", o: ["Reverse of differentiation", "Same as multiplication", "Same as division", "Reverse of addition"], a: 0 },
+    { q: "Which symbol represents integration?", o: ["Σ", "∫", "∂", "√"], a: 1 },
+    { q: "∫x dx =", o: ["x²", "x²/2 + C", "2x + C", "x + C"], a: 1 },
+    { q: "The constant of integration is represented by:", o: ["A", "B", "C", "D"], a: 2 },
+    { q: "Total Cost (TC) can be obtained by integrating:", o: ["Marginal Cost (MC)", "Average Cost (AC)", "Fixed Cost (FC)", "Total Revenue (TR)"], a: 0 },
+    { q: "Consumer Surplus is commonly calculated using:", o: ["Differentiation", "Integration", "Matrix Algebra", "Logarithms"], a: 1 },
+    { q: "Total Revenue (TR) can be obtained by integrating:", o: ["Marginal Revenue (MR)", "Marginal Cost (MC)", "Average Revenue (AR)", "Price (P)"], a: 0 },
+    { q: "∫k dx, where k is a constant, equals:", o: ["k + C", "kx + C", "x + C", "0"], a: 1 },
+    { q: "A function involving more than one independent variable requires:", o: ["Ordinary differentiation", "Partial differentiation", "Integration only", "Logarithms only"], a: 1 },
+    { q: "The symbol used for partial differentiation is:", o: ["d", "∂", "Δ", "Σ"], a: 1 },
+    { q: "If z = x² + y², then ∂z/∂x =", o: ["2x", "2y", "x + y", "xy"], a: 0 },
+    { q: "During partial differentiation, other variables are treated as:", o: ["Zero", "Constants", "Infinite", "Negative"], a: 1 },
+    { q: "Partial derivatives are useful in analyzing:", o: ["Functions with several variables", "Linear equations only", "Constants only", "Matrices only"], a: 0 },
+    { q: "Mixed partial derivatives involve differentiation with respect to:", o: ["One variable only", "Two or more variables", "Constants only", "Logarithms only"], a: 1 },
+    { q: "Optimization is the process of finding:", o: ["Maximum or minimum values", "Average values only", "Total values only", "Random values"], a: 0 },
+    { q: "Unconstrained optimization means:", o: ["There are no restrictions on the variables", "There is one restriction", "There are two restrictions", "The variables are fixed"], a: 0 },
+    { q: "The Lagrange Multiplier method is used in:", o: ["Constrained optimization", "Matrix addition", "Differentiation only", "Integration only"], a: 0 },
+    { q: "At an optimum point, the first derivative is usually:", o: ["1", "2", "0", "-1"], a: 2 },
+    { q: "Which of the following is a matrix?", o: ["An ordered array of numbers", "x + 5", "x² + 2x", "log x"], a: 0 },
+    { q: "A matrix with an equal number of rows and columns is called a:", o: ["Row matrix", "Column matrix", "Square matrix", "Rectangular matrix"], a: 2 },
+    { q: "Matrix addition is possible only when the matrices have the same:", o: ["Determinant", "Order", "Inverse", "Rank"], a: 1 },
+    { q: "Matrix multiplication is possible when:", o: ["The number of columns of the first matrix equals the number of rows of the second matrix", "Both matrices have the same determinant", "Both matrices are identity matrices", "Both matrices are diagonal matrices"], a: 0 },
+    { q: "The identity matrix is usually denoted by:", o: ["A", "I", "M", "X"], a: 1 },
+    { q: "A matrix has an inverse only if its determinant is:", o: ["Equal to zero", "Greater than zero only", "Non-zero", "Less than zero only"], a: 2 },
+    { q: "The inverse of a matrix A is represented as:", o: ["A²", "A⁻¹", "Aᵀ", "|A|"], a: 1 },
+    { q: "A matrix having only one row is called a:", o: ["Column matrix", "Square matrix", "Row matrix", "Identity matrix"], a: 2 },
+    { q: "A matrix having only one column is called a:", o: ["Row matrix", "Column matrix", "Diagonal matrix", "Square matrix"], a: 1 },
+    { q: "The determinant is defined only for:", o: ["Rectangular matrices", "Square matrices", "Row matrices", "Column matrices"], a: 1 },
+    { q: "The derivative of x⁴ is:", o: ["4x³", "3x⁴", "x³", "4x"], a: 0 },
+    { q: "The derivative of 6x² is:", o: ["6x", "12x", "12x²", "2x"], a: 1 },
+    { q: "The derivative of x² + 5x + 7 is:", o: ["2x + 5", "x + 5", "2x + 7", "5x"], a: 0 },
+    { q: "The Product Rule is expressed as:", o: ["d(uv)/dx = u(dv/dx) + v(du/dx)", "d(u + v)/dx = du/dx + dv/dx", "d(u/v)/dx = du/dx ÷ dv/dx", "d(xⁿ)/dx = nxⁿ⁻¹"], a: 0 },
+    { q: "The Quotient Rule is used when a function is written as:", o: ["u + v", "uv", "u/v", "u − v"], a: 2 },
+    { q: "Which of the following is a composite function?", o: ["y = (3x + 2)⁵", "y = 3x + 2", "y = x²", "y = 5x"], a: 0 },
+    { q: "Marginal Revenue (MR) is interpreted as:", o: ["The additional revenue earned from selling one more unit of output", "The total revenue of a firm", "The average revenue per unit", "The fixed revenue of a firm"], a: 0 },
+    { q: "Marginal Cost (MC) measures:", o: ["The additional cost of producing one more unit of output", "The fixed cost of production", "The average cost of production", "The total cost of production"], a: 0 },
+    { q: "The derivative of √x is:", o: ["1/(2√x)", "2√x", "√x", "x²"], a: 0 },
+    { q: "Integration is mainly used in economics to obtain:", o: ["Total values from marginal values", "Marginal values from total values", "Percentages only", "Ratios only"], a: 0 },
+    { q: "∫2x dx =", o: ["x² + C", "2x² + C", "x + C", "2 + C"], a: 0 },
+    { q: "An indefinite integral always includes:", o: ["A constant of integration (C)", "A determinant", "A matrix", "A logarithm"], a: 0 },
+    { q: "A definite integral is evaluated between:", o: ["Two limits", "Three limits", "Four limits", "No limits"], a: 0 },
+    { q: "The area under a curve is commonly determined using:", o: ["Differentiation", "Integration", "Matrix Algebra", "Trigonometry"], a: 1 },
+    { q: "Consumer Surplus is the area:", o: ["Below the demand curve and above the market price", "Above the supply curve only", "Below the supply curve only", "Above the x-axis only"], a: 0 },
+    { q: "Producer Surplus is the area:", o: ["Above the supply curve and below the market price", "Above the demand curve only", "Below the demand curve only", "Under the x-axis only"], a: 0 },
+    { q: "If z = x² + 3y², then ∂z/∂y =", o: ["2x", "6y", "3y", "x²"], a: 1 },
+    { q: "If z = 5x + 4y, then ∂z/∂x =", o: ["5", "4", "9", "x"], a: 0 },
+    { q: "Partial derivatives are mostly applied to:", o: ["Functions of several variables", "Constant functions only", "Linear equations only", "Trigonometric identities only"], a: 0 },
+    { q: "A critical point of a function occurs where:", o: ["The first derivative is zero or undefined", "The second derivative is always positive", "The function is constant", "The function has no variables"], a: 0 },
+    { q: "Optimization helps economists to:", o: ["Maximize profit and minimize cost", "Increase inflation", "Reduce population", "Eliminate demand"], a: 0 },
+    { q: "An unconstrained optimization problem has:", o: ["No restrictions", "One restriction", "Two restrictions", "Infinite restrictions"], a: 0 },
+    { q: "The Lagrange Multiplier method is used when there is:", o: ["A constraint on the objective function", "No constraint at all", "Only one variable", "No objective function"], a: 0 },
+    { q: "The objective function in optimization is the function to be:", o: ["Maximized or minimized", "Integrated only", "Differentiated only", "Ignored"], a: 0 },
+    { q: "The first-order condition for optimization requires:", o: ["The first derivative to be equal to zero", "The determinant to be zero", "The matrix to be singular", "The integral to be zero"], a: 0 },
+    { q: "A 2 × 3 matrix has:", o: ["2 rows and 3 columns", "3 rows and 2 columns", "2 rows and 2 columns", "3 rows and 3 columns"], a: 0 },
+    { q: "The order of a 2x2 structure matrix is:", o: ["1 × 2", "2 × 1", "2 × 2", "4 × 4"], a: 2 },
+    { q: "Matrix subtraction is possible only when the matrices have the same:", o: ["Order", "Determinant", "Inverse", "Trace"], a: 0 },
+    { q: "Which of the following is a diagonal matrix?", o: ["An identity or scalar diagonal block [2 0; 0 5]", "[1 2; 3 4]", "[1 2 3]", "[4; 5; 6]"], a: 0 },
+    { q: "The transpose of a matrix is obtained by:", o: ["Interchanging rows and columns", "Multiplying all elements by zero", "Finding the determinant", "Finding the inverse"], a: 0 },
+    { q: "The sine of an angle in a right-angled triangle is:", o: ["Opposite/Hypotenuse", "Adjacent/Hypotenuse", "Opposite/Adjacent", "Hypotenuse/Adjacent"], a: 0 },
+    { q: "The cosine of an angle in a right-angled triangle is:", o: ["Opposite/Hypotenuse", "Adjacent/Hypotenuse", "Opposite/Adjacent", "Hypotenuse/Opposite"], a: 1 },
+    { q: "The tangent of an angle is equal to:", o: ["Opposite/Adjacent", "Adjacent/Hypotenuse", "Opposite/Hypotenuse", "Hypotenuse/Adjacent"], a: 0 },
+    { q: "The value of sin 0° is:", o: ["0", "1", "-1", "½"], a: 0 },
+    { q: "The value of cos 0° is:", o: ["0", "1", "-1", "½"], a: 1 },
+    { q: "The value of sin 90° is:", o: ["0", "1", "-1", "√2"], a: 1 },
+    { q: "The value of cos 90° is:", o: ["0", "1", "-1", "½"], a: 0 },
+    { q: "The value of tan 45° is:", o: ["0", "1", "√2", "2"], a: 1 },
+    { q: "Trigonometric functions are useful in economics for analyzing:", o: ["Periodic phenomena and waves", "Matrix multiplication only", "Consumer surplus only", "Linear programming only"], a: 0 },
+    { q: "The graph of the sine function is:", o: ["Periodic", "Linear", "Quadratic", "Cubic"], a: 0 },
+    { q: "Coordinate geometry deals primarily with:", o: ["Points, lines and curves on a plane", "Matrices only", "Differentiation only", "Integration only"], a: 0 },
+    { q: "The equation y = mx + c represents a:", o: ["Straight line", "Circle", "Parabola", "Ellipse"], a: 0 },
+    { q: "In the equation y = mx + c, m represents the:", o: ["Gradient (Slope)", "Y-intercept", "X-intercept", "Radius"], a: 0 },
+    { q: "In the equation y = mx + c, c represents the:", o: ["Gradient", "Y-intercept", "X-intercept", "Distance"], a: 1 },
+    { q: "The distance between two points is calculated using the:", o: ["Distance Formula", "Product Rule", "Quotient Rule", "Chain Rule"], a: 0 },
+    { q: "Which branch of mathematics is most useful for solving optimization problems in economics?", o: ["Calculics (Calculus)", "Statistics", "Arithmetic", "Number Theory"], a: 0 },
+    { q: "The derivative of the Total Revenue function gives:", o: ["Marginal Revenue", "Average Revenue", "Total Cost", "Marginal Utility"], a: 0 },
+    { q: "The integral of the Marginal Cost function gives:", o: ["Total Cost", "Fixed Cost", "Average Cost", "Variable Cost only"], a: 0 },
+    { q: "Which of the following mathematical tools is widely used in economic analysis?", o: ["Functions, Calculus and Matrix Algebra", "Geometry only", "Algebra only", "Arithmetic only"], a: 0 },
+    { q: "The main objective of ECN104 (Introduction to Mathematics for Economists II) is to enable students to:", o: ["Apply mathematical techniques to solve economic problems", "Memorize mathematical formulas without application", "Study English grammar", "Learn computer programming only"], a: 0 }
+];
+
+let activeExam = [];
+let timeLeft = 1200; // 20 minutes execution timer
+let timer;
+const totalExamQuestions = 30; // 30 random selections from pool
+let currentQuestionIndex = 0;
+
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function autoStartExam() {
+    let shuffledSelection = shufflePool([...fullEcn104Pool]);
+    activeExam = shuffledSelection.slice(0, totalExamQuestions);
+    timeLeft = 1200; 
+    currentQuestionIndex = 0; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    
+    setTimeout(() => { 
+        document.getElementById('sync-loader').style.display = 'none';
+        document.getElementById('exam-container').style.display = 'grid'; 
+        startTimer();
+    }, 1200);
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${String.fromCharCode(65 + i)}. ${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < totalExamQuestions; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => { block.classList.toggle('active', idx === index); });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => { dot.classList.toggle('current', idx === index); });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === totalExamQuestions - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="review-card-item" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'};">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}. ${item.o[item.a]}</p>` : ''}
+            </div>`;
+    });
+
+    let percentage = Math.round((score / totalExamQuestions) * 100);
+    let grade = "";
+    let remark = "";
+    let statusEmoji = "";
+
+    if (percentage >= 70) {
+        grade = "A"; remark = "Excellent! Optimization, Calculus, and Matrices are totally handled."; statusEmoji = "🔥🏆";
+    } else if (percentage >= 60) {
+        grade = "B"; remark = "Very Good job! You understand Marginal values and integration models."; statusEmoji = "😎✨";
+    } else if (percentage >= 50) {
+        grade = "C"; remark = "Good effort. Double-check your partial differentiation and matrix inversions."; statusEmoji = "👍📖";
+    } else if (percentage >= 45) {
+        grade = "D"; remark = "Pass. Spend more time studying coordinate geometry and product/quotient rules."; statusEmoji = "⚠️📝";
+    } else if (percentage >= 40) {
+        grade = "E"; remark = "Fair. Trigonometry graphs and integration constants need heavy practice."; statusEmoji = "👀⏳";
+    } else {
+        grade = "F"; remark = "Omo, go and read your ECN oooo! 😂"; statusEmoji = "💀❌";
+    }
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('main-header-area').style.display = 'none';
+    
+    const targetPayloadMount = document.getElementById('result-payload-mount');
+    targetPayloadMount.innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
+        <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
+        <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
+        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <div id="review-area">${reviewHTML}</div>
+        <button class="btn-action" onclick="location.reload()">Try Again</button>
+    `;
+    
+    document.getElementById('result-screen').style.display = 'block';
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
