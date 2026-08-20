@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - Leadership & Vision</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
+
+        :root {
+            --navy: #001f3f;
+            --navy-dark: #001226;
+            --navy-mid: #002b57;
+            --green: #38761d;
+            --green-bright: #4bb543;
+            --bg-light: #f8fafc;
+            --card-shadow: 0 15px 30px -5px rgba(0, 31, 63, 0.08);
+            --gradient-accent: linear-gradient(135deg, #001f3f 0%, #38761d 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--navy);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* NAVBAR */
+        header {
+            background: #ffffff;
+            padding: 18px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0, 31, 63, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand-logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--navy);
+        }
+
+        .brand-logo span {
+            color: var(--green);
+        }
+
+        /* LOGIN DROPDOWN MENU */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-btn {
+            background: var(--navy);
+            color: #ffffff;
+            padding: 12px 26px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.25s ease;
+            box-shadow: 0 6px 18px rgba(0, 31, 63, 0.2);
+        }
+
+        .dropdown-btn:hover {
+            background: var(--green);
+        }
+
+        .arrow-down {
+            font-size: 0.75rem;
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 120%;
+            background: #ffffff;
+            min-width: 250px;
+            border-radius: 18px;
+            box-shadow: 0 15px 35px rgba(0, 31, 63, 0.15);
+            padding: 10px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(0, 31, 63, 0.06);
+            z-index: 110;
+        }
+
+        .dropdown.open .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown.open .arrow-down {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--navy);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(56, 118, 29, 0.08);
+            color: var(--green);
+            padding-left: 24px;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #f1f5f9;
+            margin: 6px 0;
+        }
+
+        /* HERO SECTION */
+        .hero-section {
+            position: relative;
+            padding: 70px 0;
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            overflow: hidden;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .hero-bg-image {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 55%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1600&auto=format&fit=crop') no-repeat center center/cover;
+            opacity: 0.3;
+            mask-image: linear-gradient(to right, transparent 0%, black 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 100%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 650px;
+            padding: 20px 40px;
+            margin-left: 5%;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(56, 118, 29, 0.1);
+            border: 1px solid rgba(56, 118, 29, 0.25);
+            color: var(--green);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 20px;
+        }
+
+        .hero-title {
+            font-size: clamp(2.3rem, 4.5vw, 3.8rem);
+            font-weight: 900;
+            line-height: 1.15;
+            color: var(--navy);
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+        }
+
+        .hero-title span {
+            color: var(--green);
+        }
+
+        .hero-description {
+            font-size: 1.05rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        /* ANIMATED STATS SECTION */
+        .stats-banner {
+            background: var(--gradient-accent);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 28px;
+            text-align: center;
+            margin-bottom: 60px;
+            box-shadow: 0 15px 30px rgba(0, 31, 63, 0.15);
+        }
+
+        .stats-number {
+            font-size: clamp(2.8rem, 6vw, 4.2rem);
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: #86efac;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stats-label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.9;
+        }
+
+        /* MAIN CONTAINER */
+        .container {
+            max-width: 1100px;
+            margin: 60px auto;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-subtitle {
+            color: var(--green);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--navy);
+        }
+
+        /* SPOTLIGHT CARDS (CEO & RIGHT-HAND MAN) */
+        .spotlight-card {
+            background: #ffffff;
+            border-radius: 32px;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0, 31, 63, 0.06);
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 40px;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .ceo-border {
+            border-top: 6px solid var(--green);
+        }
+
+        .right-hand-border {
+            border-top: 6px solid var(--navy);
+        }
+
+        .image-frame {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            border-radius: 24px;
+            overflow: hidden;
+            background: #e2e8f0;
+            box-shadow: 0 10px 20px rgba(0, 31, 63, 0.1);
+        }
+
+        .image-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .spotlight-info h3 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 4px;
+        }
+
+        .spotlight-role {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--green);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .spotlight-bio {
+            font-size: 0.98rem;
+            color: #475569;
+            line-height: 1.7;
+            margin-bottom: 18px;
+        }
+
+        .quote-box {
+            background: rgba(56, 118, 29, 0.06);
+            border-left: 4px solid var(--green);
+            padding: 15px 20px;
+            border-radius: 0 16px 16px 0;
+            font-style: italic;
+            font-size: 0.92rem;
+            color: var(--navy);
+            font-weight: 500;
+        }
+
+        /* TEAM MEMBERS LIST (ONLY NAMES) */
+        .team-list-container {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 35px 40px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0, 31, 63, 0.06);
+            margin-top: 20px;
+        }
+
+        .team-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .team-item {
+            border-left: 4px solid var(--green);
+            padding: 12px 18px;
+            background: #f8fafc;
+            border-radius: 0 12px 12px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .team-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        /* FOOTER */
+        footer {
+            background: #ffffff;
+            padding: 20px 40px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            margin-top: auto;
+        }
+
+        .footer-copy {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        @media (max-width: 850px) {
+            .spotlight-card {
+                grid-template-columns: 1fr;
+                padding: 30px;
+                text-align: center;
+            }
+            .image-frame {
+                height: 280px;
+                max-width: 280px;
+                margin: 0 auto;
+            }
+            .quote-box {
+                border-left: none;
+                border-top: 4px solid var(--green);
+                border-radius: 0 0 16px 16px;
+            }
+            .hero-bg-image {
+                width: 100%;
+                opacity: 0.15;
+                mask-image: none;
+                -webkit-mask-image: none;
+            }
+            .hero-content {
+                max-width: 100%;
+                margin-left: 0;
+                padding: 20px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR WITH CLICK TO TOGGLE DROPDOWN -->
+    <header>
+        <div class="brand-logo">
+            ELITE <span>EXAM HUB</span>
+        </div>
+
+        <div class="dropdown" id="loginDropdown">
+            <button class="dropdown-btn" onclick="toggleDropdown(event)">
+                <span>Login</span>
+                <span class="arrow-down">▼</span>
+            </button>
+            <div class="dropdown-menu">
+                <a href="login.html" class="dropdown-item">
+                    <span>🔑</span> General Login
+                </a>
+                <div class="dropdown-divider"></div>
+                <a href="quiz.html" class="dropdown-item">
+                    <span>🎯</span> Quiz Mode
+                </a>
+                <a href="daily-challenges.html" class="dropdown-item">
+                    <span>🔥</span> Daily Challenges
+                </a>
+                <a href="exam-prep.html" class="dropdown-item">
+                    <span>📚</span> Exam Preparation Test
+                </a>
+                <div class="dropdown-divider"></div>
+                <a href="ask-questions.html" class="dropdown-item">
+                    <span>❓</span> Ask Questions
+                </a>
+                <a href="complaints.html" class="dropdown-item">
+                    <span>⚠️</span> Complaints
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <div class="hero-badge">
+                ⚡ Next-Gen CBT Engine
+            </div>
+            <h1 class="hero-title">
+                Smart Exam Preparation <span>Made Simple</span>
+            </h1>
+            <p class="hero-description">
+                Engineered to deliver high-performance testing environments, accurate score tracking, and real-time exam simulations.
+            </p>
+        </div>
+
+        <div class="hero-bg-image"></div>
+    </section>
+
+    <!-- LEADERSHIP & STATS SECTION -->
+    <div class="container">
+        
+        <!-- ANIMATED COUNTER BANNER -->
+        <div class="stats-banner">
+            <div class="stats-number" id="studentCounter">0+</div>
+            <div class="stats-label">Students Served & Counting</div>
+        </div>
+
+        <div class="section-header">
+            <div class="section-subtitle">Executive Leadership</div>
+            <h2 class="section-title">Behind The Vision</h2>
+        </div>
+
+        <!-- CEO PROFILE -->
+        <div class="spotlight-card ceo-border">
+            <div class="image-frame">
+                <img src="ceo-avatar.jpg" alt="Simon Emmanuel Damilare" onerror="this.src='https://via.placeholder.com/260x300/001f3f/FFFFFF?text=CEO+Photo+Slot'">
+            </div>
+            <div class="spotlight-info">
+                <h3>Simon Emmanuel Damilare</h3>
+                <div class="spotlight-role">Chief Executive Officer & Founder</div>
+                <p class="spotlight-bio">
+                    Simon Emmanuel Damilare leads the vision and overall direction at Elite Exam Hub. Committed to advancing educational technology, he founded the platform to empower students with reliable, high-speed Computer-Based Testing tools designed for maximum exam preparedness.
+                </p>
+                <div class="quote-box">
+                    "Our goal is to build an environment where every student can test their knowledge with confidence and speed."
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT-HAND MAN SPOTLIGHT -->
+        <div class="spotlight-card right-hand-border">
+            <div class="image-frame">
+                <img src="co-lead-avatar.jpg" alt="Fadunmoye David Abayomi" onerror="this.src='https://via.placeholder.com/260x300/38761d/FFFFFF?text=Co-Lead+Photo+Slot'">
+            </div>
+            <div class="spotlight-info">
+                <h3>Fadunmoye David Abayomi</h3>
+                <div class="spotlight-role">Executive Co-Lead & Operations Director</div>
+                <p class="spotlight-bio">
+                    Working alongside the CEO, Fadunmoye David Abayomi plays a key leadership role in managing operations, platform architecture, and driving the strategic mission of Elite Exam Hub.
+                </p>
+                <div class="quote-box" style="border-left-color: var(--navy);">
+                    "Excellence is in the execution—ensuring every student gets a smooth and reliable testing platform."
+                </div>
+            </div>
+        </div>
+
+        <!-- TEAM MEMBERS LIST (ONLY NAMES) -->
+        <div class="section-header" style="margin-top: 60px; margin-bottom: 25px;">
+            <div class="section-subtitle">Our Crew</div>
+            <h2 class="section-title">Team Members</h2>
+        </div>
+
+        <div class="team-list-container">
+            <div class="team-list">
+                <div class="team-item">
+                    <div class="team-name">James Victor Akinola</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Bodunde Boluwatife Kemisola</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Kolawole Sulieman</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Jokotola Esther Adenike</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Gidado Farida Omotola</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Jimoh Fathia Ayomide</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Nasiru Roheemah Omotola</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Olusesan Mercy Titilayo</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Eze Chinaza Perpetual</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Oyeniyi Oreofeoluwa Deborah</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Ologunagba God's choice Oluwafisayo</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Alabi Abdulahi Ayomide</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Abe Esther Oluwatofunmi</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Abiola Isaac</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Timilehin</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Oladipupo</div>
+                </div>
+
+                <div class="team-item">
+                    <div class="team-name">Alawode Aliat</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-copy">&copy; 2026 Elite Exam Hub. All rights reserved.</div>
+    </footer>
+
+    <!-- INTERACTIVE SCRIPTS -->
+    <script>
+        // TOGGLE DROPDOWN MENU
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('loginDropdown');
+            dropdown.classList.toggle('open');
+        }
+
+        // CLOSE DROPDOWN WHEN CLICKING OUTSIDE (SWALLOW EFFECT)
+        window.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('loginDropdown');
+            if (dropdown.classList.contains('open')) {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        // ANIMATED COUNTER (0 TO 5000+)
+        function animateCounter(id, target, duration) {
+            const element = document.getElementById(id);
+            let start = 0;
+            const increment = target / (duration / 16); // 60 FPS
+            
+            const timer = setInterval(() => {
+                start += increment;
+                if (start >= target) {
+                    element.innerText = target.toLocaleString() + "+";
+                    clearInterval(timer);
+                } else {
+                    element.innerText = Math.floor(start).toLocaleString() + "+";
+                }
+            }, 16);
+        }
+
+        // START ANIMATION ON PAGE LOAD
+        window.addEventListener('DOMContentLoaded', () => {
+            animateCounter('studentCounter', 5000, 2000);
+        });
+    </script>
+
+</body>
+</html>
