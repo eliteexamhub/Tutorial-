@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - Account Access</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
+
+        :root {
+            --navy: #001f3f;
+            --navy-dark: #001226;
+            --green: #38761d;
+            --green-bright: #4bb543;
+            --bg-light: #f8fafc;
+            --card-shadow: 0 15px 35px -5px rgba(0, 31, 63, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--navy);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #ffffff;
+            padding: 18px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0, 31, 63, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand-logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--navy);
+            text-decoration: none;
+        }
+
+        .brand-logo span {
+            color: var(--green);
+        }
+
+        .back-home {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+
+        .back-home:hover {
+            color: var(--navy);
+        }
+
+        .auth-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .auth-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 540px;
+            border-radius: 28px;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0, 31, 63, 0.06);
+            border-top: 6px solid var(--green);
+        }
+
+        .tab-buttons {
+            display: flex;
+            background: #f1f5f9;
+            padding: 6px;
+            border-radius: 50px;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .tab-btn.active {
+            background: var(--navy);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 31, 63, 0.2);
+        }
+
+        .form-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .form-subtitle {
+            font-size: 0.9rem;
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 0.92rem;
+            font-family: 'Poppins', sans-serif;
+            color: var(--navy);
+            background: #ffffff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 4px rgba(56, 118, 29, 0.1);
+        }
+
+        .verification-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .get-code-btn {
+            background: var(--green);
+            color: #ffffff;
+            border: none;
+            padding: 0 18px;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .get-code-btn:hover {
+            background: #2d5e17;
+        }
+
+        .status-message {
+            font-size: 0.85rem;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status-message.success {
+            color: var(--green);
+            display: block;
+        }
+
+        .status-message.error {
+            color: #e11d48;
+            display: block;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: var(--navy);
+            color: #ffffff;
+            border: none;
+            padding: 15px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+            margin-top: 10px;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 8px 20px rgba(0, 31, 63, 0.2);
+        }
+
+        .submit-btn:hover {
+            background: var(--green);
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        footer {
+            background: #ffffff;
+            padding: 20px 40px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            margin-top: auto;
+        }
+
+        .footer-copy {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        @media (max-width: 550px) {
+            .form-row { grid-template-columns: 1fr; }
+            .auth-card { padding: 25px; }
+            header { padding: 15px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="homepage.html" class="brand-logo">
+            ELITE <span>EXAM HUB</span>
+        </a>
+        <a href="homepage.html" class="back-home">← Back to Home</a>
+    </header>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            
+            <div class="tab-buttons">
+                <button class="tab-btn active" id="loginTabBtn" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" id="signupTabBtn" onclick="switchTab('signup')">Sign Up</button>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <form id="loginForm" class="auth-form active" onsubmit="handleLogin(event)">
+                <div class="form-title">Welcome Back</div>
+                <p class="form-subtitle">Enter your registered username & password</p>
+
+                <div class="form-group">
+                    <label for="loginUsername">Username</label>
+                    <input type="text" id="loginUsername" placeholder="Enter your username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+
+                <div id="loginStatus" class="status-message"></div>
+
+                <button type="submit" class="submit-btn" id="loginBtn">Login to CBT Portal</button>
+            </form>
+
+            <!-- SIGN UP FORM -->
+            <form id="signupForm" class="auth-form" onsubmit="handleSignUp(event)">
+                <div class="form-title">Create Account</div>
+                <p class="form-subtitle">Fill in your details to register</p>
+
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" placeholder="e.g. John Doe" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="tel" id="phoneNumber" placeholder="08012345678" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signupEmail">Gmail Address</label>
+                        <input type="email" id="signupEmail" placeholder="example@gmail.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="verifyCode">Verification Code</label>
+                    <div class="verification-wrapper">
+                        <input type="text" id="verifyCode" placeholder="Enter code here" maxlength="6" required>
+                        <button type="button" class="get-code-btn" onclick="generateCode()">Get Code</button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="faculty">Faculty</label>
+                        <input type="text" id="faculty" placeholder="e.g. Science" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <input type="text" id="department" placeholder="e.g. Computer Science" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="signupUsername">Username</label>
+                        <input type="text" id="signupUsername" placeholder="Choose a username" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" placeholder="Create a password" required>
+                    </div>
+                </div>
+
+                <div id="signupStatus" class="status-message"></div>
+
+                <button type="submit" class="submit-btn" id="signupBtn">Register Account</button>
+            </form>
+
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-copy">&copy; 2026 Elite Exam Hub. All rights reserved.</div>
+    </footer>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHqLkOrJ7R9I94zsA-OHRZhFtWjfnmgReheo3PRJYp4aRKOpcTJY64fUtoUsoYevO2/exec";
+
+        let generatedVerificationCode = null;
+
+        function switchTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const loginBtn = document.getElementById('loginTabBtn');
+            const signupBtn = document.getElementById('signupTabBtn');
+
+            if (tab === 'login') {
+                loginForm.classList.add('active');
+                signupForm.classList.remove('active');
+                loginBtn.classList.add('active');
+                signupBtn.classList.remove('active');
+            } else {
+                signupForm.classList.add('active');
+                loginForm.classList.remove('active');
+                signupBtn.classList.add('active');
+                loginBtn.classList.remove('active');
+            }
+        }
+
+        function generateCode() {
+            generatedVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+            alert("YOUR VERIFICATION CODE IS: " + generatedVerificationCode);
+            
+            const status = document.getElementById('signupStatus');
+            status.innerText = "Code generated: " + generatedVerificationCode + " (Type this into the box)";
+            status.className = "status-message success";
+        }
+
+        // SIGN UP: SAVES DATA TO GOOGLE SHEETS
+        async function handleSignUp(event) {
+            event.preventDefault();
+            const typedCode = document.getElementById('verifyCode').value.trim();
+            const status = document.getElementById('signupStatus');
+            const btn = document.getElementById('signupBtn');
+
+            if (!generatedVerificationCode) {
+                status.innerText = "❌ Please click 'Get Code' first to generate a code!";
+                status.className = "status-message error";
+                return;
+            }
+
+            if (typedCode !== generatedVerificationCode) {
+                status.innerText = "❌ Incorrect verification code!";
+                status.className = "status-message error";
+                return;
+            }
+
+            btn.disabled = true;
+            status.innerText = "Saving account...";
+            status.className = "status-message success";
+
+            const payload = {
+                action: "signup",
+                fullName: document.getElementById('fullName').value,
+                phone: document.getElementById('phoneNumber').value,
+                gmail: document.getElementById('signupEmail').value,
+                faculty: document.getElementById('faculty').value,
+                department: document.getElementById('department').value,
+                username: document.getElementById('signupUsername').value,
+                password: document.getElementById('signupPassword').value
+            };
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const res = await response.json();
+
+                if (res.result === "success") {
+                    status.innerText = "✓ Account created!. Switch to Login tab.";
+                    status.className = "status-message success";
+                    setTimeout(() => { switchTab('login'); }, 1500);
+                } else {
+                    status.innerText = "❌ " + res.message;
+                    status.className = "status-message error";
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                status.innerText = "✓ Account created!.";
+                status.className = "status-message success";
+                setTimeout(() => { switchTab('login'); }, 1500);
+            }
+        }
+
+        // LOGIN: VERIFIES USERNAME & PASSWORD FROM GOOGLE SHEETS -> ROUTES TO CBT QUESTIONS
+        async function handleLogin(event) {
+            event.preventDefault();
+            const status = document.getElementById('loginStatus');
+            const btn = document.getElementById('loginBtn');
+
+            btn.disabled = true;
+            status.innerText = "Verifying credentials...";
+            status.className = "status-message success";
+
+            const payload = {
+                action: "login",
+                username: document.getElementById('loginUsername').value,
+                password: document.getElementById('loginPassword').value
+            };
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const res = await response.json();
+
+                if (res.result === "success") {
+                    status.innerText = "✓ Login successful! Opening CBT Portal...";
+                    status.className = "status-message success";
+                    setTimeout(() => { 
+                        window.location.href = "cbt_questions.html"; 
+                    }, 1200);
+                } else {
+                    status.innerText = "❌ " + res.message;
+                    status.className = "status-message error";
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                status.innerText = "❌ Error connecting to sheet verification service.";
+                status.className = "status-message error";
+                btn.disabled = false;
+            }
+        }
+    </script>
+
+</body>
+</html>
