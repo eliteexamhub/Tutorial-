@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - CBT Practice Portal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
+
+        :root {
+            --navy: #001f3f;
+            --navy-dark: #001226;
+            --green: #38761d;
+            --green-bright: #4bb543;
+            --bg-light: #f8fafc;
+            --card-shadow: 0 10px 30px -5px rgba(0, 31, 63, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--navy);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #ffffff;
+            padding: 18px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0, 31, 63, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand-logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--navy);
+            text-decoration: none;
+        }
+
+        .brand-logo span {
+            color: var(--green);
+        }
+
+        .user-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logout-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 8px 18px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+            color: #ffffff;
+        }
+
+        .hero-banner {
+            background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
+            color: #ffffff;
+            padding: 50px 20px;
+            text-align: center;
+            border-bottom: 5px solid var(--green);
+        }
+
+        .hero-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+            color: #cbd5e1;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .search-wrapper {
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 25px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            outline: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        .category-section {
+            margin-bottom: 45px;
+        }
+
+        .category-header {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--navy);
+            border-left: 5px solid var(--green);
+            padding-left: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .course-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 22px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0, 31, 63, 0.06);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .course-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px -5px rgba(0, 31, 63, 0.15);
+        }
+
+        .course-code {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 6px;
+        }
+
+        .course-title {
+            font-size: 0.88rem;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 18px;
+            line-height: 1.4;
+            min-height: 38px;
+        }
+
+        .start-btn {
+            background: var(--green);
+            color: #ffffff;
+            text-align: center;
+            padding: 10px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 700;
+            transition: background 0.2s ease;
+            display: block;
+        }
+
+        .start-btn:hover {
+            background: #2d5e17;
+        }
+
+        footer {
+            background: #ffffff;
+            padding: 20px 40px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            margin-top: auto;
+        }
+
+        .footer-copy {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 15px 20px; }
+            .hero-title { font-size: 1.7rem; }
+            .course-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#" class="brand-logo">
+            ELITE <span>EXAM HUB</span>
+        </a>
+        <div class="user-nav">
+            <a href="login.html" class="logout-btn">Log Out</a>
+        </div>
+    </header>
+
+    <div class="hero-banner">
+        <h1 class="hero-title">CBT Examination Portal</h1>
+        <p class="hero-subtitle">Select your course code to initiate your practice test session.</p>
+        
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search course code or title (e.g. GST101, MTH101)..." onkeyup="filterCourses()">
+        </div>
+    </div>
+
+    <div class="container" id="coursesContainer">
+        <!-- Dynamic Faculty and Department Sections will render here -->
+    </div>
+
+    <footer>
+        <div class="footer-copy">&copy; 2026 Elite Exam Hub. All rights reserved.</div>
+    </footer>
+
+    <script>
+        // Master Catalog of Faculties, Departments, and Deduplicated Courses
+        const courseData = [
+            {
+                category: "General University Courses (GST / ENT)",
+                courses: [
+                    { code: "GST 101", name: "Communication in English I" },
+                    { code: "GST 103", name: "Use of Library & ICT" },
+                    { code: "GST 107", name: "General Studies VII" },
+                    { code: "GST 111", name: "Communication Skills in English" },
+                    { code: "ENT 101", name: "Introduction to Entrepreneurship" }
+                ]
+            },
+            {
+                category: "Faculty of Computing & Physical Sciences",
+                courses: [
+                    { code: "COS 101", name: "Introduction to Computing" },
+                    { code: "CSC 101", name: "Introduction to Computer Science" },
+                    { code: "MTH 101", name: "Elementary Mathematics I" },
+                    { code: "MTH 103", name: "Elementary Mathematics III" },
+                    { code: "PHY 101", name: "General Physics I" },
+                    { code: "PHY 103", name: "General Physics III" },
+                    { code: "PHY 107", name: "Experimental Physics I" },
+                    { code: "CHM 101", name: "General Chemistry I" },
+                    { code: "CHM 103", name: "General Chemistry III" },
+                    { code: "CHM 107", name: "General Chemistry Practical I" },
+                    { code: "GLY 101", name: "Introduction to Geology I" },
+                    { code: "STA 111", name: "Introduction to Statistics" }
+                ]
+            },
+            {
+                category: "Faculty of Engineering & Technology",
+                courses: [
+                    { code: "CVE 101", name: "Introduction to Civil Engineering" },
+                    { code: "CPE 101", name: "Introduction to Computer Engineering" },
+                    { code: "MME 101", name: "Introduction to Materials & Metallurgical Engineering" },
+                    { code: "EEE 101", name: "Introduction to Electrical Engineering" },
+                    { code: "ABE 101", name: "Introduction to Agricultural & Bio-Resource Engineering" },
+                    { code: "MEE 101", name: "Introduction to Mechanical Engineering" },
+                    { code: "ICE 101", name: "Introduction to Information & Communication Engineering" }
+                ]
+            },
+            {
+                category: "Basic Medical, Health & Biological Sciences",
+                courses: [
+                    { code: "BIO 101", name: "General Biology I" },
+                    { code: "BIO 107", name: "General Biology Practical I" },
+                    { code: "AEB 101", name: "Animal Diversity" },
+                    { code: "MLS 101", name: "Scope & Applications of Medical Laboratory Science" }
+                ]
+            },
+            {
+                category: "Faculty of Social Sciences & Management",
+                courses: [
+                    { code: "AMS 101", name: "Principles of Management" },
+                    { code: "AMS 103", name: "Introduction to Computer Applications" },
+                    { code: "ACC 101", name: "Principles of Accounting I" },
+                    { code: "ACC 105", name: "Introductory Accounting II" },
+                    { code: "BUS 101", name: "Introduction to Business I" },
+                    { code: "BUA 101", name: "Introduction to Business Administration" },
+                    { code: "ECN 101", name: "Economic Principles I" },
+                    { code: "ECN 103", name: "Introductory Mathematics for Economists I" },
+                    { code: "FIN 101", name: "Introduction to Finance" },
+                    { code: "MKT 101", name: "Principles of Marketing" },
+                    { code: "FSS 101", name: "Mathematics for Social Scientists" },
+                    { code: "EDS 101", name: "Economics Principles I" },
+                    { code: "SOC 101", name: "Introduction to Sociology I" },
+                    { code: "SOC 103", name: "Social Anthropology" },
+                    { code: "SOC 105", name: "People and Culture" },
+                    { code: "SOC 107", name: "Elements of Scientific Thoughts I" },
+                    { code: "SOC 109", name: "Sociology of Education" },
+                    { code: "SOC 111", name: "Sociology of Mass Communication" },
+                    { code: "POL 101", name: "Introduction to Political Science" },
+                    { code: "POL 103", name: "Introduction to Global Studies" },
+                    { code: "POL 105", name: "Constitutional Development in Nigeria" },
+                    { code: "POL 107", name: "Corruption and Governance" },
+                    { code: "PAD 101", name: "Introduction to Public Administration" },
+                    { code: "PSY 101", name: "Introduction to Psychology I" },
+                    { code: "PSY 103", name: "History & Systems of Psychology" },
+                    { code: "PSY 105", name: "Ethics in Psychology" },
+                    { code: "PSY 107", name: "History of Psychology II" },
+                    { code: "CSS 101", name: "Introduction to Criminology I" },
+                    { code: "CSS 103", name: "Introduction to Law Enforcement" },
+                    { code: "CSS 105", name: "Elements of Scientific Thought" },
+                    { code: "CSS 107", name: "Introduction to Security Studies" },
+                    { code: "CSS 109", name: "Strategic Skills for Crime & Security" }
+                ]
+            },
+            {
+                category: "Faculty of Arts, Humanities & Languages",
+                courses: [
+                    { code: "LIN 101", name: "Introduction to Linguistics I" },
+                    { code: "LIN 103", name: "Phonetics & Phonology" },
+                    { code: "LIN 105", name: "Morphology of Languages" },
+                    { code: "LIN 107", name: "Syntax & Grammar" },
+                    { code: "LIN 109", name: "Sociolinguistics" },
+                    { code: "ENG 101", name: "Introduction to English Language" },
+                    { code: "ENG 103", name: "Spoken English Skills" },
+                    { code: "LIT 105", name: "Introduction to African Literature" },
+                    { code: "LIT 107", name: "Introduction to Prose Fiction" },
+                    { code: "LIT 109", name: "Introduction to Drama & Poetry" },
+                    { code: "FRN 101", name: "Elementary French I" },
+                    { code: "FRN 103", name: "French Grammar & Composition" },
+                    { code: "FRN 105", name: "French Phonetics" },
+                    { code: "YOR 101", name: "Introduction to Yoruba Language" },
+                    { code: "YOR 103", name: "Yoruba Orthography & Grammar" },
+                    { code: "YOR 105", name: "Yoruba Culture & Oral Literature" },
+                    { code: "REL 101", name: "Introduction to Religion" },
+                    { code: "REL 105", name: "Comparative Religion" },
+                    { code: "REL 107", name: "Sociology of Religion" },
+                    { code: "REL 109", name: "Psychology of Religion" },
+                    { code: "REL 113", name: "African Traditional Religion" },
+                    { code: "CRS 101", name: "Introduction to Christian Religious Studies" },
+                    { code: "ISS 107", name: "Introduction to Islamic Studies" },
+                    { code: "PHL 101", name: "Introduction to Philosophy I" },
+                    { code: "PHL 103", name: "Introduction to Logic" },
+                    { code: "PHL 105", name: "Ancient Philosophy" },
+                    { code: "PHL 107", name: "African Philosophy" },
+                    { code: "PHL 109", name: "Ethics & Human Values" },
+                    { code: "PHL 111", name: "Epistemology" },
+                    { code: "THA 101", name: "Introduction to Theatre & Drama" },
+                    { code: "THA 103", name: "Stagecraft & Technical Theatre" },
+                    { code: "THA 105", name: "Acting & Performance" },
+                    { code: "THA 107", name: "Media Arts & Screenwriting" },
+                    { code: "HIS 101", name: "Nigeria to 1800" },
+                    { code: "HIS 103", name: "Africa & the World" },
+                    { code: "HIS 105", name: "History of West Africa" },
+                    { code: "HIS 107", name: "Introduction to International Relations" },
+                    { code: "HIS 109", name: "Major Themes in World History" }
+                ]
+            },
+            {
+                category: "Faculty of Communication & Media Studies",
+                courses: [
+                    { code: "CMS 101", name: "Introduction to Human Communication" },
+                    { code: "PRS 101", name: "Principles of Public Relations" },
+                    { code: "PRS 103", name: "Public Relations Writing" },
+                    { code: "PRS 105", name: "Media & Event Management" },
+                    { code: "JMS 101", name: "Introduction to Journalism & Media Studies" },
+                    { code: "JMS 103", name: "English for Media Studies" },
+                    { code: "JMS 105", name: "News Reporting & Writing" },
+                    { code: "BCJ 101", name: "Foundations of Broadcasting & Film" },
+                    { code: "BCJ 103", name: "English for Media Studies" },
+                    { code: "BCJ 105", name: "Broadcast Audio Production" },
+                    { code: "MCM 101", name: "Foundations of Broadcasting & Film" },
+                    { code: "MCM 103", name: "Introduction to Advertising" },
+                    { code: "MCM 105", name: "Introduction to Book Publishing" },
+                    { code: "MCM 107", name: "African Communication Systems" },
+                    { code: "MCM 109", name: "English for Media Studies" }
+                ]
+            },
+            {
+                category: "Faculty of Education & Human Kinetics",
+                courses: [
+                    { code: "KHE 101", name: "Foundations of Physical Education" },
+                    { code: "KHE 103", name: "Human Anatomy & Physiology" },
+                    { code: "KHE 105", name: "Skill Acquisition in Sports" },
+                    { code: "KHE 107", name: "First Aid & Safety Education" },
+                    { code: "KHE 109", name: "Sports Psychology" },
+                    { code: "KHE 111", name: "Gymnastics & Athletics" },
+                    { code: "KHE 113", name: "Community Recreation" },
+                    { code: "KHE 115", name: "Kinesiology" },
+                    { code: "HED 101", name: "Personal Health & Hygiene" },
+                    { code: "HED 103", name: "Communicable Diseases" },
+                    { code: "HED 105", name: "Community Health Education" },
+                    { code: "HED 109", name: "School Health Program" },
+                    { code: "HED 111", name: "Environmental Health" },
+                    { code: "GCE 101", name: "Introduction to Guidance & Counseling" },
+                    { code: "GCE 103", name: "Principles of Counseling" },
+                    { code: "GCE 105", name: "Developmental Psychology" },
+                    { code: "GCE 133", name: "Appraisal Techniques in Counseling" },
+                    { code: "GCE 135", name: "Educational Statistics" },
+                    { code: "BEM 101", name: "Introduction to Business Education" },
+                    { code: "EDM 101", name: "Principles of Educational Management" },
+                    { code: "EDM 103", name: "Organization of Schools" },
+                    { code: "EDM 111", name: "School Records & Administration" },
+                    { code: "EDM 113", name: "Educational Supervision" },
+                    { code: "ECE 101", name: "Foundations of Economics Education" },
+                    { code: "ECE 103", name: "Curriculum in Economics Education" },
+                    { code: "ECE 105", name: "Methods of Teaching Economics" }
+                ]
+            },
+            {
+                category: "Faculty of Agriculture, Environmental & Hospitality Studies",
+                courses: [
+                    { code: "AGR 101", name: "Introduction to Agriculture I" },
+                    { code: "AGG 101", name: "General Agriculture" },
+                    { code: "HTM 101", name: "The Travel Concept" },
+                    { code: "HTM 103", name: "Earth and Environment" },
+                    { code: "HTM 105", name: "Tourism Movement & Historical Development" },
+                    { code: "HTM 107", name: "Elementary French for Hospitality" },
+                    { code: "HTM 109", name: "Food Purchasing and Costing" },
+                    { code: "HTM 111", name: "Hospitality Accounting" },
+                    { code: "HTM 113", name: "Front Office and Housekeeping Operations" },
+                    { code: "BUD 101", name: "Introduction to Building I" },
+                    { code: "BUD 103", name: "Building Materials I" },
+                    { code: "EVS 101", name: "Introduction to Environmental Sciences I" },
+                    { code: "EVS 102", name: "Introduction to Environmental Sciences II" },
+                    { code: "LIS 111", name: "Foundations of Library & Information Science" },
+                    { code: "LIS 115", name: "Information Resources & Services" },
+                    { code: "LIS 117", name: "Collection Development" },
+                    { code: "LIS 119", name: "Cataloging & Classification I" },
+                    { code: "LIS 125", name: "ICT Applications in Libraries" }
+                ]
+            }
+        ];
+
+        // Helper function to turn course code into standard HTML filename (e.g. "GST 101" -> "test_GST101.html")
+        function formatCourseFileName(code) {
+            const cleanCode = code.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            return `test_${cleanCode}.html`;
+        }
+
+        // Render Courses into the Container
+        function renderCourses(data) {
+            const container = document.getElementById('coursesContainer');
+            container.innerHTML = '';
+
+            data.forEach(sec => {
+                if (sec.courses.length === 0) return;
+
+                const sectionEl = document.createElement('div');
+                sectionEl.className = 'category-section';
+
+                const headerEl = document.createElement('div');
+                headerEl.className = 'category-header';
+                headerEl.innerText = sec.category;
+                sectionEl.appendChild(headerEl);
+
+                const gridEl = document.createElement('div');
+                gridEl.className = 'course-grid';
+
+                sec.courses.forEach(c => {
+                    const fileName = formatCourseFileName(c.code);
+                    const cardEl = document.createElement('div');
+                    cardEl.className = 'course-card';
+                    cardEl.innerHTML = `
+                        <div>
+                            <div class="course-code">${c.code}</div>
+                            <div class="course-title">${c.name}</div>
+                        </div>
+                        <a href="${fileName}" class="start-btn">Start Test →</a>
+                    `;
+                    gridEl.appendChild(cardEl);
+                });
+
+                sectionEl.appendChild(gridEl);
+                container.appendChild(sectionEl);
+            });
+        }
+
+        // Filter Logic for Real-time Search
+        function filterCourses() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            const filteredData = courseData.map(sec => {
+                const matchedCourses = sec.courses.filter(c => 
+                    c.code.toLowerCase().includes(query) || 
+                    c.name.toLowerCase().includes(query)
+                );
+                return {
+                    category: sec.category,
+                    courses: matchedCourses
+                };
+            });
+
+            renderCourses(filteredData);
+        }
+
+        // Initial Load
+        renderCourses(courseData);
+    </script>
+
+</body>
+</html>
