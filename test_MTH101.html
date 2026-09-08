@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - MTH 101 Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .exam-layout { display: grid; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initExam()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading Questions...</p>
+</div>
+
+<div class="container">
+    <header>
+        <h1>ELEMENTARY MATHEMATICS</h1>
+        <p>Elite Exam Hub • THEM NO BORN THIS QUESTIONS MAKE E NO COME OUT 😂</p>
+    </header>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 20:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">GO AND READ😂</div>
+    <h1 id="score-text"></h1>
+    <div id="review-area"></div>
+    <button class="btn-action" onclick="location.reload()">Try Again</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+// Pool of 200 distinctive questions for MTH101
+const fullMthPool = [
+    // 1–100
+    { q: "A set is a ____ collection of objects.", o: ["random", "ordered-only", "well-defined", "finite-only"], a: 2 },
+    { q: "An object belonging to set A is written as ____.", o: ["x ∈ A", "A ∈ x", "x ⊂ A", "x ∉ A"], a: 0 },
+    { q: "A set with no elements is called a ____.", o: ["singleton", "universal set", "empty set", "infinite set"], a: 2 },
+    { q: "A set with exactly one element is called a ____.", o: ["power set", "universal set", "singleton", "null set"], a: 2 },
+    { q: "The number of elements in a finite set is its ____.", o: ["cardinality", "complement", "intersection", "union"], a: 0 },
+    { q: "Which notation lists the members explicitly?", o: ["Matrix notation", "Recursive notation", "Predicate notation", "List notation"], a: 3 },
+    { q: "A = {1,2,…,5000} is an example of ____ notation.", o: ["matrix", "abridged list", "recursive", "predicate"], a: 1 },
+    { q: "Predicate notation specifies a set using a common ____.", o: ["factor", "property", "matrix", "determinant"], a: 1 },
+    { q: "The power set P(A) contains ____.", o: ["only proper subsets of A", "all supersets of A", "all subsets of A", "only elements of A"], a: 2 },
+    { q: "If A has n elements, P(A) has ____ elements.", o: ["2n", "n²", "2ⁿ", "n"], a: 2 },
+    { q: "A ∪ B contains elements in ____.", o: ["A or B or both", "neither A nor B", "A and B only", "A but not B"], a: 0 },
+    { q: "A ∩ B contains elements in ____.", o: ["neither", "B only", "both A and B", "A only"], a: 2 },
+    { q: "A − B contains elements that are ____.", o: ["in both", "in A but not B", "outside A", "in B but not A"], a: 1 },
+    { q: "A △ B contains elements that are ____.", o: ["in neither set", "in A only", "in exactly one of A and B", "in both sets"], a: 2 },
+    { q: "If A ⊂ B, every element of A is also in ____.", o: ["A′", "B", "B′", "U only"], a: 1 },
+    { q: "The complement A′ consists of elements ____.", o: ["outside U", "in U but not A", "in A only", "in A ∩ B"], a: 1 },
+    { q: "Which law gives X ∪ X = X?", o: ["Distributive law", "De Morgan law", "Idempotent law", "Commutative law"], a: 2 },
+    { q: "Which law gives X ∪ Y = Y ∪ X?", o: ["Complement law", "Identity law", "Associative law", "Commutative law"], a: 3 },
+    { q: "Which is a De Morgan law?", o: ["(X ∪ Y)′ = X′ ∩ Y′", "X ∩ U = X", "X ∪ X = X", "X − X = U"], a: 0 },
+    { q: "If n(U) = 50 and n(A) = 18, n(A′) = ____.", o: ["50", "18", "68", "32"], a: 3 },
+    { q: "If A = {1,3,5} and B = {3,5,7}, A ∩ B = ____.", o: ["{1,7}", "∅", "{3,5}", "{1,3,5,7}"], a: 2 },
+    { q: "If A = {1,2,3} and B = {3,4,5}, A ∪ B = ____.", o: ["{4,5}", "{1,2}", "{1,2,3,4,5}", "{3}"], a: 2 },
+    { q: "If A = {1,2,3,4} and B = {2,4,6}, A − B = ____.", o: ["{1,2,3,4,6}", "{1,3}", "{2,4}", "{6}"], a: 1 },
+    { q: "If A has 4 elements, |P(A)| = ____.", o: ["16", "4", "12", "8"], a: 0 },
+    { q: "For three sets, A ∩ B ∩ C contains elements common to ____.", o: ["A and B only", "A only", "all three sets", "B and C only"], a: 2 },
+    { q: "A real number that is not rational is ____.", o: ["natural", "irrational", "whole", "integer"], a: 1 },
+    { q: "Which is rational?", o: ["3/5", "π", "√7", "√2"], a: 0 },
+    { q: "Which property is a + b = b + a?", o: ["associative", "distributive", "inverse", "commutative"], a: 3 },
+    { q: "Which property is a(b + c) = ab + ac?", o: ["distributive", "commutative", "inverse", "identity"], a: 0 },
+    { q: "8⁰ equals ____.", o: ["1", "undefined", "0", "8"], a: 0 },
+    { q: "3² × 3⁴ equals ____.", o: ["9⁴", "3⁸", "3⁶", "6³"], a: 2 },
+    { q: "5⁷ ÷ 5³ equals ____.", o: ["5¹⁰", "5²¹", "5⁴", "5³"], a: 2 },
+    { q: "(2³)⁴ equals ____.", o: ["2⁷", "2⁴", "2¹²", "8⁴"], a: 2 },
+    { q: "For a ≠ 0, a⁻ⁿ equals ____.", o: ["1/aⁿ", "n/a", "−aⁿ", "aⁿ"], a: 0 },
+    { q: "81¹/⁴ equals ____.", o: ["4", "2", "9", "3"], a: 3 },
+    { q: "If 3ˣ = 27, x = ____.", o: ["4", "3", "2", "9"], a: 1 },
+    { q: "logₐ1 equals ____.", o: ["1", "−1", "a", "0"], a: 3 },
+    { q: "logₐ(aᵐ) equals ____.", o: ["aᵐ", "a + m", "am", "m"], a: 3 },
+    { q: "logₐ(pq) equals ____.", o: ["logₐ(p/q)", "logₐp + logₐq", "logₐp − logₐq", "qlogₐp"], a: 1 },
+    { q: "logₐ(p/q) equals ____.", o: ["logₐp + logₐq", "logₐ(pq)", "plogₐq", "logₐp − logₐq"], a: 3 },
+    { q: "If a > b and c > 0, then ac ____ bc.", o: ["<", "cannot be compared", ">", "="], a: 2 },
+    { q: "Multiplying an inequality by a negative number ____ the inequality sign.", o: ["reverses", "removes", "preserves", "squares"], a: 0 },
+    { q: "|x| represents the ____ of x from zero.", o: ["square", "reciprocal", "slope", "distance"], a: 3 },
+    { q: "Solve |x| = 5.", o: ["x = 0", "x = ±5", "x = 5 only", "x = −5 only"], a: 1 },
+    { q: "If x < 0, |x| = ____.", o: ["−x", "x", "x²", "0"], a: 0 },
+    { q: "Solve |x − 2| < 3.", o: ["x > 5", "−1 < x < 5", "−5 < x < 1", "x < −1"], a: 1 },
+    { q: "The conjugate of 2 + √3 is ____.", o: ["√3 − 2", "−2 + √3", "−2 − √3", "2 − √3"], a: 3 },
+    { q: "The square root of 48 simplifies to ____.", o: ["4√3", "3√4", "8√3", "6√2"], a: 0 },
+    { q: "For x² − 5x + 6 = 0, the roots are ____.", o: ["2 and 3", "0 and 6", "−2 and −3", "1 and 6"], a: 0 },
+    { q: "The first step of mathematical induction is to verify the statement for ____.", o: ["the base case", "the determinant", "2k", "k + 1"], a: 0 },
+    { q: "After the base case, assume the statement is true for ____.", o: ["n = k+1", "n = 0", "n = 2k", "n = k"], a: 3 },
+    { q: "The induction step proves the statement for ____.", o: ["n = 2k", "n = k+1", "n = k−1", "n = 0"], a: 1 },
+    { q: "The formula 1+2+...+n equals ____.", o: ["n(n−1)/2", "n²", "n(n+1)/2", "2n"], a: 2 },
+    { q: "1+2+3+4 equals ____.", o: ["12", "8", "16", "10"], a: 3 },
+    { q: "The sum of the first n odd numbers is ____.", o: ["2n", "n(n+1)/2", "n²", "n"], a: 2 },
+    { q: "In an induction proof, P(k) is called the ____.", o: ["induction hypothesis", "contradiction", "conclusion", "base case"], a: 0 },
+    { q: "If P(1) is true and P(k) implies P(k+1), P(n) is true for ____.", o: ["prime n only", "even n only", "n = 1 only", "all positive integers n"], a: 3 },
+    { q: "Which is NOT an induction step?", o: ["Find a determinant", "verify P(1)", "assume P(k)", "prove P(k+1)"], a: 0 },
+    { q: "To extend 1+...+k to 1+...+k+(k+1), the next term added is ____.", o: ["k", "k+1", "1", "k²"], a: 1 },
+    { q: "For n=1, 1³+2³+...+n³ equals ____.", o: ["4", "3", "1", "2"], a: 2 },
+    { q: "The three main stages are base case, induction hypothesis, and ____.", o: ["induction step", "matrix inversion", "factorization", "integration"], a: 0 },
+    { q: "Induction is especially suited to statements indexed by ____.", o: ["matrices only", "natural numbers", "complex constants only", "only irrational numbers"], a: 1 },
+    { q: "If a proof establishes P(k) ⇒ P(k+1), it creates a chain from the ____.", o: ["complement", "last term", "base case", "determinant"], a: 2 },
+    { q: "The identity 1³+2³+...+n³ = n²(n+1)²/4 is an example of a formula that can be proved by ____.", o: ["mathematical induction", "Cramer's rule", "partial fractions", "De Morgan's law"], a: 0 },
+    { q: "A sequence is a list of numbers in a specified ____.", o: ["determinant", "matrix", "order", "set only"], a: 2 },
+    { q: "The common difference of 2,5,8,11,... is ____.", o: ["3", "8", "5", "2"], a: 0 },
+    { q: "The nth term of an AP is ____.", o: ["ar⁽ⁿ⁻¹⁾", "a+(n−1)d", "a/d", "a+nd"], a: 1 },
+    { q: "The 10th term of 2,5,8,... is ____.", o: ["29", "32", "26", "30"], a: 0 },
+    { q: "The common difference of 8,4,0,−4,... is ____.", o: ["−8", "8", "−4", "4"], a: 2 },
+    { q: "The sum of n AP terms is ____.", o: ["a+(n−1)d", "ar⁽ⁿ⁻¹⁾", "n/2[2a+(n−1)d]", "a/(1−r)"], a: 2 },
+    { q: "If a=1,d=7,n=11, Sₙ = ____.", o: ["407", "385", "420", "396"], a: 3 },
+    { q: "A GP is formed by multiplying each term by a constant ____.", o: ["ratio", "sum", "determinant", "difference"], a: 0 },
+    { q: "The nth term of a GP is ____.", o: ["a/rⁿ", "aⁿ+r", "a+(n−1)d", "ar⁽ⁿ⁻¹⁾"], a: 3 },
+    { q: "The common ratio of 1,−2,4,−8,... is ____.", o: ["2", "−2", "−1", "4"], a: 1 },
+    { q: "The finite GP sum is ____ for r≠1.", o: ["a+(n−1)r", "a(1−rⁿ)/(1−r)", "arⁿ", "a/(1+r)"], a: 1 },
+    { q: "An infinite GP converges when ____.", o: ["r<-2", "|r|>1", "r=2 only", "|r|<1"], a: 3 },
+    { q: "The sum to infinity of a convergent GP is ____.", o: ["ar", "a(1−r)", "a/r", "a/(1−r)"], a: 3 },
+    { q: "For 4,−1,1/4,..., the common ratio is ____.", o: ["1/4", "4", "−4", "−1/4"], a: 3 },
+    { q: "For a=8,r=1/2, the 8th term is ____.", o: ["1/4", "1/32", "1/16", "1/8"], a: 2 },
+    { q: "For an AP with a=5,d=4, the 6th term is ____.", o: ["29", "30", "25", "21"], a: 2 },
+    { q: "For an AP with a=12,d=3, the 5th term is ____.", o: ["27", "15", "24", "21"], a: 2 },
+    { q: "The sequence 3,9,27,81,... is a ____.", o: ["GP with r=2", "AP with d=3", "GP with r=3", "AP with d=6"], a: 2 },
+    { q: "The sequence 6,4,2,0,... is a(n) ____.", o: ["AP with d=−2", "AP with d=2", "GP with r=2", "GP with r=−2"], a: 0 },
+    { q: "For an AP, the average of the first and last terms equals the ____.", o: ["common difference", "mean of the terms", "common ratio", "first term"], a: 1 },
+    { q: "A quadratic equation has the general form ____.", o: ["ax+b=0", "ax²+bx+c=0", "a/x+b=0", "ax³+bx²+c=0"], a: 1 },
+    { q: "Solve 2x²+7x−4=0.", o: ["x=1/2 or −4", "x=1 or −4", "x=−1/2 or 4", "x=2 or −4"], a: 0 },
+    { q: "The discriminant of ax²+bx+c=0 is ____.", o: ["4ac−b²", "b²+4ac", "a²−4bc", "b²−4ac"], a: 3 },
+    { q: "If Δ>0, the roots are ____.", o: ["non-real", "real and unequal", "both zero", "real and equal"], a: 1 },
+    { q: "If Δ=0, the roots are ____.", o: ["real and unequal", "undefined", "real and equal", "non-real"], a: 2 },
+    { q: "If Δ<0, the roots are ____.", o: ["real and unequal", "both positive", "non-real", "real and equal"], a: 2 },
+    { q: "The quadratic formula is ____.", o: ["(b±√(b²+4ac))/a", "(−b±√(b²−4ac))/2a", "(−b±√(b²+4ac))/2", "(b±√(b²−4ac))/a"], a: 1 },
+    { q: "For ax²+bx+c=0, the sum of roots is ____.", o: ["c/a", "b/a", "−b/a", "−c/a"], a: 2 },
+    { q: "For ax²+bx+c=0, the product of roots is ____.", o: ["b/a", "−b/a", "c/a", "−c/a"], a: 2 },
+    { q: "If roots are 2 and 3, the monic equation is ____.", o: ["x²+6x−5=0", "x²−5x+6=0", "x²+5x+6=0", "x²−6x+5=0"], a: 1 },
+    { q: "If α+β=5 and αβ=6, the equation is ____.", o: ["x²−5x+6=0", "x²+6x−5=0", "x²−6x+5=0", "x²+5x+6=0"], a: 0 },
+    { q: "The vertex x-coordinate of y=ax²+bx+c is ____.", o: ["−a/2b", "−b/2a", "b/2a", "c/a"], a: 1 },
+    { q: "If a>0, a quadratic parabola opens ____.", o: ["right", "upward", "downward", "left"], a: 1 },
+    { q: "For y=3x²−2x+1, the vertex x-coordinate is ____.", o: ["3/2", "1/3", "2/3", "−1/3"], a: 1 },
+    { q: "For y=−x²+6x−9, the maximum occurs at x=____.", o: ["6", "3", "−3", "2"], a: 1 },
+    { q: "The maximum value of y=−x²+6x−9 is ____.", o: ["−9", "0", "3", "9"], a: 1 },
+
+    // 101–150
+    { q: "The Factor Theorem states (x−k) is a factor if ____.", o: ["f(k)=1", "f(−k)=0", "f(0)=k", "f(k)=0"], a: 3 },
+    { q: "If f(2)=0, then x−2 is ____.", o: ["a factor of f(x)", "the remainder", "the quotient", "never a factor"], a: 0 },
+    { q: "The Remainder Theorem says the remainder on division by x−k is ____.", o: ["f(−k)", "f(k)", "f(0)", "k"], a: 1 },
+    { q: "The remainder on division by x+2 is ____.", o: ["f(−2)", "f(2)", "f(0)", "2f(x)"], a: 0 },
+    { q: "If f(x)=2x³−3x²+x+1, the remainder on division by x−1 is ____.", o: ["0", "1", "−1", "2"], a: 1 },
+    { q: "If f(−3)=0, x+3 is ____.", o: ["the remainder", "the quotient only", "undefined", "a factor"], a: 3 },
+    { q: "A rational function is a quotient of ____.", o: ["sets", "polynomials", "sequences", "matrices"], a: 1 },
+    { q: "Partial fractions express a rational function as a sum of ____.", o: ["matrices", "sequences", "determinants", "simpler fractions/polynomial parts"], a: 3 },
+    { q: "For a repeated factor (x−k)², the decomposition includes ____.", o: ["A/(x−k)³ only", "A(x−k)²", "A/(x−k) only", "A/(x−k)+B/(x−k)²"], a: 3 },
+    { q: "Over a quadratic factor, the partial-fraction numerator is generally ____.", o: ["quadratic, Ax²+Bx+C", "linear, Ax+B", "constant only", "cubic"], a: 1 },
+    { q: "Completing the square rewrites a quadratic using a ____.", o: ["determinant", "factorial", "matrix inverse", "perfect square"], a: 3 },
+    { q: "Graphically, roots are the x-intercepts where ____.", o: ["y=1", "y=0", "x=0", "x=1"], a: 1 },
+    { q: "For x²−5x+6=0, the product of roots is ____.", o: ["−5", "−6", "5", "6"], a: 3 },
+    { q: "For 3x²−x−5=0, the sum of roots is ____.", o: ["5/3", "−1/3", "1/3", "−5/3"], a: 2 },
+    { q: "5! equals ____.", o: ["120", "100", "60", "24"], a: 0 },
+    { q: "n! is the product of ____.", o: ["n squared", "n down to 1", "n up to infinity", "only prime numbers"], a: 1 },
+    { q: "nPr equals ____.", o: ["n!/[r!(n−r)!]", "nʳ", "n!/(n−r)!", "r!/n!"], a: 2 },
+    { q: "nCr equals ____.", o: ["n!/[r!(n−r)!]", "r!/n!", "nʳ", "n!/(n−r)!"], a: 0 },
+    { q: "6C4 equals ____.", o: ["12", "15", "10", "24"], a: 1 },
+    { q: "14C11 equals ____.", o: ["24024", "1716", "1001", "364"], a: 3 },
+    { q: "The order of selected objects matters in a ____.", o: ["combination", "factorial only", "permutation", "binomial coefficient only"], a: 2 },
+    { q: "The order does not matter in a ____.", o: ["combination", "sequence", "permutation", "factorial"], a: 0 },
+    { q: "The word NIGERIAN contains N ____ times.", o: ["1", "3", "4", "2"], a: 3 },
+    { q: "(a+b)ⁿ contains ____ terms.", o: ["n", "n+1", "n−1", "2n"], a: 1 },
+    { q: "The binomial coefficients follow ____.", o: ["Pascal's triangle", "Fibonacci sequence", "prime numbers", "square numbers"], a: 0 },
+    { q: "The coefficient of aⁿ in (a+b)ⁿ is ____.", o: ["b", "n", "n!", "1"], a: 3 },
+    { q: "The coefficient of aⁿ⁻¹b is ____.", o: ["n²", "1", "n−1", "n"], a: 3 },
+    { q: "(a+b)² equals ____.", o: ["a²−2ab+b²", "2a²+2b²", "a²+b²", "a²+2ab+b²"], a: 3 },
+    { q: "The coefficient of x² in (x+1)⁴ is ____.", o: ["6", "12", "4", "8"], a: 0 },
+    { q: "The coefficient of x³ in (x+2)⁵ is ____.", o: ["80", "20", "10", "40"], a: 3 },
+    { q: "(1+x)⁵ begins ____.", o: ["1+2x+4x²+...", "5+10x+...", "1+5x+10x²+10x³+...", "1+x+x²+..."], a: 2 },
+    { q: "7C2 equals ____.", o: ["21", "14", "28", "42"], a: 0 },
+    { q: "7P2 equals ____.", o: ["49", "21", "14", "42"], a: 3 },
+    { q: "In the binomial expansion, each term is homogeneous of total degree ____.", o: ["2n", "n", "n−1", "n+1"], a: 1 },
+    { q: "A matrix is a rectangular array of ____.", o: ["determinants only", "numbers or variables", "sets only", "functions only"], a: 1 },
+    { q: "A matrix with m rows and n columns has order ____.", o: ["m×n", "m+n", "m−n", "n×m"], a: 0 },
+    { q: "A 2×3 matrix has ____ entries.", o: ["5", "6", "9", "8"], a: 1 },
+    { q: "A square matrix has ____ rows and columns.", o: ["one row and no columns", "one column only", "different numbers of", "equal numbers of"], a: 3 },
+    { q: "A matrix of all zeros is a ____ matrix.", o: ["null/zero", "symmetric", "identity", "diagonal"], a: 0 },
+    { q: "An identity matrix has ____ on its main diagonal.", o: ["1s", "0s", "2s", "arbitrary values"], a: 0 },
+    { q: "A diagonal matrix has zeros ____ the main diagonal.", o: ["on", "only above", "only below", "off"], a: 3 },
+    { q: "An upper triangular matrix has zeros ____ the main diagonal.", o: ["below", "on", "above", "everywhere"], a: 0 },
+    { q: "A symmetric matrix satisfies ____.", o: ["A⁻¹=A", "Aᵀ=A", "Aᵀ=−A", "A²=A"], a: 1 },
+    { q: "Matrix addition requires the matrices to have the same ____.", o: ["inverse", "trace", "determinant", "order"], a: 3 },
+    { q: "If A is 2×3 and B is 3×4, AB is ____.", o: ["3×3", "2×4", "4×2", "2×3"], a: 1 },
+    { q: "Matrix multiplication is generally ____.", o: ["always symmetric", "impossible", "commutative", "not commutative"], a: 3 },
+    { q: "(AB)ᵀ equals ____.", o: ["AᵀBᵀ", "BA", "BᵀAᵀ", "AB"], a: 2 },
+    { q: "A determinant is defined for a ____ matrix.", o: ["square", "rectangular only", "column only", "row only"], a: 0 },
+    { q: "The determinant of [[a,b],[c,d]] is ____.", o: ["ac−bd", "ad−bc", "ab−cd", "a+b+c+d"], a: 1 },
+    { q: "det([[1,2],[3,4]]) equals ____.", o: ["−10", "−2", "2", "10"], a: 1 },
+
+    // 151–200
+    { q: "If two rows are interchanged, the determinant ____.", o: ["stays unchanged", "doubles", "changes sign", "becomes zero"], a: 2 },
+    { q: "If two rows are identical, the determinant is ____.", o: ["1", "0", "undefined", "−1"], a: 1 },
+    { q: "The determinant of a diagonal matrix is the ____ of diagonal entries.", o: ["average", "sum", "difference", "product"], a: 3 },
+    { q: "The inverse of A is denoted ____.", o: ["Aᵀ", "adj(A)", "|A|", "A⁻¹"], a: 3 },
+    { q: "A matrix has an inverse when its determinant is ____.", o: ["nonzero", "zero", "one only", "negative only"], a: 0 },
+    { q: "A⁻¹ equals ____.", o: ["|A|/adj(A)", "A/adj(A)", "adj(A)/|A|", "|A|adj(A)"], a: 2 },
+    { q: "The adjoint is the transpose of the matrix of ____.", o: ["roots", "cofactors", "eigenvalues", "entries"], a: 1 },
+    { q: "Cramer's rule solves systems of ____ equations.", o: ["differential", "linear", "trigonometric", "quadratic only"], a: 1 },
+    { q: "If Δ ≠ 0 in Cramer's rule, the system has a ____ solution.", o: ["infinite only", "imaginary", "unique", "no"], a: 2 },
+    { q: "A linear system in matrix form is ____.", o: ["AB = X", "AX = B", "A − X = B", "A + B = X"], a: 1 },
+    { q: "Gaussian elimination produces an ____ linear system.", o: ["equivalent", "unrelated", "quadratic", "exponential"], a: 0 },
+    { q: "Multiplying a row by a nonzero scalar is an ____ row operation.", o: ["determinant", "elementary", "inverse", "illegal"], a: 1 },
+    { q: "For A = [[2,1],[1,1]], det(A) = ____.", o: ["−1", "1", "2", "3"], a: 1 },
+    { q: "If AB is defined, the number of columns of A equals the number of ____ of B.", o: ["determinants", "rows", "columns", "diagonal entries"], a: 1 },
+    { q: "A complex number is written in the form ____.", o: ["ab²", "a + ib", "a − b", "a/b"], a: 1 },
+    { q: "i² equals ____.", o: ["i", "0", "−1", "1"], a: 2 },
+    { q: "(3+4i)+(2−i) equals ____.", o: ["5+3i", "1+5i", "6+4i", "5−3i"], a: 0 },
+    { q: "(7+2i)−(3−4i) equals ____.", o: ["10+6i", "4+6i", "4−2i", "10−2i"], a: 1 },
+    { q: "(3+4i)(2−i) equals ____.", o: ["6−4i", "10+7i", "10+5i", "2+5i"], a: 2 },
+    { q: "The modulus of a+ib is ____.", o: ["ab", "√(a²+b²)", "a+b", "a²−b²"], a: 1 },
+    { q: "|3+4i| equals ____.", o: ["5", "3", "7", "4"], a: 0 },
+    { q: "The conjugate of a+ib is ____.", o: ["−a+ib", "−a−ib", "a−ib", "b+ia"], a: 2 },
+    { q: "To divide complex numbers, multiply by the denominator's ____.", o: ["conjugate", "modulus only", "argument", "square"], a: 0 },
+    { q: "The argument of a complex number is its ____ from the positive real axis.", o: ["determinant", "modulus", "distance", "angle"], a: 3 },
+    { q: "Polar form of z is ____.", o: ["r(cosθ−sinθ)", "θ(r+i)", "r(cosθ+i sinθ)", "r+θi"], a: 2 },
+    { q: "Euler's formula is ____.", o: ["e^(iθ)=cosθ+i sinθ", "e^(iθ)=cosθ−sinθ", "e^θ=i(cosθ+sinθ)", "e^(iθ)=rθ"], a: 0 },
+    { q: "De Moivre gives [r(cosθ+i sinθ)]ⁿ as ____.", o: ["nr(cosθ+i sinθ)", "rⁿ(cosnθ+i sinnθ)", "r(cosnθ+i sinnθ)", "rⁿ(cosθ+i sinθ)"], a: 1 },
+    { q: "The fourth roots of unity satisfy ____.", o: ["z⁵=1", "z²=1", "z⁴=1", "z³=1"], a: 2 },
+    { q: "One full revolution is ____ degrees.", o: ["270°", "90°", "180°", "360°"], a: 3 },
+    { q: "One full revolution is ____ radians.", o: ["4π", "2π", "π", "π/2"], a: 1 },
+    { q: "Degrees to radians: multiply by ____.", o: ["π/180", "180/π", "2π", "π"], a: 0 },
+    { q: "Radians to degrees: multiply by ____.", o: ["360π", "2π", "π/180", "180/π"], a: 3 },
+    { q: "180° equals ____ radians.", o: ["2π", "π/4", "π/2", "π"], a: 3 },
+    { q: "90° equals ____ radians.", o: ["π/4", "π/2", "π", "2π"], a: 1 },
+    { q: "120° equals ____ radians.", o: ["2π/3", "3π/2", "π/3", "4π/3"], a: 0 },
+    { q: "π/3 radians equals ____ degrees.", o: ["30°", "90°", "45°", "60°"], a: 3 },
+    { q: "The area of a sector with angle θ radians is ____.", o: ["½r²θ", "rθ", "πr²", "2πr"], a: 0 },
+    { q: "The arc length for radius r and angle θ radians is ____.", o: ["θ/r", "2rθ", "rθ", "r/θ"], a: 2 },
+    { q: "A circle of radius 6 and central angle 150° has arc length ____.", o: ["4π", "3π", "6π", "5π"], a: 3 },
+    { q: "Angular speed equals ____.", o: ["t/θ", "θ/t", "θt", "rθ"], a: 1 },
+    { q: "On the unit circle, coordinates are ____.", o: ["(sinθ, cosθ)", "(tanθ, secθ)", "(rθ, r/θ)", "(cosθ, sinθ)"], a: 3 },
+    { q: "sinθ equals ____.", o: ["hypotenuse/opposite", "opposite/hypotenuse", "adjacent/hypotenuse", "opposite/adjacent"], a: 1 },
+    { q: "cosθ equals ____.", o: ["opposite/adjacent", "opposite/hypotenuse", "adjacent/hypotenuse", "hypotenuse/adjacent"], a: 2 },
+    { q: "tanθ equals ____.", o: ["1/cosθ", "1/sinθ", "cosθ/sinθ", "sinθ/cosθ"], a: 3 },
+    { q: "sin30° equals ____.", o: ["1", "√2/2", "√3/2", "1/2"], a: 3 },
+    { q: "cos60° equals ____.", o: ["1/2", "0", "√3/2", "1"], a: 0 },
+    { q: "tan45° equals ____.", o: ["0", "1", "√3", "1/2"], a: 1 },
+    { q: "The identity sin²θ+cos²θ equals ____.", o: ["1", "0", "sinθcosθ", "2"], a: 0 },
+    { q: "The identity 1+tan²θ is equal to ____.", o: ["sec²θ", "1", "cot²θ", "csc²θ"], a: 0 },
+    { q: "The identity 1+cot²θ is equal to ____.", o: ["csc²θ", "tan²θ", "1", "sec²θ"], a: 0 }
+];
+
+let activeExam = [];
+let timeLeft = 1200; // 20 minutes countdown (20 * 60)
+let timer;
+const totalExamQuestions = 40; 
+let currentQuestionIndex = 0;
+
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function initExam() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1000);
+
+    let shuffledSelection = shufflePool([...fullMthPool]);
+    activeExam = shuffledSelection.slice(0, totalExamQuestions);
+    timeLeft = 1200; 
+    currentQuestionIndex = 0; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    startTimer();
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${String.fromCharCode(65 + i)}. ${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < totalExamQuestions; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => { block.classList.toggle('active', idx === index); });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => { dot.classList.toggle('current', idx === index); });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === totalExamQuestions - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}. ${item.o[item.a]}</p>` : ''}
+            </div>`;
+    });
+
+    let percentage = Math.round((score / totalExamQuestions) * 100);
+    let grade = "";
+    let remark = "";
+    let statusEmoji = "";
+
+    if (percentage >= 70) {
+        grade = "A"; remark = "Excellent! You have mastered MTH 101 algebra & set theory concepts!"; statusEmoji = "🔥🏆";
+    } else if (percentage >= 60) {
+        grade = "B"; remark = "Very Good! You're a math wizard in the making 😅."; statusEmoji = "😎✨";
+    } else if (percentage >= 50) {
+        grade = "C"; remark = "Good effort. Double check your quadratic and sequence formulas."; statusEmoji = "👍📖";
+    } else if (percentage >= 45) {
+        grade = "D"; remark = "Pass. Practice your logarithm rules and set laws."; statusEmoji = "⚠️📝";
+    } else if (percentage >= 40) {
+        grade = "E"; remark = "Fair. But you still gats read bro, algebra step-by-step."; statusEmoji = "👀⏳";
+    } else {
+        grade = "F"; remark = "Omo, go and read your MTH oooo! 😂"; statusEmoji = "💀❌";
+    }
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    
+    document.getElementById('result-screen').innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
+        <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
+        <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
+        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <div id="review-area">${reviewHTML}</div>
+        <button class="btn-action" onclick="location.reload()">Try Again</button>
+    `;
+    
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
