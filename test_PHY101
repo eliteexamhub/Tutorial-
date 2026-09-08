@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - PHY Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .exam-layout { display: grid; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initExam()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading Physics Questions...</p>
+</div>
+
+<div class="container">
+    <header>
+        <h1>GENERAL PHYSICS</h1>
+        <p>Elite Exam Hub • NO SHAKING, ELITE EXAM HUB DEY FOR YOU 😂</p>
+    </header>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 20:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">NO FALL YOUR HAND 😂</div>
+    <h1 id="score-text"></h1>
+    <div id="review-area"></div>
+    <button class="btn-action" onclick="location.reload()">Try Again</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+// Pool of 200 Physics questions
+const fullPhyPool = [
+    { q: "Which of the following is a fundamental SI unit?", o: ["Newton", "Joule", "Ampere", "Watt"], a: 2 },
+    { q: "The dimensional formula for force is ____.", o: ["MLT⁻¹", "MLT⁻²", "ML²T⁻²", "M⁻¹LT⁻²"], a: 1 },
+    { q: "Which of the following is a scalar quantity?", o: ["Velocity", "Acceleration", "Electric field", "Work"], a: 3 },
+    { q: "The dot product of two perpendicular vectors is equal to ____.", o: ["1", "0", "Their product", "−1"], a: 1 },
+    { q: "The magnitude of the cross product of two parallel vectors is ____.", o: ["Maximum", "Zero", "1", "Negative"], a: 1 },
+    { q: "If displacement is proportional to time squared (s ∝ t²), the acceleration is ____.", o: ["Zero", "Constant", "Increasing", "Decreasing"], a: 1 },
+    { q: "The area under a velocity-time graph represents ____.", o: ["Acceleration", "Force", "Displacement", "Impulse"], a: 2 },
+    { q: "The slope of a displacement-time graph gives ____.", o: ["Velocity", "Acceleration", "Distance", "Speed"], a: 0 },
+    { q: "A body thrown vertically upwards reaches maximum height when its ____.", o: ["Acceleration is zero", "Velocity is zero", "Displacement is zero", "Force is zero"], a: 1 },
+    { q: "At what angle of projection is the horizontal range of a projectile maximum?", o: ["30°", "45°", "60°", "90°"], a: 1 },
+    { q: "Newton's First Law of Motion introduces the concept of ____.", o: ["Momentum", "Inertia", "Energy", "Work"], a: 1 },
+    { q: "The rate of change of momentum of a body is equal to ____.", o: ["Work done", "Impulse", "Applied Force", "Power"], a: 2 },
+    { q: "Impulse is equal to the change in ____.", o: ["Kinetic energy", "Velocity", "Momentum", "Potential energy"], a: 2 },
+    { q: "In an inelastic collision, which quantity is conserved?", o: ["Kinetic energy only", "Linear momentum only", "Both momentum and KE", "Neither"], a: 1 },
+    { q: "In a perfectly elastic collision, which quantity is conserved?", o: ["Momentum only", "Kinetic energy only", "Both momentum and KE", "Velocity only"], a: 2 },
+    { q: "The recoil of a gun after firing a bullet demonstrates Newton's ____ Law.", o: ["First", "Second", "Third", "Law of Gravitation"], a: 2 },
+    { q: "Work done on an object is zero if the angle between force and displacement is ____.", o: ["0°", "45°", "90°", "180°"], a: 2 },
+    { q: "The SI unit of Work and Energy is ____.", o: ["Watt", "Newton", "Joule", "Pascal"], a: 2 },
+    { q: "One horsepower (hp) is equivalent to approximately ____ Watts.", o: ["500 W", "746 W", "1000 W", "360 W"], a: 1 },
+    { q: "The work-energy theorem states that work done equals change in ____.", o: ["Potential Energy", "Kinetic Energy", "Momentum", "Total Energy"], a: 1 },
+    { q: "A body of mass 2 kg moving at 4 m/s has a kinetic energy of ____.", o: ["8 J", "16 J", "32 J", "4 J"], a: 1 },
+    { q: "If velocity of a body is doubled, its kinetic energy increases by a factor of ____.", o: ["2", "4", "8", "16"], a: 1 },
+    { q: "The gravitational potential energy of an object at height h is given by ____.", o: ["mgh", "½mv²", "mg/h", "m/gh"], a: 0 },
+    { q: "Centripetal acceleration is always directed towards ____.", o: ["The tangent", "Away from the center", "The center of the circle", "Vertically down"], a: 2 },
+    { q: "The linear speed v of a rotating body with angular velocity ω and radius r is ____.", o: ["v = ω/r", "v = rω", "v = r²ω", "v = ω/r²"], a: 1 },
+    { q: "The SI unit of angular velocity is ____.", o: ["rad/s²", "m/s", "rad/s", "rpm"], a: 2 },
+    { q: "The moment of inertia of a body depends on ____.", o: ["Mass only", "Distribution of mass and axis of rotation", "Angular velocity", "Torque"], a: 1 },
+    { q: "Torque is the rotational analogue of ____.", o: ["Mass", "Force", "Momentum", "Work"], a: 1 },
+    { q: "The condition for static equilibrium of a rigid body requires ____.", o: ["ΣF = 0 only", "Στ = 0 only", "Both ΣF = 0 and Στ = 0", "Σv = 0"], a: 2 },
+    { q: "Hooke's Law states that within elastic limit, stress is proportional to ____.", o: ["Strain", "Force", "Area", "Length"], a: 0 },
+    { q: "Young's Modulus is defined as the ratio of ____.", o: ["Shear stress to shear strain", "Tensile stress to tensile strain", "Volume stress to volume strain", "Force to area"], a: 1 },
+    { q: "The SI unit of stress is ____.", o: ["N·m", "N/m² (Pascal)", "Dimensionless", "J/m²"], a: 1 },
+    { q: "Strain is a quantity with ____.", o: ["Unit of meters", "Unit of N/m", "No dimensions", "Unit of Pascals"], a: 2 },
+    { q: "Pascal's principle applies to liquids at rest and states that pressure is transmitted ____.", o: ["Only downwards", "Equally in all directions", "Only upwards", "Inversely with depth"], a: 1 },
+    { q: "Archimedes' principle states that buoyant force equals the weight of ____.", o: ["The submerged body", "The fluid displaced", "The container", "The total liquid"], a: 1 },
+    { q: "Bernoulli's principle is a consequence of the law of conservation of ____.", o: ["Mass", "Momentum", "Energy", "Pressure"], a: 2 },
+    { q: "Viscosity is the internal friction of fluids. Its SI unit is ____.", o: ["N·s/m² (Pa·s)", "N/m", "Joule", "Pascal"], a: 0 },
+    { q: "The equation of continuity for fluid flow expresses conservation of ____.", o: ["Energy", "Mass", "Volume", "Pressure"], a: 1 },
+    { q: "Surface tension is defined as force per unit ____.", o: ["Area", "Volume", "Length", "Mass"], a: 2 },
+    { q: "Temperature is a measure of the average ____ of molecules.", o: ["Potential energy", "Kinetic energy", "Total mass", "Momentum"], a: 1 },
+    { q: "Absolute zero temperature corresponds to ____ on the Celsius scale.", o: ["0 °C", "−273.15 °C", "100 °C", "−100 °C"], a: 1 },
+    { q: "The Zeroth Law of Thermodynamics defines the concept of ____.", o: ["Work", "Internal energy", "Temperature", "Entropy"], a: 2 },
+    { q: "The First Law of Thermodynamics is a statement of conservation of ____.", o: ["Heat", "Energy", "Mass", "Work"], a: 1 },
+    { q: "In an isothermal process, which parameter remains constant?", o: ["Pressure", "Volume", "Temperature", "Heat capacity"], a: 2 },
+    { q: "In an adiabatic process, there is no heat exchange, meaning ____.", o: ["ΔQ = 0", "ΔT = 0", "ΔW = 0", "ΔU = 0"], a: 0 },
+    { q: "An isochoric process is one that takes place at constant ____.", o: ["Pressure", "Volume", "Temperature", "Entropy"], a: 1 },
+    { q: "An isobaric process takes place at constant ____.", o: ["Volume", "Temperature", "Pressure", "Heat"], a: 2 },
+    { q: "The Second Law of Thermodynamics introduces the concept of ____.", o: ["Temperature", "Internal Energy", "Entropy", "Enthalpy"], a: 2 },
+    { q: "Heat transfer by direct physical contact between solids is ____.", o: ["Convection", "Conduction", "Radiation", "Advection"], a: 1 },
+    { q: "Heat transfer through fluid movement is called ____.", o: ["Conduction", "Radiation", "Convection", "Induction"], a: 2 },
+    { q: "The mode of heat transfer that requires no material medium is ____.", o: ["Conduction", "Convection", "Radiation", "Evaporation"], a: 2 },
+    { q: "Specific heat capacity is the amount of heat needed to raise the temperature of ____.", o: ["1 kg of substance by 1 °C", "Entire body by 1 °C", "1 g of substance by 10 °C", "1 mole by 100 °C"], a: 0 },
+    { q: "Coulomb's Law states that electrostatic force between two charges is inversely proportional to ____.", o: ["Distance r", "Distance squared r²", "Charge magnitude", "Permittivity"], a: 1 },
+    { q: "The SI unit of electric charge is ____.", o: ["Ampere", "Coulomb", "Volt", "Farad"], a: 1 },
+    { q: "The electric field E inside a conductor in electrostatic equilibrium is ____.", o: ["Maximum", "Constant but non-zero", "Zero", "Infinite"], a: 2 },
+    { q: "Electric potential is a ____ quantity and its unit is ____.", o: ["Vector, Volt", "Scalar, Volt", "Scalar, Joule", "Vector, Coulomb"], a: 1 },
+    { q: "Capacitance is defined as C = ____.", o: ["Q/V", "QV", "V/Q", "I/V"], a: 0 },
+    { q: "The unit of capacitance is the ____.", o: ["Henry", "Farad", "Ohm", "Tesla"], a: 1 },
+    { q: "When capacitors are connected in parallel, total capacitance is ____.", o: ["Sum of individual capacitances", "Reciprocal of sums", "Less than smallest", "Product over sum"], a: 0 },
+    { q: "Ohm's Law states that current I is directly proportional to voltage V provided ____.", o: ["Resistance changes", "Temperature and physical conditions remain constant", "Power is zero", "Length decreases"], a: 1 },
+    { q: "The unit of electrical resistance is ____.", o: ["Volt", "Watt", "Ohm", "Ampere"], a: 2 },
+    { q: "Electrical power P in terms of current I and resistance R is ____.", o: ["I R", "I² R", "I / R", "V / R²"], a: 1 },
+    { q: "Kirchhoff's First Rule (Junction Rule) is based on conservation of ____.", o: ["Energy", "Charge", "Momentum", "Voltage"], a: 1 },
+    { q: "Kirchhoff's Second Rule (Loop Rule) is based on conservation of ____.", o: ["Charge", "Current", "Energy", "Mass"], a: 2 },
+    { q: "The magnetic field inside a long straight current-carrying solenoid is ____.", o: ["Zero", "Non-uniform", "Uniform and parallel to axis", "Perpendicular to axis"], a: 2 },
+    { q: "The force on a moving charge q in a magnetic field B with velocity v is given by ____.", o: ["F = q(v · B)", "F = q(v × B)", "F = q/vB", "F = qvB²"], a: 1 },
+    { q: "The SI unit of magnetic field strength (B) is ____.", o: ["Weber", "Tesla", "Henry", "Gauss"], a: 1 },
+    { q: "Faraday's Law of Electromagnetic Induction states that induced EMF depends on rate of change of ____.", o: ["Electric flux", "Current", "Magnetic flux", "Resistance"], a: 2 },
+    { q: "Lenz's Law gives the direction of induced current and is a consequence of conservation of ____.", o: ["Charge", "Energy", "Momentum", "Mass"], a: 1 },
+    { q: "Simple Harmonic Motion (SHM) occurs when restoring force is directly proportional to ____.", o: ["Velocity", "Displacement and opposite in direction", "Time squared", "Mass"], a: 1 },
+    { q: "The period T of a simple pendulum of length L is T = ____.", o: ["2π√(g/L)", "2π√(L/g)", "½π√(L/g)", "2π(L/g)"], a: 1 },
+    { q: "The maximum displacement of an oscillating particle from its equilibrium position is ____.", o: ["Wavelength", "Frequency", "Amplitude", "Phase"], a: 2 },
+    { q: "Frequency f and period T are related by ____.", o: ["f = T²", "f = 1/T", "f = 2πT", "f = T/2"], a: 1 },
+    { q: "Transverse waves are waves in which particle displacement is ____ to wave propagation.", o: ["Parallel", "Perpendicular", "At 45°", "Opposite"], a: 1 },
+    { q: "Sound waves in air are examples of ____ waves.", o: ["Transverse", "Longitudinal", "Electromagnetic", "Torsional"], a: 1 },
+    { q: "The speed of light in vacuum is approximately ____.", o: ["3 × 10⁸ m/s", "3 × 10⁶ m/s", "340 m/s", "1.5 × 10⁸ m/s"], a: 0 },
+    { q: "The relation between wave speed v, frequency f, and wavelength λ is ____.", o: ["v = f/λ", "v = f λ", "v = λ/f", "v = f² λ"], a: 1 },
+    { q: "The Doppler Effect refers to the apparent change in ____ due to relative motion.", o: ["Amplitude", "Frequency/Pitch", "Wave speed", "Phase"], a: 1 },
+    { q: "Light is what type of wave?", o: ["Longitudinal mechanical", "Transverse electromagnetic", "Longitudinal electromagnetic", "Surface pressure wave"], a: 1 },
+    { q: "Snell's Law of Refraction is written as ____.", o: ["n₁ cos θ₁ = n₂ cos θ₂", "n₁ sin θ₁ = n₂ sin θ₂", "n₁ tan θ₁ = n₂ tan θ₂", "n₁ / sin θ₁ = n₂ / sin θ₂"], a: 1 },
+    { q: "Total internal reflection occurs when light travels from a ____ medium to a ____ medium.", o: ["Less dense to denser", "Denser to less dense", "Vacuum to air", "Glass to diamond"], a: 1 },
+    { q: "The focal length f of a spherical mirror of radius of curvature R is f = ____.", o: ["2R", "R/2", "R²", "1/R"], a: 1 },
+    { q: "A convex lens is also known as a ____ lens.", o: ["Diverging", "Converging", "Planar", "Cylindrical"], a: 1 },
+    { q: "A concave lens always produces an image that is ____.", o: ["Real and inverted", "Virtual, erect and diminished", "Real and enlarged", "Virtual and enlarged"], a: 1 },
+    { q: "The power of a lens in Diopters is equal to ____.", o: ["1 / f (in meters)", "f (in cm)", "100 / f (in meters)", "f²"], a: 0 },
+    { q: "Myopia (nearsightedness) is corrected using a ____ lens.", o: ["Convex", "Concave", "Cylindrical", "Bifocal"], a: 1 },
+    { q: "Hypermetropia (farsightedness) is corrected using a ____ lens.", o: ["Concave", "Convex", "Plano-concave", "Diverging"], a: 1 },
+    { q: "The splitting of white light into its constituent colors by a prism is called ____.", o: ["Diffraction", "Interference", "Dispersion", "Polarization"], a: 2 },
+    { q: "The bending of waves around the corners of an obstacle is called ____.", o: ["Refraction", "Diffraction", "Reflection", "Polarization"], a: 1 },
+    { q: "Phenomenon proving light is a transverse wave is ____.", o: ["Interference", "Diffraction", "Polarization", "Refraction"], a: 2 },
+    { q: "Young's double-slit experiment demonstrates wave property of ____.", o: ["Polarization", "Interference", "Photoelectric effect", "Refraction"], a: 1 },
+    { q: "Constructive interference occurs when path difference is ____.", o: ["(m + ½)λ", "mλ (integer multiples of λ)", "λ / 4", "3λ / 2"], a: 1 },
+    { q: "Destructive interference occurs when path difference is ____.", o: ["mλ", "(m + ½)λ", "2mλ", "0"], a: 1 },
+    { q: "The photoelectric effect demonstrates the ____ nature of light.", o: ["Wave", "Particle (photon)", "Transverse", "Longitudinal"], a: 1 },
+    { q: "The energy of a photon of frequency f is E = ____.", o: ["hf", "h/f", "hc", "f/h"], a: 0 },
+    { q: "Planck's constant h has the unit of ____.", o: ["Joule", "Joule/second", "Joule·second", "Watt"], a: 2 },
+    { q: "The work function of a metal is the minimum energy required to ____.", o: ["Excite an atom", "Emit an electron from the surface", "Ionize a nucleus", "Produce X-rays"], a: 1 },
+    { q: "De Broglie wavelength λ of a particle of momentum p is λ = ____.", o: ["h p", "h / p", "p / h", "h / p²"], a: 1 },
+    { q: "Rutherford's alpha scattering experiment led to discovery of atomic ____.", o: ["Electron", "Neutron", "Nucleus", "Quark"], a: 2 },
+    { q: "In Bohr's model of the hydrogen atom, angular momentum is quantized as mvr = ____.", o: ["nh/2π", "nh", "2π/nh", "n²h"], a: 0 },
+    { q: "An atom is electrically neutral because number of protons equals number of ____.", o: ["Neutrons", "Electrons", "Positrons", "Nucleons"], a: 1 },
+    { q: "Isotopes are atoms with the same number of ____ but different number of ____.", o: ["Neutrons, protons", "Protons, neutrons", "Electrons, protons", "Nucleons, protons"], a: 1 },
+    { q: "Alpha particles consist of ____.", o: ["High speed electrons", "Helium nuclei (2 protons + 2 neutrons)", "Photons", "Neutrons"], a: 1 },
+    { q: "Beta minus particles are fast moving ____.", o: ["Protons", "Electrons", "Helium nuclei", "Neutrons"], a: 1 },
+    { q: "Gamma rays are ____.", o: ["Charged particles", "Helium ions", "High-energy electromagnetic radiation", "Electrons"], a: 2 },
+    { q: "The time required for half the radioactive nuclei in a sample to decay is the ____.", o: ["Mean life", "Half-life", "Decay constant", "Period"], a: 1 },
+    { q: "Nuclear fission involves ____.", o: ["Combining light nuclei into a heavy one", "Splitting a heavy nucleus into lighter ones", "Electron capture", "Alpha emission"], a: 1 },
+    { q: "Nuclear fusion is the reaction powering ____.", o: ["Nuclear power plants", "The Sun and stars", "Geothermal vents", "Chemical batteries"], a: 1 },
+    { q: "Einstein's mass-energy equivalence equation is ____.", o: ["E = mc²", "E = ½mc²", "E = m/c²", "E = mgh"], a: 0 },
+    { q: "Special Relativity states that the speed of light in a vacuum is ____ for all observers.", o: ["Variable", "Constant", "Dependent on source velocity", "Dependent on frequency"], a: 1 },
+    { q: "Which quantity remains invariant under Lorentz transformation?", o: ["Time interval", "Length", "Speed of light in vacuum", "Mass"], a: 2 },
+    { q: "A scalar quantity has ____.", o: ["Magnitude only", "Direction only", "Both magnitude and direction", "Neither"], a: 0 },
+    { q: "A vector quantity has ____.", o: ["Magnitude only", "Both magnitude and direction", "Direction only", "No units"], a: 1 },
+    { q: "The resultant of two forces 3 N and 4 N acting at 90° to each other is ____.", o: ["7 N", "1 N", "5 N", "12 N"], a: 2 },
+    { q: "If net force on an object is zero, the object is in ____.", o: ["Free fall", "Equilibrium", "Uniform acceleration", "Circular motion"], a: 1 },
+    { q: "The force of friction is always ____ to the direction of motion.", o: ["Parallel and same", "Opposite", "Perpendicular", "At 45°"], a: 1 },
+    { q: "Static friction is generally ____ kinetic friction.", o: ["Greater than", "Less than", "Equal to", "Zero compared to"], a: 0 },
+    { q: "The coefficient of friction μ is dimensionless because it is a ratio of two ____.", o: ["Distances", "Masses", "Forces", "Velocities"], a: 2 },
+    { q: "Terminal velocity is reached when drag force plus buoyancy equals ____.", o: ["Zero", "Weight of the object", "Mass times g²", "Double the weight"], a: 1 },
+    { q: "Escaping Earth's gravity requires escape velocity, which is roughly ____ km/s.", o: ["3.0", "7.9", "11.2", "29.8"], a: 2 },
+    { q: "Kepler's First Law states that planets move in ____ orbits with the Sun at one focus.", o: ["Circular", "Elliptical", "Parabolic", "Hyperbolic"], a: 1 },
+    { q: "Kepler's Second Law implies conservation of ____.", o: ["Linear momentum", "Angular momentum", "Kinetic energy", "Mass"], a: 1 },
+    { q: "Kepler's Third Law states that T² is proportional to ____.", o: ["r", "r²", "r³", "1/r"], a: 2 },
+    { q: "Universal Gravitational Constant G has SI units of ____.", o: ["N·m²/kg²", "N·kg/m²", "m/s²", "J/kg"], a: 0 },
+    { q: "Acceleration due to gravity g on Earth's surface is approximately ____.", o: ["9.8 m/s²", "1.6 m/s²", "6.67 m/s²", "3 × 10⁸ m/s²"], a: 0 },
+    { q: "Value of g ____ as altitude above Earth's surface increases.", o: ["Increases", "Decreases", "Remains constant", "Doubles"], a: 1 },
+    { q: "Weight of an object in a freely falling elevator is ____.", o: ["True weight", "Double true weight", "Apparent zero (weightlessness)", "Half true weight"], a: 2 },
+    { q: "Simple harmonic motion velocity is maximum at ____.", o: ["Extreme position", "Equilibrium position", "Midway between extreme and equilibrium", "At all points"], a: 1 },
+    { q: "Acceleration in SHM is maximum at ____.", o: ["Equilibrium position", "Extreme positions", "Never maximum", "Center"], a: 1 },
+    { q: "Resonance occurs when driving frequency equals ____ of the system.", o: ["Zero", "Double frequency", "Natural frequency", "Infinite frequency"], a: 2 },
+    { q: "In damped oscillations, amplitude ____ with time.", o: ["Increases", "Decreases exponentially", "Stays constant", "Oscillates randomly"], a: 1 },
+    { q: "Pitch of a sound wave depends on its ____.", o: ["Amplitude", "Frequency", "Speed", "Loudness"], a: 1 },
+    { q: "Loudness of sound depends primarily on wave ____.", o: ["Frequency", "Wavelength", "Amplitude", "Speed"], a: 2 },
+    { q: "Human audible frequency range is roughly ____.", o: ["0 Hz - 100 Hz", "20 Hz - 20,000 Hz", "20,000 Hz - 2 MHz", "1 MHz - 1 GHz"], a: 1 },
+    { q: "Sound waves cannot travel through ____.", o: ["Water", "Steel", "Vacuum", "Air"], a: 2 },
+    { q: "Beat frequency produced by two tuning forks of 256 Hz and 260 Hz is ____.", o: ["516 Hz", "4 Hz", "258 Hz", "2 Hz"], a: 1 },
+    { q: "In a standing wave on a string, points of zero amplitude are called ____.", o: ["Antinodes", "Nodes", "Crests", "Troughs"], a: 1 },
+    { q: "Points of maximum amplitude in a standing wave are called ____.", o: ["Nodes", "Antinodes", "Troughs", "Foci"], a: 1 },
+    { q: "Distance between two consecutive nodes in a standing wave is ____.", o: ["λ", "λ / 2", "λ / 4", "2λ"], a: 1 },
+    { q: "Thermal conductivity k is a measure of a material's ability to ____.", o: ["Store heat", "Conduct heat", "Reflect light", "Expand"], a: 1 },
+    { q: "Linear thermal expansion formula is ΔL = ____.", o: ["α L₀ ΔT", "α / (L₀ ΔT)", "L₀ / (α ΔT)", "α L₀² ΔT"], a: 0 },
+    { q: "The Ideal Gas Law is written as ____.", o: ["PV = nRT", "P/V = nRT", "PT = nVR", "PV/T = R/n"], a: 0 },
+    { q: "Boyle's Law states that for constant temperature, pressure P is inversely proportional to ____.", o: ["Temperature T", "Volume V", "Mass m", "Number of moles n"], a: 1 },
+    { q: "Charle's Law states that at constant pressure, volume V is directly proportional to ____.", o: ["Absolute Temperature T", "Pressure P", "Density ρ", "Mass m"], a: 0 },
+    { q: "Universal Gas Constant R has value approximately ____ J/(mol·K).", o: ["8.314", "6.022", "1.38", "9.81"], a: 0 },
+    { q: "Root-mean-square speed (v_rms) of ideal gas molecules is proportional to ____.", o: ["T", "√T", "T²", "1/T"], a: 1 },
+    { q: "Specific heat capacity of water is approximately ____ J/(kg·K).", o: ["1000", "4186", "500", "2100"], a: 1 },
+    { q: "Heat of fusion is the heat required to change a substance from ____ without temperature change.", o: ["Liquid to gas", "Solid to liquid", "Gas to solid", "Liquid to solid only"], a: 1 },
+    { q: "Heat of vaporization changes a substance from ____.", o: ["Solid to liquid", "Liquid to gas", "Gas to liquid", "Solid to gas"], a: 1 },
+    { q: "An equipotential surface is a surface where electric potential is ____ at all points.", o: ["Zero", "The same", "Maximum", "Infinite"], a: 1 },
+    { q: "Electric field lines are always ____ to equipotential surfaces.", o: ["Parallel", "Perpendicular", "Tangential", "At 45°"], a: 1 },
+    { q: "Work done moving a charge along an equipotential surface is ____.", o: ["QV", "Zero", "Maximum", "qE"], a: 1 },
+    { q: "Dielectric inserted in a capacitor ____ its capacitance.", o: ["Decreases", "Increases", "Does not change", "Reduces to zero"], a: 1 },
+    { q: "Resistors in series have the same ____ passing through them.", o: ["Voltage", "Current", "Power", "Charge density"], a: 1 },
+    { q: "Resistors in parallel have the same ____ across them.", o: ["Current", "Voltage", "Resistance", "Energy"], a: 1 },
+    { q: "The equivalent resistance of three 6-Ohm resistors in parallel is ____.", o: ["18 Ω", "2 Ω", "6 Ω", "1 Ω"], a: 1 },
+    { q: "Internal resistance of an ideal voltmeter is ____.", o: ["Zero", "Infinite", "100 Ohms", "Equal to battery EMF"], a: 1 },
+    { q: "Internal resistance of an ideal ammeter is ____.", o: ["Infinite", "Zero", "1 Ohm", "100 Ohms"], a: 1 },
+    { q: "A galvanometer is converted into an ammeter by connecting a low resistance in ____.", o: ["Series", "Parallel (shunt)", "Bridge", "Series-parallel"], a: 1 },
+    { q: "A galvanometer is converted into a voltmeter by connecting a high resistance in ____.", o: ["Series", "Parallel", "Shunt", "Ground"], a: 0 },
+    { q: "Magnetic force on a current-carrying wire of length L in field B is F = ____.", o: ["I L B sin θ", "I L / B", "I B / L", "I² L B"], a: 0 },
+    { q: "The device that converts mechanical energy into electrical energy is a ____.", o: ["Motor", "Generator / Dynamo", "Transformer", "Rectifier"], a: 1 },
+    { q: "A transformer works on the principle of ____.", o: ["Self-induction", "Mutual induction", "Seebeck effect", "Peltier effect"], a: 1 },
+    { q: "A step-up transformer increases ____.", o: ["Current", "Voltage", "Power", "Frequency"], a: 1 },
+    { q: "Transformers operate on ____ current only.", o: ["Direct (DC)", "Alternating (AC)", "Constant", "Static"], a: 1 },
+    { q: "In an AC circuit with pure resistor, voltage and current are ____.", o: ["90° out of phase", "In phase", "180° out of phase", "45° out of phase"], a: 1 },
+    { q: "Inductive reactance X_L is given by ____.", o: ["2πfL", "1/(2πfL)", "2πf/L", "L/(2πf)"], a: 0 },
+    { q: "Capacitive reactance X_C is given by ____.", o: ["2πfC", "1/(2πfC)", "2πf/C", "C/(2πf)"], a: 1 },
+    { q: "Resonance in RLC series circuit occurs when ____.", o: ["X_L = R", "X_L = X_C", "X_C = R", "R = 0"], a: 1 },
+    { q: "At resonance in series RLC circuit, impedance Z equals ____.", o: ["Zero", "Resistance R", "X_L", "Infinity"], a: 1 },
+    { q: "Electromagnetic waves consist of oscillating electric and magnetic fields that are ____ to each other.", o: ["Parallel", "Perpendicular", "At 45°", "Anti-parallel"], a: 1 },
+    { q: "Which EM wave has the highest frequency?", o: ["Radio waves", "Microwaves", "Gamma rays", "Infrared"], a: 2 },
+    { q: "Which EM wave has the longest wavelength?", o: ["X-rays", "Gamma rays", "Radio waves", "Ultraviolet"], a: 2 },
+    { q: "Critical angle θ_c formula for light passing into medium with n=1 is sin θ_c = ____.", o: ["n", "1 / n", "n²", "1 / n²"], a: 1 },
+    { q: "Magnifying power of a simple microscope is M = ____.", o: ["1 + D/f", "D f", "f/D", "1 − D/f"], a: 0 },
+    { q: "Focal length of a plane mirror is ____.", o: ["Zero", "Infinite", "1 meter", "10 cm"], a: 1 },
+    { q: "Magnification of a mirror or lens is defined as ratio of image height to ____.", o: ["Focal length", "Object height", "Lens diameter", "Radius"], a: 1 },
+    { q: "Refractive index of a medium is ratio of speed of light in vacuum to ____.", o: ["Speed of light in medium", "Frequency in medium", "Wavelength in vacuum", "Density"], a: 0 },
+    { q: "Unit of luminous intensity is ____.", o: ["Lumen", "Lux", "Candela", "Watt"], a: 2 },
+    { q: "In a p-n junction diode, depletion layer contains ____.", o: ["Free electrons only", "Free holes only", "No mobile charge carriers", "Excess ions"], a: 2 },
+    { q: "Forward biasing a p-n junction diode ____ the depletion width.", o: ["Increases", "Decreases", "Has no effect on", "Doubles"], a: 1 },
+    { q: "A transistor has three terminals called ____.", o: ["Anode, Cathode, Gate", "Emitter, Base, Collector", "Source, Drain, Gate", "Positive, Negative, Neutral"], a: 1 },
+    { q: "The majority charge carriers in p-type semiconductors are ____.", o: ["Electrons", "Holes", "Protons", "Neutrons"], a: 1 },
+    { q: "The majority charge carriers in n-type semiconductors are ____.", o: ["Holes", "Electrons", "Positrons", "Ions"], a: 1 },
+    { q: "Process of adding impurities to a pure semiconductor is called ____.", o: ["Diffraction", "Doping", "Annealing", "Ionization"], a: 1 },
+    { q: "SI unit of activity of a radioactive source is ____.", o: ["Curie", "Becquerel (Bq)", "Gray", "Sievert"], a: 1 },
+    { q: "A nuclear reactor controls the chain reaction using control rods made of ____.", o: ["Graphite", "Cadmium or Boron", "Heavy water", "Uranium"], a: 1 },
+    { q: "Moderator in a nuclear reactor is used to ____ neutrons.", o: ["Absorb", "Slow down", "Speed up", "Produce"], a: 1 },
+    { q: "X-rays are produced when fast moving electrons strike a target of high ____.", o: ["Volume", "Atomic number and melting point", "Capacitance", "Resistance"], a: 1 },
+    { q: "Compton effect involves scattering of X-ray photons by ____.", o: ["Nuclei", "Free electrons", "Protons", "Neutrons"], a: 1 },
+    { q: "Uncertainty Principle was formulated by ____.", o: ["Einstein", "Heisenberg", "Bohr", "Schrödinger"], a: 1 },
+    { q: "According to Heisenberg's Uncertainty Principle, Δx Δp ≥ ____.", o: ["h / 2", "h / (4π)", "h / π", "2πh"], a: 1 },
+    { q: "Mass defect in a nucleus represents energy called ____.", o: ["Kinetic energy", "Binding energy", "Thermal energy", "Ionization energy"], a: 1 }
+];
+
+let activeExam = [];
+let timeLeft = 1200; // 20 minutes countdown (20 * 60)
+let timer;
+const totalExamQuestions = 40; 
+let currentQuestionIndex = 0;
+
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function initExam() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1000);
+
+    let shuffledSelection = shufflePool([...fullPhyPool]);
+    activeExam = shuffledSelection.slice(0, totalExamQuestions);
+    timeLeft = 1200; 
+    currentQuestionIndex = 0; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    startTimer();
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${String.fromCharCode(65 + i)}. ${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < totalExamQuestions; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => { block.classList.toggle('active', idx === index); });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => { dot.classList.toggle('current', idx === index); });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === totalExamQuestions - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}. ${item.o[item.a]}</p>` : ''}
+            </div>`;
+    });
+
+    let percentage = Math.round((score / totalExamQuestions) * 100);
+    let grade = "";
+    let remark = "";
+    let statusEmoji = "";
+
+    if (percentage >= 70) {
+        grade = "A"; remark = "Solid work! You've mastered core physics principles!"; statusEmoji = "⚡🏆";
+    } else if (percentage >= 60) {
+        grade = "B"; remark = "Good performance! Physics no fit shake you 😅."; statusEmoji = "😎✨";
+    } else if (percentage >= 50) {
+        grade = "C"; remark = "Fair score! Brush up on your optics and electricity formulas."; statusEmoji = "👍📖";
+    } else if (percentage >= 45) {
+        grade = "D"; remark = "Pass grade. Review vectors and thermodynamics laws."; statusEmoji = "⚠️📝";
+    } else if (percentage >= 40) {
+        grade = "E"; remark = "Borderline! Work on your unit conversions and mechanics equations."; statusEmoji = "👀⏳";
+    } else {
+        grade = "F"; remark = "Omo, go back to your Physics textbooks ASAP! 😂"; statusEmoji = "💀❌";
+    }
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    
+    document.getElementById('result-screen').innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
+        <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
+        <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
+        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <div id="review-area">${reviewHTML}</div>
+        <button class="btn-action" onclick="location.reload()">Try Again</button>
+    `;
+    
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
