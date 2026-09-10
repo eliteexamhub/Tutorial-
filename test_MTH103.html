@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - MTH 103 Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .exam-layout { display: grid; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initExam()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading MTH 103 Practice Exam...</p>
+</div>
+
+<div class="container">
+    <header>
+        <h1>MTH 103: ELEMENTARY MATHEMATICS III</h1>
+        <p>Elite Exam Hub • NO SHAKING, ELITE EXAM HUB DEY FOR YOU 😂</p>
+    </header>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 30:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">NO FALL YOUR HAND 😂</div>
+    <h1 id="score-text"></h1>
+    <div id="review-area"></div>
+    <button class="btn-action" onclick="location.reload()">Try Again</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+// MTH 103 200 Question Bank
+const fullPhyPool = [
+    { q: "Which of the following quantities has both magnitude and direction?", o: ["Mass", "Temperature", "Velocity", "Time"], a: 2, exp: "A vector quantity possesses both magnitude and direction, whereas scalar quantities have magnitude only." },
+    { q: "Which of the following is a scalar quantity?", o: ["Displacement", "Force", "Velocity", "Distance"], a: 3, exp: "Distance has magnitude only and is therefore a scalar quantity." },
+    { q: "The magnitude of the vector a = 3i + 4j is:", o: ["3", "4", "5", "7"], a: 2, exp: "|a| = √(3² + 4²) = √25 = 5." },
+    { q: "The vector a = 5i − 12j has magnitude:", o: ["7", "13", "17", "144"], a: 1, exp: "|a| = √(5² + (−12)²) = √169 = 13." },
+    { q: "A vector whose magnitude is 1 is called a:", o: ["Null vector", "Unit vector", "Position vector", "Equal vector"], a: 1, exp: "A unit vector has a magnitude exactly equal to one." },
+    { q: "The unit vector in the direction of a vector a is:", o: ["a|a|", "a/|a|", "|a|/a", "a²"], a: 1, exp: "Dividing a non-zero vector by its magnitude produces a unit vector in the same direction." },
+    { q: "The zero vector has magnitude:", o: ["−1", "0", "1", "Undefined"], a: 1, exp: "The zero or null vector has all its components equal to zero." },
+    { q: "If a = 2i + 3j and b = 4i − j, then a + b is:", o: ["6i + 2j", "2i + 4j", "6i − 2j", "8i + 3j"], a: 0, exp: "Add corresponding components: (2 + 4)i + (3 − 1)j = 6i + 2j." },
+    { q: "If a = 5i + 2j and b = 3i − 4j, then a − b is:", o: ["2i + 6j", "8i − 2j", "2i − 2j", "8i + 6j"], a: 0, exp: "a − b = (5 − 3)i + [2 − (−4)]j = 2i + 6j." },
+    { q: "If a = 3i − 2j + k, then 2a is:", o: ["6i − 4j + 2k", "5i − 4j + k", "6i − 2j + k", "3i − 4j + 2k"], a: 0, exp: "Scalar multiplication multiplies every component by 2." },
+    { q: "Two vectors are equal if they have:", o: ["Equal magnitudes only", "Equal directions only", "Equal magnitudes and directions", "Opposite directions"], a: 2, exp: "Equal vectors must have the same magnitude and the same direction." },
+    { q: "Two vectors are parallel when:", o: ["Their dot product is zero", "One is a scalar multiple of the other", "Their magnitudes are zero", "They have different directions"], a: 1, exp: "Parallel vectors can be expressed as scalar multiples of one another." },
+    { q: "If a = 2i + 4j, a vector parallel to a is:", o: ["4i + 2j", "i + 2j", "2i − j", "4i − 4j"], a: 1, exp: "i + 2j = ½(2i + 4j), so the vectors are parallel." },
+    { q: "The vector from A(2,3) to B(5,7) is:", o: ["3i + 4j", "7i + 10j", "−3i − 4j", "5i + 7j"], a: 0, exp: "AB = (5 − 2)i + (7 − 3)j = 3i + 4j." },
+    { q: "The magnitude of 3i + 4j is:", o: ["4", "5", "6", "7"], a: 1, exp: "√(3² + 4²) = √25 = 5." },
+    { q: "The position vector of the point P(3,−2,5) is:", o: ["3i − 2j + 5k", "3i + 2j + 5k", "−3i + 2j − 5k", "5i − 2j + 3k"], a: 0, exp: "The position vector is obtained directly from the coordinates." },
+    { q: "If a = 3i + 4j, its unit vector is:", o: ["3i + 4j", "3/5i + 4/5j", "4/3i + 3/4j", "5i + 5j"], a: 1, exp: "The magnitude of a is 5. Therefore, the unit vector is a/|a|." },
+    { q: "The angle between two perpendicular vectors is:", o: ["0°", "45°", "90°", "180°"], a: 2, exp: "Perpendicular vectors meet at a right angle." },
+    { q: "Two vectors are perpendicular if their:", o: ["Sum is zero", "Dot product is zero", "Cross product is zero", "Magnitudes are equal"], a: 1, exp: "For perpendicular vectors, a · b = 0." },
+    { q: "If a = 2i + 3j and b = 3i − 2j, then a · b is:", o: ["0", "6", "−6", "12"], a: 0, exp: "a · b = (2)(3) + (3)(−2) = 6 − 6 = 0." },
+    { q: "The dot product of i with j is:", o: ["1", "−1", "0", "k"], a: 2, exp: "i and j are perpendicular unit vectors." },
+    { q: "The dot product of i with i is:", o: ["0", "1", "−1", "j"], a: 1, exp: "i · i = |i|² = 1." },
+    { q: "If a · b = |a||b|, the angle between a and b is:", o: ["0°", "45°", "90°", "180°"], a: 0, exp: "From a · b = |a||b|cosθ, cosθ = 1, so θ = 0°." },
+    { q: "If a · b = −|a||b|, the angle between them is:", o: ["0°", "60°", "90°", "180°"], a: 3, exp: "cosθ = −1, therefore θ = 180°." },
+    { q: "The formula for the dot product is:", o: ["ab sinθ", "ab cosθ", "a + b cosθ", "a − b sinθ"], a: 1, exp: "a · b = |a||b|cosθ." },
+    { q: "The cross product of two vectors produces a:", o: ["Scalar", "Vector", "Matrix", "Number only"], a: 1, exp: "The cross product produces a vector perpendicular to both original vectors." },
+    { q: "The cross product of i and j is:", o: ["i", "j", "k", "0"], a: 2, exp: "i × j = k." },
+    { q: "The cross product j × i equals:", o: ["k", "−k", "i", "0"], a: 1, exp: "The cross product is anti-commutative, so j × i = −(i × j) = −k." },
+    { q: "The cross product of two parallel vectors is:", o: ["1", "−1", "Zero vector", "A unit vector"], a: 2, exp: "|a × b| = |a||b|sin0° = 0." },
+    { q: "The magnitude of a × b is:", o: ["ab cosθ", "ab sinθ", "a + b", "a − b"], a: 1, exp: "|a × b| = |a||b|sinθ." },
+    { q: "The scalar product is another name for:", o: ["Cross product", "Dot product", "Vector product", "Triple product"], a: 1, exp: "The dot product produces a scalar quantity." },
+    { q: "The vector product is another name for:", o: ["Dot product", "Scalar product", "Cross product", "Addition"], a: 2, exp: "The cross product is also called the vector product." },
+    { q: "If a = 2i + j and b = i + 2j, then a · b is:", o: ["2", "4", "5", "6"], a: 1, exp: "a · b = (2)(1) + (1)(2) = 4." },
+    { q: "The vectors 2i + 3j and 4i + 6j are:", o: ["Perpendicular", "Parallel", "Equal in magnitude but perpendicular", "Unrelated"], a: 1, exp: "The second vector is twice the first vector." },
+    { q: "If a and b are perpendicular, then a · b equals:", o: ["1", "−1", "0", "|a||b|"], a: 2, exp: "cos90° = 0." },
+    { q: "The angle between i and j is:", o: ["0°", "45°", "90°", "180°"], a: 2, exp: "The coordinate axes are mutually perpendicular." },
+    { q: "The angle between i and k is:", o: ["30°", "45°", "90°", "180°"], a: 2, exp: "i, j and k represent mutually perpendicular directions." },
+    { q: "If a = 3i + 4j, then a · a is:", o: ["5", "7", "25", "49"], a: 2, exp: "a · a = |a|² = 3² + 4² = 25." },
+    { q: "The square of the magnitude of a = 2i + 3j + 6k is:", o: ["13", "36", "49", "72"], a: 2, exp: "|a|² = 2² + 3² + 6² = 4 + 9 + 36 = 49." },
+    { q: "The magnitude of 2i + 3j + 6k is:", o: ["5", "6", "7", "9"], a: 2, exp: "|a| = √(4 + 9 + 36) = √49 = 7." },
+    { q: "The vector 3i + 4j makes an angle θ with the positive x-axis such that:", o: ["tanθ = 3/4", "tanθ = 4/3", "tanθ = 7", "tanθ = 1/3"], a: 1, exp: "tanθ = y/x = 4/3." },
+    { q: "The direction cosines of a vector satisfy:", o: ["l + m + n = 1", "l² + m² + n² = 1", "lmn = 1", "l² + m² − n² = 1"], a: 1, exp: "This is the fundamental relation for direction cosines." },
+    { q: "The direction cosine along the x-axis is represented by:", o: ["l", "m", "n", "p"], a: 0, exp: "l, m and n represent the direction cosines along the x-, y- and z-axes respectively." },
+    { q: "The direction cosine along the z-axis is:", o: ["l", "m", "n", "r"], a: 2, exp: "n represents the direction cosine with the z-axis." },
+    { q: "The scalar triple product of a, b and c is written as:", o: ["a + b + c", "a · (b × c)", "a × (b · c)", "abc"], a: 1, exp: "The scalar triple product gives a scalar." },
+    { q: "The scalar triple product represents the:", o: ["Area of a triangle", "Volume of a parallelepiped", "Length of a vector", "Angle between vectors"], a: 1, exp: "The absolute value of the scalar triple product gives the volume." },
+    { q: "Three vectors are coplanar if their scalar triple product is:", o: ["1", "−1", "0", "3"], a: 2, exp: "Coplanarity requires a · (b × c) = 0." },
+    { q: "The vector a × b is perpendicular to:", o: ["a only", "b only", "Both a and b", "Neither"], a: 2, exp: "The cross product produces a vector normal to both vectors." },
+    { q: "The area of a parallelogram formed by a and b is:", o: ["a · b", "|a × b|", "|a + b|", "|a − b|"], a: 1, exp: "The magnitude of the cross product gives the parallelogram's area." },
+    { q: "The area of a triangle formed by vectors a and b is:", o: ["|a × b|", "2|a × b|", "½|a × b|", "a · b"], a: 2, exp: "A triangle has half the area of the corresponding parallelogram." },
+    { q: "If a = 2i + 3j and b = i − j, then a × b is:", o: ["−5k", "5k", "k", "6k"], a: 0, exp: "a × b = [2(−1) − 3(1)]k = −5k." },
+    { q: "The cross product is:", o: ["Commutative", "Anti-commutative", "Always associative", "Always scalar"], a: 1, exp: "a × b = −(b × a)." },
+    { q: "The dot product is:", o: ["Anti-commutative", "Commutative", "Always zero", "Always negative"], a: 1, exp: "a · b = b · a." },
+    { q: "The angle between two vectors can be obtained using:", o: ["sinθ = (a · b)/(|a||b|)", "cosθ = (a · b)/(|a||b|)", "tanθ = a · b", "cosθ = |a||b|"], a: 1, exp: "This follows directly from the dot-product formula." },
+    { q: "A vector having zero magnitude is called:", o: ["Unit vector", "Position vector", "Null vector", "Equal vector"], a: 2, exp: "The null vector has magnitude zero." },
+    { q: "If a = 4i − 3j, then −a is:", o: ["4i + 3j", "−4i + 3j", "−4i − 3j", "3i − 4j"], a: 1, exp: "Multiplication by −1 reverses every component." },
+    { q: "If a = 2i + 3j and b = 4i + 6j, then b is:", o: ["a/2", "2a", "3a", "a + b"], a: 1, exp: "2a = 4i + 6j = b." },
+    { q: "A position vector is normally drawn from:", o: ["Any point to any point", "The origin to the point", "The point to the origin only", "The x-axis to the point"], a: 1, exp: "A position vector locates a point relative to the origin." },
+    { q: "If A(1,2,3) and B(4,6,3), then AB is:", o: ["3i + 4j", "5i + 8j + 6k", "4i + 6j + 3k", "−3i − 4j"], a: 0, exp: "AB = B − A = (3,4,0)." },
+    { q: "The magnitude of AB in Question 59 is:", o: ["3", "4", "5", "7"], a: 2, exp: "|AB| = √(3² + 4²) = 5." },
+    { q: "If a is a unit vector, then:", o: ["|a| = 0", "|a| = 1", "|a| = −1", "|a| = 2"], a: 1, exp: "This is the definition of a unit vector." },
+    { q: "Which operation between vectors gives a scalar?", o: ["Cross product", "Dot product", "Vector addition", "Scalar multiplication"], a: 1, exp: "The dot product produces a scalar quantity." },
+    { q: "Which operation gives a vector perpendicular to two given vectors?", o: ["Dot product", "Cross product", "Addition", "Subtraction"], a: 1, exp: "The cross product is perpendicular to both input vectors." },
+    { q: "The magnitude of ai + bj + ck is:", o: ["a + b + c", "√(a² + b² + c²)", "a² + b² + c²", "abc"], a: 1, exp: "This is the three-dimensional magnitude formula." },
+    { q: "If a · b > 0, the angle between them is generally:", o: ["Acute", "Obtuse", "180°", "Always 90°"], a: 0, exp: "A positive dot product means cosθ > 0." },
+    { q: "If a · b < 0, the angle between them is:", o: ["Acute", "Obtuse", "Zero", "Always 90°"], a: 1, exp: "A negative dot product means cosθ < 0." },
+    { q: "If a · b = 0, then non-zero a and b are:", o: ["Parallel", "Equal", "Perpendicular", "Opposite"], a: 2, exp: "A zero dot product indicates perpendicular vectors." },
+    { q: "If a × b = 0 for non-zero vectors, then they are:", o: ["Perpendicular", "Parallel", "Equal to zero", "Unit vectors"], a: 1, exp: "Their angle is 0° or 180°, making the cross product zero." },
+    { q: "The magnitude of 3i + 4j + 12k is:", o: ["12", "13", "15", "19"], a: 1, exp: "√(3² + 4² + 12²) = √169 = 13." },
+    { q: "The unit vector along 3i + 4j + 12k is:", o: ["3/13i + 4/13j + 12/13k", "3i + 4j + 12k", "13i + 13j + 13k", "1/3i + 1/4j + 1/12k"], a: 0, exp: "Divide each component by the magnitude, 13." },
+    { q: "If a = 3i + 4j and b = 4i − 3j, then:", o: ["a · b = 0", "a · b = 12", "a · b = 24", "a · b = −24"], a: 0, exp: "(3)(4) + (4)(−3) = 12 − 12 = 0." },
+    { q: "The vectors in Question 71 are therefore:", o: ["Parallel", "Perpendicular", "Equal", "Opposite"], a: 1, exp: "Their dot product is zero." },
+    { q: "The magnitude of a × b, where |a| = 3, |b| = 4 and θ = 90°, is:", o: ["7", "12", "1", "0"], a: 1, exp: "|a × b| = 3 × 4 × sin90° = 12." },
+    { q: "The area of the triangle formed by vectors of magnitudes 3 and 4 at 90° is:", o: ["6", "12", "24", "3"], a: 0, exp: "Area = ½(3)(4) = 6." },
+    { q: "If a = 2i + 2j, a vector of twice its magnitude in the same direction is:", o: ["i + j", "4i + 4j", "2i − 2j", "4i + 2j"], a: 1, exp: "Multiplying a by 2 doubles its magnitude without changing its direction." },
+    { q: "The direction of −a relative to a is:", o: ["The same", "Opposite", "Perpendicular", "Undefined"], a: 1, exp: "Multiplication by −1 reverses the direction." },
+    { q: "If a + b = 0, then:", o: ["a = b", "a = −b", "a ⟂ b", "a × b = 1"], a: 1, exp: "Rearranging a + b = 0 gives a = −b." },
+    { q: "A vector can be represented geometrically by:", o: ["A directed line segment", "A circle", "A parabola only", "A point only"], a: 0, exp: "A vector is represented by a line segment with magnitude and direction." },
+    { q: "The magnitude of a vector is always:", o: ["Negative", "Non-negative", "Complex", "Zero"], a: 1, exp: "Magnitude represents length, which cannot be negative." },
+    { q: "Which of the following is NOT a vector quantity?", o: ["Displacement", "Force", "Acceleration", "Temperature"], a: 3, exp: "Temperature is a scalar quantity." },
+    { q: "The vector equation of a straight line through position vector a with direction vector b is:", o: ["r = a + tb", "r = ab + t", "r = a − bt only", "r = a/t + b"], a: 0, exp: "This is the standard vector equation of a straight line." },
+    { q: "In r = a + tb, t represents:", o: ["A vector", "A scalar parameter", "An angle", "A coordinate axis"], a: 1, exp: "Different values of t generate different points on the line." },
+    { q: "A line through A(1,2,3) with direction (2,1,−1) has equation:", o: ["r = (1,2,3) + t(2,1,−1)", "r = (2,1,−1) + t(1,2,3)", "r = (1,1,1) + t(2,2,2)", "r = (1,2,3) − t(2,1,−1) only"], a: 0, exp: "The position vector gives a point on the line and the second vector gives its direction." },
+    { q: "The symmetric equation of a line with direction ratios a, b, c through (x₁,y₁,z₁) is:", o: ["(x+x₁)/a = (y+y₁)/b = (z+z₁)/c", "(x−x₁)/a = (y−y₁)/b = (z−z₁)/c", "ax + by + cz = 0", "x + y + z = 1"], a: 1, exp: "This is the standard symmetric form." },
+    { q: "The direction vector of r = (1,2,3) + t(4,−2,5) is:", o: ["(1,2,3)", "(4,−2,5)", "(1,−2,5)", "(4,2,3)"], a: 1, exp: "The coefficient of the parameter t is the direction vector." },
+    { q: "Two lines are parallel if their direction vectors are:", o: ["Perpendicular", "Scalar multiples", "Equal to zero", "Dot products"], a: 1, exp: "Parallel lines have proportional direction vectors." },
+    { q: "Two lines are perpendicular if their direction vectors have:", o: ["Dot product zero", "Cross product zero", "Equal magnitudes", "Equal components"], a: 0, exp: "Perpendicular vectors have a zero dot product." },
+    { q: "A plane equation can be written in the form:", o: ["ax + by + cz = d", "x + y = 0 only", "r = a + tb", "x² + y² = 1"], a: 0, exp: "This is the Cartesian equation of a plane." },
+    { q: "In ax + by + cz = d, the vector (a,b,c) represents the:", o: ["Direction of the plane", "Normal vector to the plane", "Position vector", "Radius"], a: 1, exp: "The coefficient vector is perpendicular to the plane." },
+    { q: "The plane 2x + 3y − z = 5 has normal vector:", o: ["(2,3,−1)", "(2,−3,1)", "(5,0,0)", "(1,2,3)"], a: 0, exp: "The coefficients of x, y and z form the normal vector." },
+    { q: "The plane through the origin has equation of the form:", o: ["ax + by + cz = d, d ≠ 0", "ax + by + cz = 0", "x² + y² = z²", "r = a + tb"], a: 1, exp: "Substituting the origin gives d = 0." },
+    { q: "The distance from the origin to ax + by + cz = d is:", o: ["|d|/√(a²+b²+c²)", "d/(a+b+c)", "a+b+c", "|d|"], a: 0, exp: "This follows from the point-to-plane distance formula." },
+    { q: "The plane x + y + z = 6 passes through:", o: ["(1,1,1)", "(2,2,2)", "(0,0,0)", "(6,6,6)"], a: 1, exp: "2 + 2 + 2 = 6." },
+    { q: "The distance between parallel planes ax + by + cz = d₁ and ax + by + cz = d₂ is:", o: ["|d₁−d₂|/√(a²+b²+c²)", "|d₁−d₂|", "a+b+c", "d₁d₂"], a: 0, exp: "This is the standard distance formula for parallel planes." },
+    { q: "Two planes are parallel if their normal vectors are:", o: ["Perpendicular", "Scalar multiples", "Equal to zero", "Unit vectors only"], a: 1, exp: "Parallel planes have parallel normal vectors." },
+    { q: "Two planes are perpendicular if their normal vectors are:", o: ["Parallel", "Perpendicular", "Equal", "Opposite only"], a: 1, exp: "The angle between planes is related to the angle between their normal vectors." },
+    { q: "The line of intersection of two non-parallel planes is a:", o: ["Point", "Circle", "Straight line", "Sphere"], a: 2, exp: "Two distinct non-parallel planes intersect along a straight line." },
+    { q: "The direction vector of the line of intersection of two planes is perpendicular to:", o: ["Neither plane", "Both normal vectors", "Only the first normal", "Only the second normal"], a: 1, exp: "It can be obtained from the cross product of the two normal vectors." },
+    { q: "If the normal vectors of two planes are n₁ and n₂, their intersection direction can be found using:", o: ["n₁ + n₂", "n₁ · n₂", "n₁ × n₂", "n₁ − n₂ only"], a: 2, exp: "The cross product is perpendicular to both normals." },
+    { q: "The shortest distance from a point to a plane is measured:", o: ["Parallel to the plane", "Perpendicular to the plane", "Along the x-axis only", "Along the y-axis only"], a: 1, exp: "The perpendicular gives the minimum distance." },
+    { q: "A plane is uniquely determined by:", o: ["One point only", "Three non-collinear points", "Two identical points", "One vector only"], a: 1, exp: "Three non-collinear points determine a unique plane." },
+    { q: "A normal vector to the xy-plane is:", o: ["i", "j", "k", "i + j"], a: 2, exp: "The xy-plane is perpendicular to the z-axis." },
+    { q: "The equation of the xy-plane is:", o: ["x = 0", "y = 0", "z = 0", "x + y = 0"], a: 2, exp: "Every point on the xy-plane has z-coordinate zero." },
+    { q: "The equation of the yz-plane is:", o: ["x = 0", "y = 0", "z = 0", "x + y = 0"], a: 0, exp: "Every point on the yz-plane has x-coordinate zero." },
+    { q: "The equation of the xz-plane is:", o: ["x = 0", "y = 0", "z = 0", "x + z = 0"], a: 1, exp: "Every point on the xz-plane has y-coordinate zero." },
+    { q: "The line (x−1)/2 = (y+2)/3 = z/4 passes through:", o: ["(1,−2,0)", "(2,3,4)", "(1,2,0)", "(−1,2,0)"], a: 0, exp: "Setting the common parameter equal to zero gives (1,−2,0)." },
+    { q: "The direction ratios of the line in Question 106 are:", o: ["1,−2,0", "2,3,4", "1,2,3", "2,−3,4"], a: 1, exp: "The denominators give the direction ratios." },
+    { q: "The plane 3x − 2y + 4z = 7 has normal vector:", o: ["(3,−2,4)", "(3,2,−4)", "(7,0,0)", "(1,1,1)"], a: 0, exp: "The coefficients of x, y and z form the normal vector." },
+    { q: "A line lies completely in a plane if its:", o: ["Direction vector is perpendicular to the plane", "Direction vector is parallel to the plane and a point lies on the plane", "Direction vector is zero", "Normal vector equals zero"], a: 1, exp: "The line must be parallel to the plane and have at least one point in the plane." },
+    { q: "If a line is perpendicular to a plane, its direction vector is parallel to the plane's:", o: ["Position vector", "Normal vector", "Radius", "Tangent vector"], a: 1, exp: "A normal vector is perpendicular to the plane." },
+    { q: "The derivative of xⁿ is:", o: ["xⁿ⁻¹", "nxⁿ⁻¹", "nxⁿ", "xⁿ/n"], a: 1, exp: "This is the power rule of differentiation." },
+    { q: "d/dx(x³) is:", o: ["x²", "2x²", "3x²", "3x"], a: 2, exp: "Applying the power rule gives 3x²." },
+    { q: "The derivative of a constant is:", o: ["1", "The constant itself", "0", "−1"], a: 2, exp: "A constant does not change as x changes." },
+    { q: "d/dx(5x) is:", o: ["5", "5x", "x", "0"], a: 0, exp: "The derivative of ax is a." },
+    { q: "d/dx(x² + 3x + 5) is:", o: ["2x + 3", "x + 3", "2x + 5", "x² + 3"], a: 0, exp: "Differentiate each term separately." },
+    { q: "The derivative of sin x is:", o: ["cos x", "−cos x", "sin x", "−sin x"], a: 0, exp: "d/dx(sin x) = cos x." },
+    { q: "The derivative of cos x is:", o: ["sin x", "−sin x", "cos x", "−cos x"], a: 1, exp: "d/dx(cos x) = −sin x." },
+    { q: "The derivative of eˣ is:", o: ["xeˣ⁻¹", "eˣ", "xeˣ", "1"], a: 1, exp: "The exponential function eˣ is its own derivative." },
+    { q: "The derivative of ln x is:", o: ["x", "1/x", "ln x", "eˣ"], a: 1, exp: "d/dx(ln x) = 1/x." },
+    { q: "If y = 3x⁴, then dy/dx is:", o: ["3x³", "12x³", "4x³", "12x⁴"], a: 1, exp: "3 × 4x³ = 12x³." },
+    { q: "The product rule is used to differentiate:", o: ["A sum only", "A product of functions", "A constant", "A single power only"], a: 1, exp: "The product rule applies when two functions are multiplied." },
+    { q: "The quotient rule is used when:", o: ["Two functions are multiplied", "One function is divided by another", "There is a constant", "The function is linear"], a: 1, exp: "The quotient rule differentiates ratios of functions." },
+    { q: "The chain rule is particularly useful for:", o: ["Composite functions", "Constants", "Zero functions", "Simple addition only"], a: 0, exp: "The chain rule differentiates functions contained within other functions." },
+    { q: "If y = (2x + 1)³, then dy/dx is:", o: ["3(2x + 1)²", "6(2x + 1)²", "2(2x + 1)³", "6x² + 1"], a: 1, exp: "Using the chain rule: 3(2x + 1)² × 2 = 6(2x + 1)²." },
+    { q: "If y = x², then d²y/dx² is:", o: ["0", "1", "2", "2x"], a: 2, exp: "First derivative is 2x; differentiating again gives 2." },
+    { q: "A stationary point occurs where:", o: ["y = 0", "dy/dx = 0", "d²y/dx² = 0 always", "x = 0"], a: 1, exp: "A stationary point occurs where the gradient is zero." },
+    { q: "At a local maximum, the first derivative is generally:", o: ["Positive only", "Zero at the stationary point", "Always negative", "Undefined"], a: 1, exp: "A differentiable local maximum occurs at a point where the first derivative is zero." },
+    { q: "The second derivative test is used to determine:", o: ["The domain only", "The nature of stationary points", "The range only", "The intercept only"], a: 1, exp: "The sign of the second derivative can identify local maxima or minima." },
+    { q: "An antiderivative of xⁿ, n ≠ −1, is:", o: ["nxⁿ⁻¹", "xⁿ⁺¹/(n+1) + C", "xⁿ + C", "nxⁿ⁺¹"], a: 1, exp: "This is the power rule for integration." },
+    { q: "∫x² dx is:", o: ["2x + C", "x³ + C", "x³/3 + C", "x²/2 + C"], a: 2, exp: "Increase the power by one and divide by the new power." },
+    { q: "∫5x⁴ dx is:", o: ["5x⁵ + C", "x⁵ + C", "25x³ + C", "x⁴ + C"], a: 1, exp: "∫5x⁴ dx = 5(x⁵/5) = x⁵ + C." },
+    { q: "The integral of 1/x is:", o: ["x", "ln|x| + C", "1/x² + C", "eˣ + C"], a: 1, exp: "The logarithmic integral rule gives ∫(1/x)dx = ln|x| + C." },
+    { q: "∫cos x dx is:", o: ["sin x + C", "−sin x + C", "cos x + C", "−cos x + C"], a: 0, exp: "The derivative of sin x is cos x." },
+    { q: "∫sin x dx is:", o: ["cos x + C", "−cos x + C", "sin x + C", "−sin x + C"], a: 1, exp: "The derivative of −cos x is sin x." },
+    { q: "The constant C in an indefinite integral is called the:", o: ["Differential constant", "Constant of integration", "Gradient", "Limit"], a: 1, exp: "Differentiating C gives zero, so any constant can be added to an antiderivative." },
+    { q: "The point where the x-axis and y-axis intersect is called the:", o: ["Vertex", "Origin", "Focus", "Centre"], a: 1, exp: "The origin is the point (0,0)." },
+    { q: "The coordinates of the origin are:", o: ["(1,1)", "(0,1)", "(1,0)", "(0,0)"], a: 3, exp: "Both coordinates are zero at the origin." },
+    { q: "The distance between (x₁,y₁) and (x₂,y₂) is:", o: ["√[(x₂−x₁)² + (y₂−y₁)²]", "x₂−x₁ + y₂−y₁", "x₁x₂ + y₁y₂", "(x₂−x₁)(y₂−y₁)"], a: 0, exp: "This is the Cartesian distance formula." },
+    { q: "The distance between (1,2) and (4,6) is:", o: ["3", "4", "5", "7"], a: 2, exp: "√[(4−1)² + (6−2)²] = √(9 + 16) = 5." },
+    { q: "The midpoint of (x₁,y₁) and (x₂,y₂) is:", o: ["(x₁+x₂,y₁+y₂)", "((x₁+x₂)/2,(y₁+y₂)/2)", "(x₁−x₂,y₁−y₂)", "(2x₁,2y₁)"], a: 1, exp: "The midpoint is the average of the corresponding coordinates." },
+    { q: "The midpoint of (2,3) and (6,7) is:", o: ["(4,5)", "(8,10)", "(2,2)", "(3,4)"], a: 0, exp: "((2+6)/2,(3+7)/2) = (4,5)." },
+    { q: "The slope of a line through two points is:", o: ["(x₂−x₁)/(y₂−y₁)", "(y₂−y₁)/(x₂−x₁)", "x₁+x₂", "y₁+y₂"], a: 1, exp: "Slope is change in y divided by change in x." },
+    { q: "The slope of a horizontal line is:", o: ["0", "1", "−1", "Undefined"], a: 0, exp: "A horizontal line has no change in y." },
+    { q: "The slope of a vertical line is:", o: ["0", "1", "−1", "Undefined"], a: 3, exp: "A vertical line has zero change in x, so its slope involves division by zero." },
+    { q: "The slope of the line joining (1,2) and (3,8) is:", o: ["2", "3", "4", "6"], a: 1, exp: "m = (8−2)/(3−1) = 6/2 = 3." },
+    { q: "Two lines are perpendicular if the product of their slopes is:", o: ["0", "1", "−1", "2"], a: 2, exp: "For non-vertical perpendicular lines, m₁m₂ = −1." },
+    { q: "Two non-vertical lines are parallel if their slopes are:", o: ["Equal", "Opposite", "Reciprocal", "Zero"], a: 0, exp: "Parallel lines have equal gradients." },
+    { q: "The Cartesian coordinate system has:", o: ["One quadrant", "Two quadrants", "Three quadrants", "Four quadrants"], a: 3, exp: "The x- and y-axes divide the plane into four quadrants." },
+    { q: "The point (−3,4) lies in:", o: ["First quadrant", "Second quadrant", "Third quadrant", "Fourth quadrant"], a: 1, exp: "x is negative and y is positive." },
+    { q: "The point (4,−5) lies in:", o: ["First quadrant", "Second quadrant", "Third quadrant", "Fourth quadrant"], a: 3, exp: "x is positive and y is negative." },
+    { q: "In polar coordinates, a point is represented by:", o: ["(x,y)", "(r,θ)", "(x,θ)", "(r,y)"], a: 1, exp: "Polar coordinates use radial distance r and angle θ." },
+    { q: "The Cartesian relation between polar and rectangular coordinates is:", o: ["x = r sinθ, y = r cosθ", "x = r cosθ, y = r sinθ", "x = r + θ, y = r − θ", "x = rθ, y = r/θ"], a: 1, exp: "These are the standard conversion formulas." },
+    { q: "The polar coordinate r represents:", o: ["The angle", "Distance from the origin", "x-coordinate only", "y-coordinate only"], a: 1, exp: "r is the radial distance from the pole/origin." },
+    { q: "The polar angle θ represents:", o: ["Distance from origin", "Direction measured from the positive x-axis", "Radius", "Diameter"], a: 1, exp: "θ measures the angular direction of the point." },
+    { q: "The Cartesian equation x² + y² = r² represents:", o: ["A straight line", "A circle centred at the origin", "A parabola", "An ellipse only"], a: 1, exp: "This is the standard equation of a circle with centre (0,0)." },
+    { q: "The slope-intercept form of a straight line is:", o: ["y = mx + c", "x = my + c", "y = m/x + c", "xy = mc"], a: 0, exp: "m is the slope and c is the y-intercept." },
+    { q: "In y = mx + c, m represents the:", o: ["Intercept", "Slope", "Radius", "Diameter"], a: 1, exp: "m is the gradient of the line." },
+    { q: "In y = mx + c, c represents the:", o: ["x-intercept", "y-intercept", "Gradient", "Radius"], a: 1, exp: "c is the value of y when x = 0." },
+    { q: "The equation of a line with slope 2 and y-intercept 3 is:", o: ["y = 3x + 2", "y = 2x + 3", "y = 2x − 3", "y = 3x − 2"], a: 1, exp: "Substitute m = 2 and c = 3 into y = mx + c." },
+    { q: "The point-slope form is:", o: ["y − y₁ = m(x − x₁)", "y + y₁ = m(x + x₁)", "y = mx", "x + y = m"], a: 0, exp: "This form uses one point on the line and its slope." },
+    { q: "The equation of the line through (2,3) with slope 4 is:", o: ["y − 3 = 4(x − 2)", "y + 3 = 4(x + 2)", "y − 2 = 3(x − 4)", "y = 4x + 3"], a: 0, exp: "Apply y − y₁ = m(x − x₁)." },
+    { q: "The general equation of a straight line is:", o: ["ax + by + c = 0", "ax² + by² = 0", "x² + y² = r²", "y = x²"], a: 0, exp: "ax + by + c = 0 is the general linear form." },
+    { q: "The x-intercept of 2x + 3y = 6 is:", o: ["2", "3", "6", "1"], a: 1, exp: "Put y = 0: 2x = 6, so x = 3." },
+    { q: "The y-intercept of 2x + 3y = 6 is:", o: ["1", "2", "3", "6"], a: 2, exp: "Put x = 0: 3y = 6, so y = 2." },
+    { q: "The slope of 2x + 3y = 6 is:", o: ["2/3", "−2/3", "3/2", "−3/2"], a: 1, exp: "3y = −2x + 6, so y = −2/3x + 2." },
+    { q: "The equation x = 5 represents a:", o: ["Horizontal line", "Vertical line", "Circle", "Parabola"], a: 1, exp: "x remains constant at 5." },
+    { q: "The equation y = 5 represents a:", o: ["Vertical line", "Horizontal line", "Circle", "Hyperbola"], a: 1, exp: "y remains constant at 5." },
+    { q: "A line parallel to y = 3x + 1 has slope:", o: ["−3", "1/3", "3", "0"], a: 2, exp: "Parallel lines have equal slopes." },
+    { q: "A line perpendicular to y = 2x + 1 has slope:", o: ["2", "−2", "1/2", "−1/2"], a: 3, exp: "The perpendicular slope is the negative reciprocal." },
+    { q: "The angle of inclination θ of a line with slope m satisfies:", o: ["m = sinθ", "m = cosθ", "m = tanθ", "m = cotθ"], a: 2, exp: "The gradient of a line is tanθ." },
+    { q: "The standard equation of a circle with centre (h,k) and radius r is:", o: ["(x−h)² + (y−k)² = r²", "x² + y² = r", "x + y = r²", "(x+h) + (y+k) = r"], a: 0, exp: "This is the standard Cartesian equation of a circle." },
+    { q: "The circle x² + y² = 25 has radius:", o: ["5", "25", "10", "12.5"], a: 0, exp: "Comparing with x² + y² = r² gives r² = 25, so r = 5." },
+    { q: "The centre of x² + y² = 25 is:", o: ["(5,5)", "(0,5)", "(0,0)", "(25,0)"], a: 2, exp: "There are no horizontal or vertical shifts." },
+    { q: "The circle (x−2)² + (y−3)² = 16 has centre:", o: ["(−2,−3)", "(2,3)", "(4,6)", "(3,2)"], a: 1, exp: "Compare with (x−h)² + (y−k)² = r²." },
+    { q: "The radius of the circle in Question 174 is:", o: ["2", "3", "4", "16"], a: 2, exp: "r² = 16, so r = 4." },
+    { q: "The tangent to a circle at a point is:", o: ["Parallel to the radius", "Perpendicular to the radius", "Equal to the radius", "A diameter"], a: 1, exp: "The radius drawn to the point of tangency is perpendicular to the tangent." },
+    { q: "The equation of a circle with centre at the origin and radius 3 is:", o: ["x² + y² = 3", "x² + y² = 6", "x² + y² = 9", "x + y = 9"], a: 2, exp: "r² = 3² = 9." },
+    { q: "The diameter of a circle of radius 7 is:", o: ["7", "14", "21", "49"], a: 1, exp: "Diameter = 2r = 14." },
+    { q: "A line and a circle can have:", o: ["0, 1 or 2 points of intersection", "Only 1 point", "Only 2 points", "Always infinitely many points"], a: 0, exp: "A line may miss, touch, or cut a circle." },
+    { q: "A line that touches a circle at exactly one point is called:", o: ["Chord", "Diameter", "Tangent", "Secant"], a: 2, exp: "A tangent has exactly one point of contact with the circle." },
+    { q: "The graph of y² = 4ax is a:", o: ["Circle", "Parabola", "Ellipse", "Hyperbola"], a: 1, exp: "y² = 4ax is the standard equation of a parabola." },
+    { q: "The standard parabola y² = 4ax opens:", o: ["Upward", "Downward", "To the right", "To the left"], a: 2, exp: "When a > 0, y² = 4ax opens in the positive x-direction." },
+    { q: "The vertex of y² = 4ax is:", o: ["(a,0)", "(0,a)", "(0,0)", "(−a,0)"], a: 2, exp: "The standard parabola is centred at the origin with its vertex there." },
+    { q: "The focus of y² = 4ax is:", o: ["(0,a)", "(a,0)", "(−a,0)", "(0,−a)"], a: 1, exp: "For y² = 4ax, the focus is (a,0)." },
+    { q: "The directrix of y² = 4ax is:", o: ["x = a", "x = −a", "y = a", "y = −a"], a: 1, exp: "The directrix is x = −a." },
+    { q: "The parabola x² = 4ay opens:", o: ["Right", "Left", "Upward", "Downward"], a: 2, exp: "For a > 0, x² = 4ay opens along the positive y-axis." },
+    { q: "The focus of x² = 4ay is:", o: ["(a,0)", "(0,a)", "(−a,0)", "(0,−a)"], a: 1, exp: "The focus lies a units along the positive y-axis." },
+    { q: "The standard equation of an ellipse centred at the origin is:", o: ["x²/a² + y²/b² = 1", "x² + y² = 0", "y² = 4ax", "xy = 1"], a: 0, exp: "This is the standard form of an axis-aligned ellipse." },
+    { q: "An ellipse has:", o: ["One focus", "Two foci", "Three foci", "No focus"], a: 1, exp: "An ellipse is defined using two fixed points called foci." },
+    { q: "For an ellipse, the sum of the distances from any point on the ellipse to the two foci is:", o: ["Constant", "Zero", "Variable without restriction", "Equal to the eccentricity"], a: 0, exp: "This constant-sum property defines an ellipse." },
+    { q: "The eccentricity of an ellipse is:", o: ["Greater than 1", "Equal to 1", "Less than 1", "Always 2"], a: 2, exp: "An ellipse has eccentricity 0 ≤ e < 1." },
+    { q: "The eccentricity of a parabola is:", o: ["0", "1", "Less than 1", "Greater than 2"], a: 1, exp: "Every parabola has eccentricity exactly equal to 1." },
+    { q: "The eccentricity of a hyperbola is:", o: ["0", "Less than 1", "1", "Greater than 1"], a: 3, exp: "A hyperbola has eccentricity e > 1." },
+    { q: "A hyperbola generally has:", o: ["One branch", "Two branches", "Three branches", "No branch"], a: 1, exp: "A standard hyperbola consists of two separate branches." },
+    { q: "The standard rectangular hyperbola is:", o: ["x² + y² = 1", "xy = c²", "y² = 4ax", "x² + y² = r²"], a: 1, exp: "xy = constant represents a rectangular hyperbola." },
+    { q: "The standard equation of a sphere centred at the origin is:", o: ["x² + y² + z² = r²", "x + y + z = r", "x² + y² = r", "xyz = r²"], a: 0, exp: "This is the standard equation of a sphere centred at the origin." },
+    { q: "The sphere x² + y² + z² = 49 has radius:", o: ["7", "14", "49", "24.5"], a: 0, exp: "r² = 49, therefore r = 7." },
+    { q: "The equation of a sphere with centre (a,b,c) and radius r is:", o: ["(x−a)² + (y−b)² + (z−c)² = r²", "(x+a)² + (y+b)² + (z+c)² = r", "x² + y² + z² = r", "x + y + z = r²"], a: 0, exp: "This is the standard translated form of a sphere." },
+    { q: "The surface area of a sphere of radius r is:", o: ["πr²", "2πr²", "4πr²", "4πr³"], a: 2, exp: "The surface area formula is 4πr²." },
+    { q: "The volume of a sphere of radius r is:", o: ["4πr²", "4/3πr³", "2πr³", "πr³"], a: 1, exp: "The volume of a sphere is V = 4/3πr³." }
+];
+
+let activeExam = [];
+let timeLeft = 1800; // 30 minutes countdown (1800 seconds)
+let timer;
+const totalExamQuestions = 40; 
+let currentQuestionIndex = 0;
+
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function initExam() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1000);
+
+    const shuffled = shufflePool([...fullPhyPool]);
+    activeExam = shuffled.slice(0, totalExamQuestions);
+    
+    timeLeft = 1800; 
+    currentQuestionIndex = 0; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    startTimer();
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${String.fromCharCode(65 + i)}. ${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < totalExamQuestions; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => { block.classList.toggle('active', idx === index); });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => { dot.classList.toggle('current', idx === index); });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === totalExamQuestions - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}. ${item.o[item.a]}</p>` : ''}
+                <p style="font-size: 0.9rem; color: #475569; margin-top: 8px;"><em>Explanation: ${item.exp}</em></p>
+            </div>`;
+    });
+
+    let percentage = Math.round((score / totalExamQuestions) * 100);
+    let grade = "";
+    let remark = "";
+    let statusEmoji = "";
+
+    if (percentage >= 70) {
+        grade = "A"; remark = "Pure mathematical wizardry! You killed MTH 103!"; statusEmoji = "⚡🏆";
+    } else if (percentage >= 60) {
+        grade = "B"; remark = "Solid score! Your vector and trig fundamentals are sharp!"; statusEmoji = "😎✨";
+    } else if (percentage >= 50) {
+        grade = "C"; remark = "Fair effort! Revisit coordinate geometry and vector cross products."; statusEmoji = "👍📖";
+    } else if (percentage >= 45) {
+        grade = "D"; remark = "Pass mark! Revise trigonometric identities and line equations."; statusEmoji = "⚠️📝";
+    } else if (percentage >= 40) {
+        grade = "E"; remark = "Borderline! Need more practice on dot products and conics."; statusEmoji = "👀⏳";
+    } else {
+        grade = "F"; remark = "Omo, go solve more math problems ASAP! 😂"; statusEmoji = "💀❌";
+    }
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    
+    document.getElementById('result-screen').innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
+        <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
+        <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
+        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <div id="review-area">${reviewHTML}</div>
+        <button class="btn-action" onclick="location.reload()">Try Again</button>
+    `;
+    
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
