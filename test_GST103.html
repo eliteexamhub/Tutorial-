@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - GST 103 Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .exam-layout { display: grid; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initExam()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading GST 103 Practice Exam...</p>
+</div>
+
+<div class="container">
+    <header>
+        <h1>GST 103: USE OF LIBRARY</h1>
+        <p>Elite Exam Hub • NO SHAKING, ELITE EXAM HUB DEY FOR YOU 😂</p>
+    </header>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 20:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">NO FALL YOUR HAND 😂</div>
+    <h1 id="score-text"></h1>
+    <div id="review-area"></div>
+    <button class="btn-action" onclick="location.reload()">Try Again</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+// GST 103 Question Bank (146 Questions)
+const fullPhyPool = [
+    { q: "A library can be defined as_____________", o: ["An educational resource centre", "A 'nest' where scholars are hatched", "A storehouse of knowledge", "All of the above"], a: 3, exp: "A library can be described as an educational resource centre, a place where knowledge is preserved, and a centre that supports scholars and learning." },
+    { q: "The Use of Library and Introduction to ICT (GST 103) is_____________", o: ["A compulsory course", "A required course", "An elective course", "All of the above"], a: 1, exp: "GST 103 is treated as a required course for students." },
+    { q: "A library that is attached to a tertiary institution is:", o: ["School library", "National library", "An Academic library", "A Research library"], a: 2, exp: "Libraries established to serve universities, colleges and other tertiary institutions are called academic libraries." },
+    { q: "One known component of a typical library is _____________", o: ["Circulation", "Reference", "Cataloguing", "Clientele"], a: 2, exp: "Cataloguing is an important library function through which library materials are described and organized for easy identification and retrieval." },
+    { q: "Newspapers, journals and magazines are examples of _____________", o: ["Books", "Pamphlet", "Serials", "None of the above"], a: 2, exp: "Serials are publications issued continuously in successive parts, such as newspapers, journals and magazines." },
+    { q: "A printed reading material of less than 49 pages is _____________", o: ["Serials", "Book", "Jotter", "Pamphlet"], a: 3, exp: "A pamphlet is a short printed publication, generally consisting of fewer than 49 pages." },
+    { q: "When a printed reading material is more than 49 pages, it is _____________", o: ["Pamphlet", "Book", "Serials", "Jotter"], a: 1, exp: "In the classification used in the material, a printed publication exceeding 49 pages is regarded as a book." },
+    { q: "Punch, Guardian and Tribune are examples of _____________", o: ["Books", "Serials", "Pamphlet", "Documents"], a: 1, exp: "Punch, Guardian and Tribune are newspapers, and newspapers are classified as serial publications." },
+    { q: "Films, Slides and Television are examples of ____________", o: ["Instruments", "Equipment", "Audio-Visual materials", "Objects"], a: 2, exp: "Films, slides and television communicate information through visual and/or auditory means, making them audio-visual materials." },
+    { q: "_____________________ is the apex library of a country", o: ["Academic library", "Special library", "Research library", "National library"], a: 3, exp: "The national library serves as the highest-level library institution responsible for preserving and providing access to a nation's documentary heritage." },
+    { q: "_____________ library is personally owned by an individual or an organization.", o: ["Special", "Private", "Self", "Academic"], a: 1, exp: "A private library is owned and controlled by an individual, family, organization or private body." },
+    { q: "The library aids _____________", o: ["Learning", "Research", "Teaching", "All of the above"], a: 3, exp: "Libraries support teaching, learning and research by providing access to information resources." },
+    { q: "Which of the following functions is performed by a library to support academics?", o: ["Providing food services", "Preserving cultural heritage and supporting research", "Issuing national identity cards", "All of the above"], a: 1, exp: "Libraries support research and preserve intellectual/cultural heritage." },
+    { q: "Which of the following best describes the core function of an academic library?", o: ["Commercial printing", "Providing recreational games", "Supporting learning, teaching, and research", "Public administration"], a: 2, exp: "Academic libraries primary role is supporting learning, teaching and research in tertiary institutions." },
+    { q: "_______________ is a selection tool used for selecting serials in the library", o: ["Memoir", "Publisher’s catalogue", "Year book", "Accession register"], a: 1, exp: "A publisher's catalogue provides information about publications available from publishers and can help librarians select materials for acquisition." },
+    { q: "Reference books can be ______________", o: ["Directional or Non directional", "Active or Passive", "Direct or Indirect", "Open access or Closed access"], a: 0, exp: "Reference sources may provide direct information or guide users toward other sources where the required information can be found." },
+    { q: "Which type of library primary serves the general public without discrimination?", o: ["Special library", "Public library", "Academic library", "Private library"], a: 1, exp: "Public libraries serve the entire general public." },
+    { q: "Reference section contains the following except_____________.", o: ["Dictionary", "Yearbook", "Gazettes", "Atlas"], a: 2, exp: "According to the supplied answer key, gazettes are the exception in this question." },
+    { q: "Reference books in the library usually bears the symbol before their call mark on the spine of the work", o: ["RB", "RBK", "RE", "REF"], a: 3, exp: "“REF” is commonly used as an abbreviation to identify reference materials in libraries." },
+    { q: "____________ is the exclusive right accorded by law to the creator of a literary work, composer, artist with regard to the use and the reproduction of his created work for economic or commercial purposes.", o: ["Publishing law", "Copyright", "Cataloguing rule", "Piracy"], a: 1, exp: "Copyright gives creators legal rights over the use, reproduction and distribution of their original works." },
+    { q: "Works that are eligible for copyright protection are the following except", o: ["Literary work", "Statistical work", "Musical work", "Artistic work"], a: 1, exp: "Literary, musical and artistic works are recognized categories of copyrightable works in the context of the question." },
+    { q: "_____________ are periodic government publications which provide information on the activities of the government", o: ["Handbook", "Manual", "Directory", "Gazettes"], a: 3, exp: "Government gazettes are official publications used to communicate government notices, activities and information." },
+    { q: "_____________is when fake copies of an author’s work are reproduced for commercial purposes", o: ["Piracy", "Plagiarism", "Referencing", "Counterfeit"], a: 0, exp: "Piracy involves unauthorized reproduction and distribution of protected works, often for commercial gain." },
+    { q: "_____________is an act of violating copyright law when people illegally reproduce work for sale without permission from the owner of the work", o: ["Piracy", "Plagiarism", "Referencing", "Counterfeit"], a: 0, exp: "Unauthorized reproduction and sale of copyrighted material constitutes piracy." },
+    { q: "A book to which you can refer for authoritative facts and quick information is _____________", o: ["Electronic books", "Textbook", "Reference book", "Classification scheme"], a: 2, exp: "Reference books are designed to provide quick and authoritative information on specific subjects." },
+    { q: "An act of violating the copyright law when people take other people’s idea and copy it, making it look as though it is their own idea is called _____________", o: ["Piracy", "Plagiarism", "Referencing", "Counterfeits"], a: 1, exp: "Plagiarism occurs when someone presents another person's ideas or work as their own without proper acknowledgment." },
+    { q: "The library management software adopted by FUOYE Library is _____________", o: ["TEEAL", "AGORA", "HINARI", "KOHA"], a: 3, exp: "KOHA is an integrated library management system used for functions such as cataloguing, circulation and library administration." },
+    { q: "The University website is _____________", o: ["ww.fuoye.edu.ng", "www.fouye.edu.ng", "www.fuoye.edu.ng", "www.fuye.edu.ng"], a: 2, exp: "The option given in the source corresponds to the Federal University Oye-Ekiti website address." },
+    { q: "_____________ and _____________ are computer operating systems", o: ["Linux & Koha", "TEEAL & Windows", "Ubuntu & AGORA", "Linux & Windows"], a: 3, exp: "Linux and Windows are operating systems. Koha, TEEAL and AGORA are not operating systems." },
+    { q: "FUOYE Wifi hotspot name is _____________", o: ["hotspot.edu.ng", "fuoye.net", ".hotspot fuoye.net", "fuoyenet"], a: 3, exp: "The answer key specifies fuoyenet as the FUOYE Wi-Fi hotspot name." },
+    { q: "All these are Microsoft Office desktop applications except _____________", o: ["Word", "Excel", "Windows", "PowerPoint"], a: 2, exp: "Word, Excel and PowerPoint are Microsoft Office applications, while Windows is an operating system." },
+    { q: "All these are the databases available in FUOYE Library except _____________", o: ["Science Direct", "TEEAL", "KOHA", "HINARI"], a: 0, exp: "According to the supplied answer key, ScienceDirect is the exception among the listed resources." },
+    { q: "All these are approaches by which information could be accessed on OPAC except _____________", o: ["Author", "Editor", "Subject", "Title"], a: 1, exp: "OPAC searches commonly include author, title and subject as access points. “Editor” is not listed as the expected approach here." },
+    { q: "_____________ is the department in the library that handles matters relating to automation and internet services", o: ["Information Technology Department", "Technology Department", "Information and Communication Technology Department", "Automation Department"], a: 2, exp: "The ICT department handles technological services, including library automation and internet-related services." },
+    { q: "_____________ is an electronic device which is capable of receiving information (data) in a particular form and of performing a sequence of operations in accordance with a predetermined but variable set of procedural instructions (program) to produce a result in the form of information or signal", o: ["Zinox", "Computer", "ICT", "DELL"], a: 1, exp: "A computer receives data, processes it according to programmed instructions and produces information as output." },
+    { q: "_____________ is the IP address to access OPAC on KOHA in FUOYE", o: ["www.koha.fuoye.edu.ng", "www.fuoye.koha.edu.ng", "www.fuoye.opac.edu.ng", "www.opac.fuoye.edu.ng"], a: 0, exp: "The supplied answer key identifies option A as the address for accessing the FUOYE KOHA OPAC." },
+    { q: "_____________ are the materials that can only be accessed with the application of Information and Communication Technology (ICT)", o: ["Information materials", "Electronic materials", "Technological Materials", "Information and Communication materials"], a: 1, exp: "Electronic materials require electronic devices and ICT facilities for access." },
+    { q: "One of the following is not an anti-virus", o: ["Smadav", "Avast", "E-set", "V-prune"], a: 3, exp: "Smadav, Avast and ESET are antivirus products, while V-prune is not identified as an antivirus in the material." },
+    { q: "Cataloguing is the process of describing a book where by all the _____________ details are highlighted", o: ["Author", "Pagination", "Bibliographic", "Publication"], a: 2, exp: "Cataloguing records important bibliographic information about a library item, such as its author, title, edition and publication details." },
+    { q: "Library catalogue is the _____________ to the content of the holding of a library", o: ["Key pointer", "Identification", "Call mark", "Copies"], a: 0, exp: "A library catalogue serves as a key pointer or guide to the materials held by the library." },
+    { q: "To locate a book on the shelf, what do you need from KOHA in the circulation?", o: ["Author's name", "Call mark", "Title of the book", "Pagination"], a: 1, exp: "The call mark indicates the location of a book on the library shelf." },
+    { q: "The classification scheme used in FUOYE library is ________________", o: ["Library of Congress Classification Scheme", "Dewey Decimal Classification Scheme", "MOIS Classification Scheme", "Universal Decimal Classification Scheme"], a: 1, exp: "The supplied answer key identifies the Dewey Decimal Classification Scheme as the classification system used by FUOYE Library." },
+    { q: "____________ is a unique number assigned to the library material as soon as it arrives the library", o: ["Classification number", "Pagination Number", "Accession Number", "Call mark"], a: 2, exp: "An accession number uniquely identifies a library item when it is added to the library collection." },
+    { q: "_____________ and _____________ are the two types of catalogue you know", o: ["Cataloguing and Classification", "Call mark catalogue and classification catalogue", "Card catalogue and Online Public Access Catalogue", "Card catalogue and Classification Catalogue"], a: 2, exp: "Traditional card catalogues and computerized OPAC systems are two forms of library catalogues." },
+    { q: "The section in which books are processed in the library is called _____________", o: ["Circulation section", "Cataloguing section", "Reference section", "ICT section"], a: 1, exp: "The cataloguing section processes and describes library materials before they are made available to users." },
+    { q: "The section that is responsible for the training of staff in the library is _____________", o: ["Acquisition section", "Cataloguing section", "Technical section", "Administrative section"], a: 2, exp: "According to the source answer key, the technical section is responsible for this function." },
+    { q: "_____________ and _____________ are some of the services rendered in the circulation section", o: ["Stamping of books & Planning of library budget", "Training of library staff & coordinating library systems", "Printing of materials & Browsing of Internet", "Charging and discharging of books"], a: 3, exp: "The circulation section handles the borrowing and return of library materials." },
+    { q: "_____________ is the section where Encyclopedea, Atlases and Handbooks are kept", o: ["Cataloguing section", "Reference section", "Acquisition section", "Administrative section"], a: 1, exp: "Encyclopedias, atlases and handbooks are reference materials and are normally kept in the reference section." },
+    { q: "The approaches to library catalogue include _____________", o: ["Author's name, Title & Subject", "Call mark, Accession number & Author's name", "Title, Subject & Callmark", "Title, Call mark & Accession number"], a: 0, exp: "Author, title and subject are standard access points for searching a library catalogue." },
+    { q: "One of the functions of library catalogue is _____________", o: ["It helps registered users to use the library", "It allows users to be issued tickets", "It provides full bibliographic details", "It allows penalty to be charged on overdue books"], a: 2, exp: "A catalogue gives users important bibliographic information about library materials." },
+    { q: "_____________ is the process of describing a book or other library item in such a way that all the important bibliographic details are highlighted.", o: ["Classification", "Cataloguing", "Indexing", "Abstracting"], a: 1, exp: "Cataloguing involves creating a bibliographic record containing important details about a library item." },
+    { q: "_____________ can be defined as the process of arranging library materials into various subjects for easy accessibility and retrieval without wasting the user's time.", o: ["Classification", "Cataloguing", "Indexing", "Abstracting"], a: 0, exp: "Classification groups library materials according to subjects so that related resources can be located easily." },
+    { q: "Imprint in bibliographic details of a book contains the following:", o: ["Title, Edition statement and Publisher details", "Pagination, Publisher and Illustrations", "Pagination, Height of book and Illustration", "Place of publication, Publisher and Year of Publication"], a: 3, exp: "Imprint information identifies where a work was published, by whom and when." },
+    { q: "Collation in bibliographic details of a book contains the following:", o: ["Title, Edition statement and Publisher details", "Pagination, Publisher and Illustrations", "Pagination, Height of book and Illustration", "Place of publication, Publisher and Year of Publication"], a: 2, exp: "Collation describes the physical characteristics of a publication, including pagination and physical dimensions." },
+    { q: "Information materials in the library are well _____________ for easy _____________ and _____________", o: ["Retrieved, access and organisation", "Accessed, retrieval and organization", "Organised, retrieval and access", "None of the above"], a: 2, exp: "Proper organization of library materials makes their retrieval and access easier for users." },
+    { q: "_____________ are skills that guide library users so that they can maximally utilise the library resources (books, journals, information materials) effectively and efficiently.", o: ["Library skills", "Study skills", "User skills", "Reading skills"], a: 0, exp: "Library skills teach users how to locate, evaluate and effectively use library resources." },
+    { q: "_____________ are skills guide in the studying and understanding the information in a book.", o: ["Library skills", "Study skills", "User skills", "Reading skills"], a: 1, exp: "Study skills are techniques that help learners understand, retain and apply information effectively." },
+    { q: "The letter “S” in study skills stands for _____________", o: ["Study", "Service", "Survey", "Skill"], a: 2, exp: "In the study-skill sequence presented in the material, “S” represents Survey." },
+    { q: "The letter “R” in study skills stands for _____________ except", o: ["None of the above", "Recite", "Review", "Recall"], a: 3, exp: "According to the supplied answer key, “Recall” is the exception." },
+    { q: "Which students are allowed to use the library?", o: ["Postgraduate", "Registered", "Undergraduates", "Pre-degree"], a: 1, exp: "Library access is available to registered users who are authorized to use the library." },
+    { q: "\"Overdue books are charged at N50 per day including weekends\" is one of the _____________", o: ["Library rules", "Library regulations", "Library routines", "Library sanctions"], a: 0, exp: "Charging users for overdue books is a rule governing the use of library materials." },
+    { q: "Access to library electronic resources in FUOYE LIBRARY refers to _____________ and _____________ gotten from the _____________", o: ["Books and journals, internet", "User names and passwords, library", "Library and information, internet", "Encyclopedia and gazettes, library"], a: 0, exp: "Electronic library resources can include books and journals accessed through internet-based library services." },
+    { q: "Call mark can also be referred to as", o: ["Cutter number", "Accession number", "Location mark", "Class number"], a: 2, exp: "A call mark helps indicate where a library item is located on the shelves." },
+    { q: "Cutter number is a/an ________________ added to the classification number to facilitate easier arrangement", o: ["Alphanumeric symbol", "Classification scheme", "Author symbol", "Call mark"], a: 0, exp: "A Cutter number is an alphanumeric code added to a classification number to further arrange materials." },
+    { q: "In the library of congress classification scheme D is for", o: ["General works", "Music", "History", "Law"], a: 2, exp: "In the Library of Congress Classification system, class D covers history." },
+    { q: "M is for", o: ["Medicine", "Science", "Technology", "Music"], a: 3, exp: "In the Library of Congress Classification system, class M represents music." },
+    { q: "S is for", o: ["Law", "Education", "Medicine", "Agriculture"], a: 3, exp: "In the Library of Congress Classification system, class S represents agriculture." },
+    { q: "Q is for", o: ["Science", "Political science", "Technology", "Law"], a: 0, exp: "Class Q in the Library of Congress system represents science." },
+    { q: "AG is for", o: ["Dictionaries", "Geography", "History", "Religion"], a: 0, exp: "The source associates the AG subclass with dictionaries and other general reference materials." },
+    { q: "AN is for", o: ["Agriculture", "Medicine", "Science", "Newspapers"], a: 3, exp: "The supplied answer key identifies AN with newspapers." },
+    { q: "BD is for", o: ["Logic", "Ethics", "Bible", "Metaphysics"], a: 3, exp: "In the Library of Congress classification, BD is associated with speculative philosophy and metaphysics." },
+    { q: "BR is for", o: ["Islam", "Christianity", "Quran", "Aesthetics"], a: 1, exp: "In the Library of Congress system, BR is used for Christianity." },
+    { q: "HB is for", o: ["Economic Theory", "Banking and finance", "Public finance", "Economic condition"], a: 0, exp: "The HB subclass covers economic theory in the Library of Congress Classification system." },
+    { q: "HC is for", o: ["Statistics", "Economic condition", "Public Finance", "Economic Theory"], a: 1, exp: "HC is associated with economic history and conditions." },
+    { q: "HJ is for", o: ["Public finance", "Banking and finance", "Statistics", "Socialism"], a: 0, exp: "HJ is used for public finance within the Library of Congress Classification system." },
+    { q: "LA is for", o: ["Astronomy", "English Literature", "History of Education", "Theory and Practice of education"], a: 2, exp: "LA covers the history of education." },
+    { q: "LC is for", o: ["Special Aspects in Education", "Socialism", "Economic Theory", "Bible"], a: 0, exp: "LC is used for special aspects of education." },
+    { q: "PA is for", o: ["Chemistry", "Geology", "English literature", "Greek and Latin"], a: 3, exp: "PA is the Library of Congress class associated with classical languages and literature, particularly Greek and Latin." },
+    { q: "PS is for", o: ["American Literature", "African Literature", "Greek and Latin", "Public finance"], a: 0, exp: "PS covers American literature in the Library of Congress Classification system." },
+    { q: "QL is for", o: ["Physics", "Biology", "Zoology", "Botany"], a: 2, exp: "QL is the Library of Congress classification area for zoology." },
+    { q: "QK is for", o: ["Physics", "Biology", "Zoology", "Botany"], a: 3, exp: "QK is associated with botany in the Library of Congress Classification system." },
+    { q: "The full meaning of OPAC is ______________", o: ["Open Public Access Catalogue", "Online Printed Access Catalogue", "Online Public Access Catalogue", "Open Personal Access Card"], a: 2, exp: "OPAC stands for Online Public Access Catalogue, a computerized catalogue that allows users to search library holdings." },
+    { q: "____________ is not an element of library catalogue?", o: ["Database", "ISBN", "Author", "Title"], a: 0, exp: "Author, title and ISBN can be part of bibliographic records, whereas “database” is not itself a standard catalogue element in this question." },
+    { q: "Series of instructions designed for a computer to carry out specific functions is referred to as _____________", o: ["Digital Library", "Software", "Database", "Programming"], a: 3, exp: "The source answer key identifies programming as the answer to this question." },
+    { q: "An online database of materials held by a library or group of libraries is known as _______________", o: ["Computer", "Cataloguing", "OPAC", "Software"], a: 2, exp: "OPAC provides an online searchable catalogue of materials held by a library or group of libraries." },
+    { q: "The two main types of computer software are ______________ and ______________", o: ["System and Analogue software", "Digital and Application software", "Digital and Analogue software", "System and application software"], a: 3, exp: "System software manages computer operations, while application software performs tasks for users." },
+    { q: "A list of all information materials held by a library or group of libraries is known as _______________", o: ["Shelf", "Library Catalogue", "Library Card", "Library Resources"], a: 1, exp: "A library catalogue records and provides access to the materials held by a library." },
+    { q: "____________ is an example of system software?", o: ["Microsoft Office", "Photoshop", "Library software", "Operating system"], a: 3, exp: "An operating system is system software because it manages computer hardware and provides a platform for applications." },
+    { q: "Android is an example of ______________", o: ["Library Software", "Facebook", "Application", "Operating system"], a: 3, exp: "Android is an operating system designed primarily for mobile devices." },
+    { q: "A software that has been developed to handle basic housekeeping functions of a library is known as _____________", o: ["Library software", "System software", "Adobe Photoshop software", "PDF software"], a: 0, exp: "Library software is designed to manage functions such as cataloguing, circulation, acquisitions and other library operations." },
+    { q: "Two types of library software are ______________ and _______________", o: ["System and Application software", "Application and Open Source software", "Digital and Coded software", "Proprietary and Open source software"], a: 3, exp: "Library software may be proprietary, requiring licensing, or open source, whose source code is available for use and modification." },
+    { q: "The type of library software that requires the payment of subscription fee is known as _____________", o: ["System software", "Proprietary software", "Digital software", "Coded software"], a: 1, exp: "Proprietary software is controlled by its owner and commonly requires payment for licensing or subscription." },
+    { q: "____________ Software is responsible for managing variety of independent hardware components?", o: ["Microsoft Word software", "Digital software", "System software", "Application software"], a: 2, exp: "System software, especially the operating system, manages hardware components and coordinates their operation." },
+    { q: "_____________ is not an example of Open source library software?", o: ["Koha", "SLAM", "Windows", "Virtua"], a: 2, exp: "Windows is proprietary operating system software, not open-source library software." },
+    { q: "____________ is not an example of Application software?", o: ["Corel Draw", "Microsoft Office", "Library software", "None of the above"], a: 3, exp: "The supplied answer key identifies “None of the above,” meaning the listed examples can be regarded as application software in the context of the question." },
+    { q: "The type of library software that does not require the payment of subscription fee is known as __________", o: ["Proprietary software", "System software", "Open Source software", "Digital software"], a: 2, exp: "Open-source software is generally available without proprietary subscription licensing and can often be modified by users." },
+    { q: "____________ is not an example of operating system?", o: ["Windows", "Desktop computer", "Mac OS", "Linux"], a: 1, exp: "Windows, Mac OS and Linux are operating systems, while a desktop computer is a type of computer hardware." },
+    { q: "___________ is not an example of proprietary software", o: ["Symphony", "Millennium", "Aleph", "SLIM"], a: 0, exp: "According to the supplied answer key, Symphony is the exception." },
+    { q: "Koha is an example of ___________", o: ["Database", "Library material", "Proprietary software", "Open source software"], a: 3, exp: "KOHA is an open-source integrated library management system." },
+    { q: "A collection of data, or information, specially organized for rapid search and retrieval by a computer is known as __________", o: ["Software", "Catalogue", "Database", "Index"], a: 2, exp: "A database organizes information systematically so that it can be searched and retrieved efficiently." },
+    { q: "______________ is not an example of Internet browser", o: ["Google Chrome", "Photoshop", "Opera mini", "Internet explorer"], a: 1, exp: "Chrome, Opera Mini and Internet Explorer are browsers, while Photoshop is image-editing software." },
+    { q: "Linus is an example of ___________", o: ["Operating system", "Software", "Database", "Library catalogue"], a: 0, exp: "The question refers to Linux, which is an operating system." },
+    { q: "___________ is an example of library database", o: ["Koha", "Virtua", "SLAM", "AGORA"], a: 0, exp: "According to the supplied answer key, KOHA is identified as the library database in this question." },
+    { q: "TEEAL is an exapmle of ____________", o: ["Library Database", "Library catalogue", "Library software", "Computer"], a: 2, exp: "The supplied answer key identifies TEEAL as library software." },
+    { q: "DOAJ stands for ___________", o: ["Directory Online Access Journals", "Directory Open Access Journals", "Directory Offline Access Journals", "Directory Open Application Journals"], a: 1, exp: "DOAJ stands for Directory of Open Access Journals, a service that indexes open-access scholarly journals." },
+    { q: "______________ is not an example of library database", o: ["Ebscohost", "Science Direct", "Pubmed", "Greenstone"], a: 0, exp: "According to the supplied answer key, EBSCOhost is the exception in this question." },
+    { q: "What is your default password while trying to access your portal?", o: ["Matric No", "Surname", "Fuoye123", "FUOYE"], a: 1, exp: "The supplied answer key identifies the student's surname as the default password." },
+    { q: "Computer comes in all these sizes except", o: ["Micro Computer", "Midrange Computer", "Mainframes", "Tower Computer"], a: 3, exp: "The source answer key specifically indicates that Tower Computer is the exception among hardware classifications." },
+    { q: "One of the examples of Micro Computer is", o: ["Laptop computer", "Ubuntu", "Fedora", "Macintoch"], a: 0, exp: "A laptop is a type of microcomputer designed for individual use." },
+    { q: "Types of Wireless Communication network are? Except", o: ["Cellular Communication Service", "Local Area Network", "Wireless LAN (WLAN)", "Bluetooth Personal Area Network"], a: 1, exp: "The source answer key identifies LAN as the exception; WLAN and Bluetooth PAN are specifically wireless network types." },
+    { q: "The full meaning of SSID is", o: ["Service Set Identifier", "Set Service Identifier", "Service Set Identity", "Set Service Identity"], a: 0, exp: "SSID stands for Service Set Identifier and is the name used to identify a Wi-Fi network." },
+    { q: "An example of an Academic Library is?", o: ["Fuoye Library", "Ekiti State Library", "Central Bank of Nigeria Library", "International Institute of Tropical Agriculture Library"], a: 0, exp: "A university library such as FUOYE Library is an academic library because it serves students, lecturers and researchers." },
+    { q: "An example of a Public Library is", o: ["Fuoye Library", "Ekiti State Library", "Central Bank of Nigeria Library", "Wole Soyinka Library"], a: 1, exp: "A public library is established to provide information services to the general public." },
+    { q: "An example of a National Library is?", o: ["Fuoye Library", "Ekiti State Library", "Central Bank of Nigeria Library", "Wole Soyinka Library"], a: 2, exp: "This is the answer indicated by the supplied answer key." },
+    { q: "Various means by which books are being acquired in the Library except", o: ["Purchase", "Bequeath", "Exchange", "Antiquity"], a: 3, exp: "Purchase, bequeathal and exchange are recognized means of acquiring library materials; antiquity is not an acquisition method." },
+    { q: "Classification can simply be defined as", o: ["Means of grouping Materials", "Location of Materials on the shelf", "Accessioning of Materials", "Stamping of Materials"], a: 0, exp: "Classification involves grouping materials according to their subject or other characteristics." },
+    { q: "06825 on a Library Material means", o: ["Class Mark", "Catalogue No", "Accessioning No", "Library No"], a: 1, exp: "According to the supplied answer key, 06825 represents the catalogue number." },
+    { q: "Which of the Classification Scheme makes use of both Alphabeth and Number", o: ["Library of Congress Classification Scheme", "Moy's Classification Scheme", "Dewey Decimal Classification Scheme", "Universal Decimal Classification Scheme"], a: 0, exp: "The Library of Congress system uses combinations of letters and numbers in its classification notation." },
+    { q: "Which of the Classification Scheme makes use of only Number", o: ["Universal Decimal Classification Scheme", "Colon Classification Scheme", "Library of Congress Classification Scheme", "Dewey Decimal Classification Scheme"], a: 3, exp: "The Dewey Decimal Classification system primarily uses numerical notation to represent subjects." },
+    { q: "What gives the full Bibliographic details of a book", o: ["Cataloguing", "Accessioning", "Stamping", "Classifying"], a: 0, exp: "Cataloguing creates a detailed bibliographic record of a book, including information such as author, title, edition and publication details." },
+    { q: "Copy Right covers the following Category of work except", o: ["Literary Works", "Cinematograph Works", "Artistic Works", "Sound Recordings Photocopy"], a: 3, exp: "The source answer key identifies option D as the exception." },
+    { q: "Copy Rght law can be violated with the following activity except", o: ["Printing", "Counterfeits", "Piracy", "Plagiarism"], a: 0, exp: "Printing by itself does not necessarily violate copyright; unauthorized copying, piracy and plagiarism can constitute infringement or related violations." },
+    { q: "The full Meaning of APA is", o: ["American Psychological Association", "American Philosophy Association", "African Psychological Association", "Association of Psychological American"], a: 0, exp: "APA stands for American Psychological Association, which is also associated with the widely used APA referencing style." },
+    { q: "An example of Malicious code is", o: ["Virus", "Trojan Horse", "Logic Bomb", "All of the above"], a: 3, exp: "Viruses, Trojan horses and logic bombs are all forms of malicious code designed to cause harm or perform unauthorized actions." },
+    { q: "One of the security Measures to Computer Threat is", o: ["Antivirus", "Anti-Spyware", "Fire Wall", "All of the above"], a: 3, exp: "Antivirus, anti-spyware and firewalls are all used to protect computer systems against different forms of threats." },
+    { q: "An Example of Operating System include all but one of the following", o: ["Linux", "Fedora", "Macintoch", "Window"], a: 3, exp: "According to the supplied answer key, option D is the exception." },
+    { q: "The full Meaning of UTP is", o: ["Unshielded Twisted Pair", "Untouchable Twisted Pair", "Unshielded Twined pair", "Untouchable Twined Pair"], a: 0, exp: "UTP is a type of networking cable consisting of twisted pairs of wires without shielding." },
+    { q: "The Steps by which Books get to the shelf Include I Accessioning of books ii. Cataloging and classifying of books iii. Assigning of Call Marks iv. Stamping", o: ["I,ii,iii,iv", "iv,I,ii,iii", "iii,I,iv,ii", "iv,I,ii,iii"], a: 0, exp: "The supplied answer key gives the sequence as accessioning, cataloguing/classifying, assigning call marks and stamping." },
+    { q: "One of the ways to Protect our Datas Include", o: ["Make a backup File", "Detect Virus and Clean the Computer", "Warn others on Various attacks", "All of the above"], a: 3, exp: "Backing up data, removing viruses and warning users about attacks all contribute to data protection." },
+    { q: "One of these is not The Earlier Writing Materials", o: ["Papyrus", "Clay Table", "Pichment", "Ms Word"], a: 3, exp: "Papyrus, clay tablets and parchment are historical writing materials. Microsoft Word is modern computer software." },
+    { q: "The Man who Invented Printing Machine in 1468 was", o: ["Isaac Newton", "Michael Faraday", "Johannes Gutenberg", "Bill Gater"], a: 2, exp: "Johannes Gutenberg is widely credited with developing the movable-type printing press in Europe." },
+    { q: "The Unit in the Library where Users are Registered is called", o: ["Reception", "Circulation", "Cataloging", "Registration Point"], a: 3, exp: "The registration point is where users are enrolled and their library membership details are recorded." },
+    { q: "The Mother of all Libraries in Nigeria is", o: ["State library", "National Library", "Fuoye Library", "Senatorial Library"], a: 1, exp: "The National Library serves as Nigeria's apex library institution and is therefore described as the “mother” of libraries in the country." },
+    { q: "The fine imposed on a User for keeping the Library materials beyond expected period is called", o: ["Legal fine", "Date due Fine", "Penalty fine", "Library fine"], a: 1, exp: "According to the supplied answer key, the charge associated with keeping materials beyond the due date is referred to as a date-due fine." },
+    { q: "Weeding in the Library is an act of ________________ Materials in the Library", o: ["Adding", "Removing", "Complementing", "Supplementing"], a: 1, exp: "Weeding is the process of removing outdated, damaged or otherwise unsuitable materials from a library collection." },
+    { q: "Journals can be classified under _____________", o: ["Reference", "Serials", "Reserved", "Book"], a: 1, exp: "Journals are serial publications because they are issued periodically in successive issues." },
+    { q: "Encyclopedia can be classified under", o: ["Reference", "Serials", "Reserved", "Books"], a: 0, exp: "Encyclopedias are reference works designed to provide quick access to factual information." },
+    { q: "The back title of the page that gives the date of publication, publisher is called ___________", o: ["Recto page", "Verso page", "Preface", "Table of content"], a: 1, exp: "The verso is the back or left-hand side of a leaf and may contain publication information." },
+    { q: "The page of the book where the author briefly discusses aspect of the book is called", o: ["The text", "Dedication", "Preface", "Acknowledgement"], a: 2, exp: "A preface is an introductory section in which the author may explain the purpose, scope or background of the book." },
+    { q: "The pages that precede the main text and usually numbered in Roman numerals is called", o: ["Title page", "Preliminary page", "Copyright page", "Initial page"], a: 1, exp: "Preliminary pages appear before the main text and are commonly numbered using Roman numerals." },
+    { q: "The right hand page of a book that usually bears odd number is called", o: ["Right hand side", "Recto", "Transformation page", "Verso"], a: 1, exp: "The recto is the right-hand page of an open book and normally carries an odd page number." },
+    { q: "The brief remark to a book by someone who is familiar with the subject matter is called", o: ["Introduction", "Foreword", "Appendix", "Index"], a: 1, exp: "A foreword is usually a short introductory statement written by someone other than the main author, often an expert or respected person." },
+    { q: "________ a geographical dictionary that gives historical, statistical, cultural and other relevant information", o: ["Gazettes", "Gaztteers", "Directories", "Yearbook"], a: 1, exp: "A gazetteer is a geographical reference work providing information about places, including historical, statistical and cultural details." },
+    { q: "Government publications can be referred to as", o: ["Gazettes", "Gazzetteer", "Yearbook", "Directories"], a: 0, exp: "Government gazettes are official publications through which governments communicate notices, decisions and other official information." },
+    { q: "All these are type of serials except _________", o: ["Periodical", "Journals", "Biographies", "Magazine"], a: 2, exp: "Periodicals, journals and magazines are serial publications, whereas a biography is generally a book or standalone work." },
+    { q: "The advent of ICT has brought about different version of libraries except", o: ["Automated library", "Digital Library", "Traditional library", "Virtual Library"], a: 2, exp: "ICT has led to automated, digital and virtual forms of library services. Traditional libraries represent the conventional form rather than an ICT-created version." }
+];
+
+let activeExam = [];
+let timeLeft = 1200; // Strictly 20 minutes countdown (1200 seconds)
+let timer;
+const totalExamQuestions = 60; // Strictly 60 questions per exam session
+let currentQuestionIndex = 0;
+
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function initExam() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1000);
+
+    // Randomly select EXACTLY 60 questions from the 146 question pool
+    const shuffled = shufflePool([...fullPhyPool]);
+    activeExam = shuffled.slice(0, totalExamQuestions);
+    
+    timeLeft = 1200; // Reset timer to 20 mins
+    currentQuestionIndex = 0; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    startTimer();
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${String.fromCharCode(65 + i)}. ${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < totalExamQuestions; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => { block.classList.toggle('active', idx === index); });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => { dot.classList.toggle('current', idx === index); });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === totalExamQuestions - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}. ${item.o[item.a]}</p>` : ''}
+                <p style="font-size: 0.9rem; color: #475569; margin-top: 8px;"><em>Explanation: ${item.exp}</em></p>
+            </div>`;
+    });
+
+    let percentage = Math.round((score / totalExamQuestions) * 100);
+    let grade = "";
+    let remark = "";
+    let statusEmoji = "";
+
+    if (percentage >= 70) {
+        grade = "A"; remark = "Solid work! You've mastered GST 103 concepts!"; statusEmoji = "⚡🏆";
+    } else if (percentage >= 60) {
+        grade = "B"; remark = "Good performance! GST 103 no fit shake you 😅."; statusEmoji = "😎✨";
+    } else if (percentage >= 50) {
+        grade = "C"; remark = "Fair score! Brush up on classification schemes and library terms."; statusEmoji = "👍📖";
+    } else if (percentage >= 45) {
+        grade = "D"; remark = "Pass grade. Review computer basics and section duties."; statusEmoji = "⚠️📝";
+    } else if (percentage >= 40) {
+        grade = "E"; remark = "Borderline! Work on your knowledge of reference materials."; statusEmoji = "👀⏳";
+    } else {
+        grade = "F"; remark = "Omo, go back to your GST 103 textbooks ASAP! 😂"; statusEmoji = "💀❌";
+    }
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    
+    document.getElementById('result-screen').innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
+        <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
+        <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
+        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <div id="review-area">${reviewHTML}</div>
+        <button class="btn-action" onclick="location.reload()">Try Again</button>
+    `;
+    
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
