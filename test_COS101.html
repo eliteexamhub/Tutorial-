@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - CSC 101 Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .exam-layout { display: grid; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initExam()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading Questions...</p>
+</div>
+
+<div class="container">
+    <header>
+        <h1>INTRODUCTION TO COMPUTER SCIENCE</h1>
+        <p>Elite Exam Hub • THEM NO BORN THIS QUESTIONS MAKE E NO COME OUT 😂</p>
+    </header>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 20:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">GO AND READ😂</div>
+    <h1 id="score-text"></h1>
+    <div id="review-area"></div>
+    <button class="btn-action" onclick="location.reload()">Try Again</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+// CSC 101 Question Pool (80 Questions)
+const fullCscPool = [
+    { q: "A computer can best be defined as a machine that is used to ______.", o: ["Produce electricity", "Process data to give required information", "Manufacture furniture", "Store only pictures"], a: 1 },
+    { q: "Which of the following represents the basic stages of computer processing?", o: ["Output → Input → Processing", "Processing → Input → Output", "Input → Processing → Output", "Input → Output → Processing"], a: 2 },
+    { q: "The raw facts entered into a computer are called ______.", o: ["Information", "Data", "Output", "Programs"], a: 1 },
+    { q: "The meaningful result obtained after processing data is called ______.", o: ["Information", "Input", "Hardware", "Memory"], a: 0 },
+    { q: "Who is associated with the invention of the Difference Engine?", o: ["Charles Babbage", "Herman Hollerith", "Blaise Pascal", "John Napier"], a: 0 },
+    { q: "Blaise Pascal is associated with the invention of the ______.", o: ["Analytical Engine", "Pascaline", "Difference Engine", "Tabulating Machine"], a: 1 },
+    { q: "Gottfried Wilhelm Leibniz invented a calculating machine known as the ______.", o: ["Pascaline", "Difference Engine", "Stepped Reckoner", "ENIAC"], a: 2 },
+    { q: "Charles Babbage designed the ______.", o: ["Analytical Engine", "Pascaline", "ENIAC", "Abacus"], a: 0 },
+    { q: "The Analytical Engine was designed to perform ______.", o: ["Only addition", "Only subtraction", "General calculations", "Only multiplication"], a: 2 },
+    { q: "Herman Hollerith is associated with the development of the ______.", o: ["Tabulating machine", "Analytical Engine", "Pascaline", "Abacus"], a: 0 },
+    { q: "Which of the following was an important feature of Hollerith's machine?", o: ["Touchscreen", "Punched cards", "Wireless mouse", "Laser printer"], a: 1 },
+    { q: "Which of the following is NOT normally considered a stage in the basic computer processing cycle?", o: ["Input", "Processing", "Output", "Sleeping"], a: 3 },
+    { q: "The component of a computer that performs calculations and processing is mainly the ______.", o: ["CPU", "Keyboard", "Monitor", "Speaker"], a: 0 },
+    { q: "Which of the following is an example of computer input?", o: ["Printed result", "Information displayed on a monitor", "Data entered through a keyboard", "Sound from a speaker"], a: 2 },
+    { q: "The output produced by a computer may be in the form of ______.", o: ["Information", "Raw data only", "Electricity only", "Instructions only"], a: 0 },
+    { q: "Which of the following is a characteristic of a computer?", o: ["Slowness", "Accuracy", "Forgetfulness", "Laziness"], a: 1 },
+    { q: "The ability of a computer to perform operations very quickly is known as ______.", o: ["Speed", "Reliability", "Storage", "Efficiency"], a: 0 },
+    { q: "The ability of a computer to perform repeated operations without becoming tired is related to ______.", o: ["Diligence", "Colour", "Portability", "Size"], a: 0 },
+    { q: "Which characteristic means that a computer can perform different types of tasks?", o: ["Versatility", "Slowness", "Fragility", "Silence"], a: 0 },
+    { q: "The three major components of a computer system are hardware, software and ______.", o: ["Firmware", "Humanware", "Keyboard", "Monitor"], a: 1 },
+    { q: "Computer hardware refers to ______.", o: ["Physical components of a computer", "Computer instructions", "Internet websites", "User passwords"], a: 0 },
+    { q: "Which of the following is hardware?", o: ["Windows", "Keyboard", "Microsoft Word", "Operating system"], a: 1 },
+    { q: "Which of the following is an input device?", o: ["Mouse", "Monitor", "Speaker", "Printer"], a: 0 },
+    { q: "Which of the following is an output device?", o: ["Keyboard", "Mouse", "Monitor", "Scanner"], a: 2 },
+    { q: "The keyboard is primarily used for ______.", o: ["Displaying information", "Entering data and commands", "Printing documents", "Producing sound"], a: 1 },
+    { q: "Which device is commonly used for pointing and selecting objects on the screen?", o: ["Mouse", "Printer", "Speaker", "Projector"], a: 0 },
+    { q: "A motherboard is best described as ______.", o: ["A computer program", "The main circuit board of a computer", "A storage file", "A type of software"], a: 1 },
+    { q: "Which of the following is a storage device?", o: ["Hard drive", "Mouse", "Keyboard", "Monitor"], a: 0 },
+    { q: "Which of the following is NOT a physical computer component?", o: ["Keyboard", "Mouse", "Microsoft Word", "Hard drive"], a: 2 },
+    { q: "The term \"humanware\" refers primarily to ______.", o: ["People who use or operate computer systems", "Computer cables", "Computer memory", "Operating systems"], a: 0 },
+    { q: "Computers are widely used in education for ______.", o: ["Teaching and learning", "Cooking only", "Building houses manually", "Farming without data"], a: 0 },
+    { q: "Which of the following is an application area of computers mentioned in the material?", o: ["Banking", "Fishing only", "Dancing only", "Sleeping"], a: 0 },
+    { q: "Computers are used in hospitals mainly to support ______.", o: ["Healthcare operations", "Road construction only", "Entertainment only", "Sports training only"], a: 0 },
+    { q: "Which sector uses computers for financial transactions and account management?", o: ["Banking", "Forestry only", "Athletics only", "Construction only"], a: 0 },
+    { q: "Computers have become important in business because they can ______.", o: ["Process and manage information", "Eliminate all employees", "Replace electricity", "Work without instructions"], a: 0 },
+    { q: "Which of the following is an application area of computing?", o: ["Marketing", "Sleeping", "Eating", "Walking"], a: 0 },
+    { q: "Computers can support communication through ______.", o: ["Internet services", "Chalk only", "Paper alone", "Manual counting only"], a: 0 },
+    { q: "Which sector can use computers for calculations, simulations and data analysis?", o: ["Science", "Sleeping", "Cooking only", "Dancing only"], a: 0 },
+    { q: "The usefulness of computers in society is largely due to their ability to ______.", o: ["Process information efficiently", "Eat food", "Sleep", "Walk"], a: 0 },
+    { q: "Which of the following is NOT an application area of computing?", o: ["Education", "Banking", "Hospitals", "Human breathing"], a: 3 },
+    { q: "Data communication refers to the transmission of digital data between ______.", o: ["Two or more computers/devices", "Two books", "Two chairs", "Two buildings without devices"], a: 0 },
+    { q: "A network is a group of computers that are ______.", o: ["Connected together", "Always switched off", "Used only for games", "Not able to communicate"], a: 0 },
+    { q: "LAN stands for ______.", o: ["Local Area Network", "Large Access Network", "Long Area Node", "Local Application Number"], a: 0 },
+    { q: "PAN stands for ______.", o: ["Personal Area Network", "Public Access Network", "Personal Application Node", "Private Area Number"], a: 0 },
+    { q: "WAN stands for ______.", o: ["Wide Area Network", "Wireless Access Number", "World Application Network", "Wide Application Node"], a: 0 },
+    { q: "MAN stands for ______.", o: ["Metropolitan Area Network", "Main Access Network", "Machine Area Node", "Multiple Application Network"], a: 0 },
+    { q: "Which type of network is generally associated with a person's devices?", o: ["PAN", "WAN", "MAN", "CAN"], a: 0 },
+    { q: "A network covering a large geographical area is called a ______.", o: ["WAN", "PAN", "LAN", "CAN"], a: 0 },
+    { q: "Which of the following is a network topology?", o: ["Bus", "Keyboard", "Printer", "Monitor"], a: 0 },
+    { q: "Which of these is also a network topology?", o: ["Ring", "Mouse", "Scanner", "Speaker"], a: 0 },
+    { q: "Which of the following is a network topology?", o: ["Star", "CPU", "RAM", "ROM"], a: 0 },
+    { q: "Reliability in data communication refers to ______.", o: ["Dependability of the communication process", "Colour of the computer", "Size of the monitor", "Shape of the keyboard"], a: 0 },
+    { q: "An operating system is best described as ______.", o: ["Software that manages computer resources", "A keyboard", "A printer", "A monitor"], a: 0 },
+    { q: "Which of the following is an operating system?", o: ["Windows", "Microsoft Word", "PowerPoint", "CorelDRAW"], a: 0 },
+    { q: "Which of the following is NOT an operating system?", o: ["Linux", "Windows", "macOS", "Microsoft Word"], a: 3 },
+    { q: "One function of an operating system is ______.", o: ["Resource management", "Manufacturing hardware", "Producing electricity", "Repairing keyboards physically"], a: 0 },
+    { q: "An operating system provides an interface between the user and ______.", o: ["Computer hardware", "Food", "Furniture", "Buildings"], a: 0 },
+    { q: "Which operating system is associated with Apple computers?", o: ["macOS", "MS-DOS", "Windows only", "Android only"], a: 0 },
+    { q: "Linux is an example of a(n) ______.", o: ["Operating system", "Input device", "Output device", "Spreadsheet"], a: 0 },
+    { q: "Android is primarily a ______.", o: ["Mobile operating system", "Printer", "Spreadsheet", "Keyboard"], a: 0 },
+    { q: "Which of the following is a function of an operating system?", o: ["Managing files", "Washing computers", "Producing paper", "Designing furniture"], a: 0 },
+    { q: "A multi-user operating system allows ______.", o: ["Multiple users to use computer resources", "Only one user forever", "No user to access the system", "Only printers to operate"], a: 0 },
+    { q: "A real-time operating system is designed to respond to events ______.", o: ["Within a specified time", "After several years", "Only when switched off", "Without processing"], a: 0 },
+    { q: "GUI stands for ______.", o: ["Graphical User Interface", "General User Internet", "Graphic Utility Input", "General Utility Interface"], a: 0 },
+    { q: "Which of the following is a feature of a GUI?", o: ["Icons", "Only punched cards", "No visual elements", "Mechanical gears"], a: 0 },
+    { q: "An icon is best described as ______.", o: ["A graphical representation of an object or command", "A computer virus", "A storage cable", "A keyboard key only"], a: 0 },
+    { q: "The Windows desktop is the ______.", o: ["Main graphical working area", "Computer's hard disk", "Printer tray", "CPU fan"], a: 0 },
+    { q: "The Start button is used to ______.", o: ["Access programs and system functions", "Turn a monitor into a printer", "Delete the motherboard", "Increase electricity"], a: 0 },
+    { q: "The taskbar is normally found at the ______ of the Windows desktop.", o: ["Bottom", "Middle", "Inside the CPU", "Back of the monitor"], a: 0 },
+    { q: "A folder is used to ______.", o: ["Organize files", "Display electricity", "Increase screen brightness automatically", "Replace the CPU"], a: 0 },
+    { q: "Which operation creates a duplicate of a file?", o: ["Copy", "Delete", "Shut down", "Format"], a: 0 },
+    { q: "Which operation removes a file from its original location?", o: ["Cut", "Copy", "Paste", "Rename"], a: 0 },
+    { q: "The operation used to change the name of a file or folder is ______.", o: ["Rename", "Copy", "Paste", "Refresh"], a: 0 },
+    { q: "The process of placing a copied item in another location is called ______.", o: ["Paste", "Cut", "Delete", "Rename"], a: 0 },
+    { q: "Microsoft Word is primarily a ______ application.", o: ["Word-processing", "Spreadsheet", "Presentation", "Graphics"], a: 0 },
+    { q: "Which of the following is associated with Microsoft Word?", o: ["Document creation", "Network topology", "Virus scanning only", "Hardware manufacturing"], a: 0 },
+    { q: "The Quick Access Toolbar contains ______.", o: ["Frequently used commands", "Only computer games", "Network cables", "Hardware components"], a: 0 },
+    { q: "Which of the following can be found in the Microsoft Word interface?", o: ["Ribbon", "Motherboard", "Hard disk platter", "CPU fan"], a: 0 },
+    { q: "The title bar generally displays ______.", o: ["The document/application title", "Only the keyboard layout", "The CPU temperature", "Network cables"], a: 0 },
+    { q: "Which command is used to store a document?", o: ["Save", "Delete", "Cut", "Close"], a: 0 }
+];
+
+let activeExam = [];
+let timeLeft = 1200; // 20 minutes countdown (20 * 60)
+let timer;
+const totalExamQuestions = 40; 
+let currentQuestionIndex = 0;
+
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function initExam() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1000);
+
+    let shuffledSelection = shufflePool([...fullCscPool]);
+    activeExam = shuffledSelection.slice(0, totalExamQuestions);
+    timeLeft = 1200; 
+    currentQuestionIndex = 0; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    startTimer();
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${String.fromCharCode(65 + i)}.${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < totalExamQuestions; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => { block.classList.toggle('active', idx === index); });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => { dot.classList.toggle('current', idx === index); });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === totalExamQuestions - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}.${item.o[item.a]}</p>` : ''}
+            </div>`;
+    });
+
+    let percentage = Math.round((score / totalExamQuestions) * 100);
+    let grade = "";
+    let remark = "";
+    let statusEmoji = "";
+
+    if (percentage >= 70) {
+        grade = "A"; remark = "Excellent! You have mastered CSC 101 computer fundamentals!"; statusEmoji = "🔥🏆";
+    } else if (percentage >= 60) {
+        grade = "B"; remark = "Very Good! You're a computer wizard in the making 😅."; statusEmoji = "😎✨";
+    } else if (percentage >= 50) {
+        grade = "C"; remark = "Good effort. Double check your networking and hardware basics."; statusEmoji = "👍📖";
+    } else if (percentage >= 45) {
+        grade = "D"; remark = "Pass. Practice your operating system and GUI rules."; statusEmoji = "⚠️📝";
+    } else if (percentage >= 40) {
+        grade = "E"; remark = "Fair. But you still gats read bro, take it step-by-step."; statusEmoji = "👀⏳";
+    } else {
+        grade = "F"; remark = "Omo, go and read your CSC 101 oooo! 😂"; statusEmoji = "💀❌";
+    }
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    
+    document.getElementById('result-screen').innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
+        <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
+        <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
+        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <div id="review-area">${reviewHTML}</div>
+        <button class="btn-action" onclick="location.reload()">Try Again</button>
+    `;
+    
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
