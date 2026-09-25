@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - BIO 101 Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .exam-layout { display: grid; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initExam()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading Questions...</p>
+</div>
+
+<div class="container">
+    <header>
+        <h1>GENERAL BIOLOGY (BIO 101)</h1>
+        <p>Elite Exam Hub • THEM NO BORN THIS QUESTIONS MAKE E NO COME OUT 😂</p>
+    </header>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 20:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">GO AND READ😂</div>
+    <h1 id="score-text"></h1>
+    <div id="review-area"></div>
+    <button class="btn-action" onclick="location.reload()">Try Again</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+// Pool of 200 questions for BIO101
+const fullMthPool = [
+    { q: "Biology is primarily concerned with the study of ______.", o: ["Matter", "Life and living organisms", "Rocks and minerals", "The atmosphere"], a: 1 },
+    { q: "The science that deals with the study of diseases, their causes, symptoms and effects is called ______.", o: ["Anatomy", "Pathology", "Ecology", "Taxonomy"], a: 1 },
+    { q: "Which of the following is NOT a major area of biology?", o: ["Botany", "Zoology", "Geology", "Microbiology"], a: 2 },
+    { q: "The branch of biology concerned mainly with plants is ______.", o: ["Zoology", "Botany", "Cytology", "Physiology"], a: 1 },
+    { q: "Zoology is the scientific study of ______.", o: ["Plants", "Animals", "Cells only", "Microorganisms only"], a: 1 },
+    { q: "The branch of biology concerned with the study of cells is called ______.", o: ["Cytology", "Ecology", "Taxonomy", "Genetics"], a: 0 },
+    { q: "The study of heredity and variation is known as ______.", o: ["Genetics", "Ecology", "Anatomy", "Histology"], a: 0 },
+    { q: "Ecology is primarily concerned with ______.", o: ["Cell division", "Interactions between organisms and their environment", "Naming organisms", "Human anatomy"], a: 1 },
+    { q: "Which biological discipline is most directly concerned with the classification and naming of organisms?", o: ["Taxonomy", "Physiology", "Embryology", "Pathology"], a: 0 },
+    { q: "A scientist who studies microorganisms is primarily involved in ______.", o: ["Microbiology", "Astronomy", "Geology", "Economics"], a: 0 },
+    { q: "Which of the following is a characteristic of living organisms?", o: ["Respiration", "Rusting", "Melting", "Crystallization"], a: 0 },
+    { q: "The ability of an organism to respond to changes in its environment is called ______.", o: ["Sensitivity", "Nutrition", "Excretion", "Growth"], a: 0 },
+    { q: "The process by which organisms obtain or manufacture food is called ______.", o: ["Excretion", "Nutrition", "Respiration", "Reproduction"], a: 1 },
+    { q: "Which process removes metabolic waste products from an organism?", o: ["Growth", "Excretion", "Nutrition", "Reproduction"], a: 1 },
+    { q: "The production of new individuals by living organisms is called ______.", o: ["Adaptation", "Reproduction", "Respiration", "Sensitivity"], a: 1 },
+    { q: "An increase in the size and/or mass of an organism is known as ______.", o: ["Growth", "Nutrition", "Adaptation", "Movement"], a: 0 },
+    { q: "The ability of organisms to survive under particular environmental conditions is associated with ______.", o: ["Adaptation", "Excretion", "Digestion", "Respiration"], a: 0 },
+    { q: "Which of the following is included among the characteristics of living organisms listed in the document?", o: ["Competition", "Magnetism", "Combustion", "Corrosion"], a: 0 },
+    { q: "Which of the following is NOT a characteristic of living organisms listed in the document?", o: ["Movement", "Respiration", "Reproduction", "Evaporation"], a: 3 },
+    { q: "Biology is described in the document as a broad subject because it encompasses the study of ______.", o: ["Only human beings", "Only plants", "Life processes from molecular levels to communities", "Only microorganisms"], a: 2 },
+    { q: "Biodiversity refers to ______.", o: ["The study of rocks", "The great variety of living organisms and their habitats", "The study of cells", "The study of weather"], a: 1 },
+    { q: "Systematics is the scientific study of ______.", o: ["Biological diversity and its evolution", "Weather patterns", "Human diseases only", "Soil chemistry"], a: 0 },
+    { q: "Taxonomy is a subdivision of ______.", o: ["Ecology", "Systematics", "Physiology", "Anatomy"], a: 1 },
+    { q: "Who is regarded as the Father of Modern Taxonomy?", o: ["Charles Darwin", "Aristotle", "Carolus Linnaeus", "Gregor Mendel"], a: 2 },
+    { q: "Classification is best described as the ______.", o: ["Random arrangement of organisms", "Orderly arrangement of organisms into groups based on similarities", "Destruction of organisms", "Naming of planets"], a: 1 },
+    { q: "Which of the following represents the correct taxonomic hierarchy from highest to lowest?", o: ["Species → Genus → Family → Order → Class → Phylum → Kingdom", "Kingdom → Phylum → Class → Order → Family → Genus → Species", "Kingdom → Species → Genus → Family → Class → Order → Phylum", "Phylum → Kingdom → Class → Species → Family → Genus → Order"], a: 1 },
+    { q: "The basic unit of biological classification is the ______.", o: ["Genus", "Family", "Species", "Kingdom"], a: 2 },
+    { q: "A species consists of organisms that can ______.", o: ["Never reproduce", "Interbreed successfully and produce offspring", "Belong to different kingdoms", "Always live in different habitats"], a: 1 },
+    { q: "Which scientist laid the foundations for modern biological nomenclature?", o: ["Carolus Linnaeus", "Lamarck", "Watson", "Haeckel"], a: 0 },
+    { q: "Linnaeus initially distinguished which two kingdoms?", o: ["Monera and Protista", "Animalia and Vegetabilia", "Fungi and Plantae", "Protista and Fungi"], a: 1 },
+    { q: "The scientific naming system in which an organism is given two names is called ______.", o: ["Trinomial nomenclature", "Binomial nomenclature", "Numerical nomenclature", "Molecular nomenclature"], a: 1 },
+    { q: "The first word in a scientific name represents the ______.", o: ["Species", "Genus", "Family", "Order"], a: 1 },
+    { q: "The second word in a binomial scientific name represents the ______.", o: ["Species-specific name", "Kingdom", "Family", "Phylum"], a: 0 },
+    { q: "In scientific nomenclature, the genus name begins with a ______ letter.", o: ["Lowercase", "Capital", "Numerical", "Greek"], a: 1 },
+    { q: "Which scientific name is correctly written?", o: ["homo Sapiens", "Homo Sapiens", "Homo sapiens", "homo sapiens"], a: 2 },
+    { q: "Why is binomial nomenclature useful?", o: ["It gives organisms standard names worldwide", "It prevents reproduction", "It changes habitats", "It eliminates biodiversity"], a: 0 },
+    { q: "The three-domain system includes Bacteria, Archaea and ______.", o: ["Plantae", "Eukarya", "Animalia", "Protista"], a: 1 },
+    { q: "Organisms in the domain Bacteria are generally ______.", o: ["Prokaryotic", "Multicellular animals", "Fungi", "Plants"], a: 0 },
+    { q: "Organisms belonging to Eukarya possess ______.", o: ["No DNA", "A true nucleus", "No cell membrane", "No ribosomes"], a: 1 },
+    { q: "The kingdom Monera consists mainly of ______ organisms.", o: ["Prokaryotic", "Multicellular eukaryotic", "Viral", "Fungal"], a: 0 },
+    { q: "Which of the following is an example of a prokaryote?", o: ["Bacterium", "Mushroom", "Amoeba", "Fern"], a: 0 },
+    { q: "The hereditary material of bacteria is located in the ______.", o: ["True nucleus", "Nucleoid", "Golgi body", "Chloroplast"], a: 1 },
+    { q: "Which structure is absent in typical prokaryotic cells?", o: ["Ribosome", "Plasma membrane", "Membrane-bound nucleus", "Cytoplasm"], a: 2 },
+    { q: "The bacterial cell wall commonly contains ______.", o: ["Cellulose only", "Peptidoglycan", "Chitin only", "Glycogen"], a: 1 },
+    { q: "Gram-positive bacteria have a cell wall that is relatively rich in ______.", o: ["Protein-sugar complexes", "Cellulose", "Chitin", "Lipid only"], a: 0 },
+    { q: "Gram-negative bacteria possess an additional ______ layer.", o: ["Lipid", "Cellulose", "Chitin", "Nuclear"], a: 0 },
+    { q: "Which of the following is NOT one of the three major bacterial groups based on habitat mentioned in the document?", o: ["Halophiles", "Thermophiles", "Methanogens", "Protozoans"], a: 3 },
+    { q: "Organisms that live in extremely salty environments are called ______.", o: ["Thermophiles", "Halophiles", "Methanogens", "Saprophytes"], a: 1 },
+    { q: "Organisms adapted to very high temperatures are called ______.", o: ["Halophiles", "Thermophiles", "Parasites", "Protozoans"], a: 1 },
+    { q: "Methanogens are associated with the production of ______.", o: ["Oxygen", "Methane", "Nitrogen", "Hydrogen peroxide"], a: 1 },
+    { q: "Spherical bacteria are called ______.", o: ["Bacilli", "Cocci", "Vibrios", "Spirilla"], a: 1 },
+    { q: "Rod-shaped bacteria are called ______.", o: ["Bacilli", "Cocci", "Vibrios", "Spirilla"], a: 0 },
+    { q: "Comma-shaped bacteria are called ______.", o: ["Cocci", "Bacilli", "Vibrios", "Spirilla"], a: 2 },
+    { q: "Spiral-shaped bacteria are called ______.", o: ["Spirilla", "Cocci", "Bacilli", "Vibrios"], a: 0 },
+    { q: "Which of the following is an autotrophic mode of nutrition in bacteria?", o: ["Parasitic", "Saprophytic", "Photosynthetic", "Holozoic"], a: 2 },
+    { q: "The kingdom Protista contains mainly ______ organisms.", o: ["Prokaryotic", "Eukaryotic", "Viral", "Acellular"], a: 1 },
+    { q: "Most protists are ______.", o: ["Unicellular", "Acellular", "Multicellular animals", "Vascular plants"], a: 0 },
+    { q: "Amoeba moves mainly by means of ______.", o: ["Cilia", "Flagella", "Pseudopodia", "Wings"], a: 2 },
+    { q: "Paramecium moves using ______.", o: ["Cilia", "Pseudopodia", "Roots", "Hyphae"], a: 0 },
+    { q: "Euglena is an example of a ______.", o: ["Plant-like protist", "Fungus", "Bacterium", "Mammal"], a: 0 },
+    { q: "Protozoans are generally classified as ______.", o: ["Animal-like protists", "Plant-like protists", "Fungi", "Bacteria"], a: 0 },
+    { q: "Algae are generally described in the document as ______.", o: ["Plant-like protists", "Animal-like protists", "Prokaryotes only", "Fungi"], a: 0 },
+    { q: "Which organism is an example of a fungus?", o: ["Mushroom", "Amoeba", "Paramecium", "Euglena"], a: 0 },
+    { q: "Fungi obtain nutrients mainly by ______.", o: ["Absorption", "Photosynthesis", "Ingestion followed by chewing", "Filtration"], a: 0 },
+    { q: "The vegetative body of most fungi is called the ______.", o: ["Mycelium", "Nucleus", "Thallus", "Capsule"], a: 0 },
+    { q: "Individual fungal filaments are called ______.", o: ["Hyphae", "Cilia", "Pseudopodia", "Rhizoids"], a: 0 },
+    { q: "Fungi reproduce by ______.", o: ["Only binary fission", "Spores and other methods", "Only seeds", "Only eggs"], a: 1 },
+    { q: "Which of the following is a characteristic of fungi?", o: ["They are photosynthetic", "They are non-vascular", "They possess chloroplasts", "They produce their own food"], a: 1 },
+    { q: "The cell wall of fungi is chemically associated with ______.", o: ["Chitin", "Cellulose only", "Peptidoglycan", "Calcium carbonate only"], a: 0 },
+    { q: "Fungi may obtain nutrition as ______.", o: ["Saprophytes, parasites or symbionts", "Only autotrophs", "Only herbivores", "Only carnivores"], a: 0 },
+    { q: "The plant kingdom is broadly divided into groups based on characteristics such as ______.", o: ["Seeds and vascular tissues", "Hair colour", "Blood groups", "Body temperature"], a: 0 },
+    { q: "Cryptogams are plants that ______.", o: ["Have well-developed reproductive organs", "Do not have well-developed reproductive organs", "Always produce fruits", "Always produce flowers"], a: 1 },
+    { q: "Phanerogams are plants that ______.", o: ["Have well-developed reproductive organs", "Lack reproductive organs", "Are all fungi", "Are all bacteria"], a: 0 },
+    { q: "Bryophytes are generally ______ plants.", o: ["Vascular", "Non-vascular", "Seed-producing", "Flowering"], a: 1 },
+    { q: "Which of the following is an example of a bryophyte?", o: ["Moss", "Maize", "Pine", "Mango"], a: 0 },
+    { q: "Pteridophytes are characterized by the presence of ______.", o: ["Vascular tissues", "Flowers only", "Fruits only", "Seeds only"], a: 0 },
+    { q: "Which of the following is an example of a pteridophyte?", o: ["Fern", "Moss", "Mushroom", "Mango"], a: 0 },
+    { q: "Gymnosperms produce seeds that are generally ______.", o: ["Enclosed within fruits", "Naked or exposed", "Produced inside flowers", "Produced by fungi"], a: 1 },
+    { q: "Angiosperms are commonly known as ______ plants.", o: ["Flowering", "Non-vascular", "Seedless", "Fungal"], a: 0 },
+    { q: "A major difference between gymnosperms and angiosperms is that angiosperm seeds are generally ______.", o: ["Naked", "Enclosed in fruits", "Produced by spores", "Absent"], a: 1 },
+    { q: "Which of the following is a monocotyledon?", o: ["Maize", "Bean", "Pea", "Groundnut"], a: 0 },
+    { q: "Which of the following is a dicotyledon?", o: ["Maize", "Bean", "Grass", "Rice"], a: 1 },
+    { q: "Monocotyledons typically possess ______ cotyledon.", o: ["One", "Two", "Three", "Four"], a: 0 },
+    { q: "Dicotyledons typically possess ______ cotyledons.", o: ["One", "Two", "Three", "Four"], a: 1 },
+    { q: "Which plant group has seeds but does not produce flowers?", o: ["Gymnosperms", "Angiosperms", "Bryophytes", "Pteridophytes"], a: 0 },
+    { q: "Animals are generally described as ______ organisms.", o: ["Eukaryotic and multicellular", "Prokaryotic and unicellular", "Acellular", "Photosynthetic"], a: 0 },
+    { q: "Animals obtain food mainly through ______ nutrition.", o: ["Heterotrophic", "Autotrophic", "Photosynthetic", "Chemosynthetic"], a: 0 },
+    { q: "The presence of a true body cavity is characteristic of ______.", o: ["Coelomates", "Acoelomates", "Pseudocoelomates", "Prokaryotes"], a: 0 },
+    { q: "Animals without a body cavity are called ______.", o: ["Coelomates", "Acoelomates", "Pseudocoelomates", "Vertebrates"], a: 1 },
+    { q: "Animals with a false body cavity are called ______.", o: ["Coelomates", "Acoelomates", "Pseudocoelomates", "Diploblasts"], a: 2 },
+    { q: "Sponges belong to the phylum ______.", o: ["Porifera", "Annelida", "Mollusca", "Arthropoda"], a: 0 },
+    { q: "A characteristic feature of Porifera is the presence of numerous ______.", o: ["Pores", "Wings", "Feathers", "Scales"], a: 0 },
+    { q: "Hydra belongs to the phylum ______.", o: ["Coelenterata/Cnidaria", "Mollusca", "Annelida", "Chordata"], a: 0 },
+    { q: "Cnidarians generally possess ______ symmetry.", o: ["Bilateral", "Radial", "Asymmetrical", "Spiral"], a: 1 },
+    { q: "Cnidarians are generally ______.", o: ["Triploblastic", "Diploblastic", "Monoblastic", "Acoelomate vertebrates"], a: 1 },
+    { q: "Planaria belongs to the phylum ______.", o: ["Platyhelminthes", "Nematoda", "Annelida", "Mollusca"], a: 0 },
+    { q: "Members of Platyhelminthes are commonly called ______.", o: ["Flatworms", "Roundworms", "Segmented worms", "Sponges"], a: 0 },
+    { q: "Ascaris belongs to the phylum ______.", o: ["Nematoda", "Annelida", "Mollusca", "Arthropoda"], a: 0 },
+    { q: "Members of Nematoda are commonly known as ______.", o: ["Flatworms", "Roundworms", "Segmented worms", "Ringworms"], a: 1 },
+    { q: "Earthworms belong to the phylum ______.", o: ["Annelida", "Nematoda", "Mollusca", "Echinodermata"], a: 0 },
+    { q: "A major characteristic of annelids is ______ segmentation.", o: ["Absent", "Present", "Random", "Radial"], a: 1 },
+    { q: "Annelids generally possess a ______ body cavity.", o: ["True coelom", "No cavity", "False cavity", "Nuclear cavity"], a: 0 },
+    { q: "Which of the following belongs to Annelida?", o: ["Leech", "Ascaris", "Tapeworm", "Hydra"], a: 0 },
+    { q: "Arthropods possess an ______ skeleton.", o: ["Internal", "External", "Fluid", "Cartilaginous"], a: 1 },
+    { q: "Which of the following is an arthropod?", o: ["Butterfly", "Earthworm", "Starfish", "Snail"], a: 0 },
+    { q: "One major characteristic of Arthropoda is ______ appendages.", o: ["Jointed", "Unjointed", "Leaf-like", "Root-like"], a: 0 },
+    { q: "Which organism belongs to Mollusca?", o: ["Snail", "Earthworm", "Spider", "Starfish"], a: 0 },
+    { q: "The body of a typical mollusc is divided into structures including the ______.", o: ["Visceral mass and muscular foot", "Head and wings only", "Thorax and abdomen only", "Root and shoot"], a: 0 },
+    { q: "Molluscs generally possess a ______ circulatory system.", o: ["Open", "Closed only", "Double closed", "Pulmonary"], a: 0 },
+    { q: "Starfish belongs to the phylum ______.", o: ["Echinodermata", "Mollusca", "Arthropoda", "Annelida"], a: 0 },
+    { q: "Adult echinoderms typically possess ______ symmetry.", o: ["Bilateral", "Radial", "Asymmetrical", "None"], a: 1 },
+    { q: "Echinoderms possess a characteristic ______ system.", o: ["Water vascular", "Blood vascular only", "Air vascular", "Root vascular"], a: 0 },
+    { q: "Which of the following is an echinoderm?", o: ["Sea cucumber", "Snail", "Butterfly", "Earthworm"], a: 0 },
+    { q: "Chordates are characterized by the presence of a ______.", o: ["Notochord", "Shell", "Hypha", "Pseudopodium"], a: 0 },
+    { q: "The notochord is a ______ structure.", o: ["Rod-shaped", "Flat", "Hollow sphere", "Spiral shell"], a: 0 },
+    { q: "Vertebrates possess a vertebral column developed from the ______.", o: ["Notochord", "Cell wall", "Hypha", "Shell"], a: 0 },
+    { q: "Which of the following is a vertebrate?", o: ["Dog", "Earthworm", "Snail", "Sponge"], a: 0 },
+    { q: "Fish generally possess ______ chambers in their heart.", o: ["Two", "Three", "Four", "Five"], a: 0 },
+    { q: "Adult amphibians generally have a ______-chambered heart.", o: ["Two", "Three", "Four", "Five"], a: 1 },
+    { q: "Birds generally possess a ______-chambered heart.", o: ["Two", "Three", "Four", "Five"], a: 2 },
+    { q: "Cytology is the study of ______.", o: ["Cells", "Ecosystems", "Evolution", "Fossils"], a: 0 },
+    { q: "Which two major types of cells are compared in the document?", o: ["Plant and fungal cells", "Prokaryotic and eukaryotic cells", "Animal and bacterial cells only", "Viral and fungal cells"], a: 1 },
+    { q: "A major difference between prokaryotic and eukaryotic cells is that eukaryotic cells possess a ______.", o: ["True nucleus", "Nucleoid only", "Cell wall only", "Capsule"], a: 0 },
+    { q: "The genetic material of prokaryotes is located in the ______.", o: ["Nucleoid region", "Golgi apparatus", "Nucleus", "Lysosome"], a: 0 },
+    { q: "Ribosomes are primarily involved in ______.", o: ["Protein synthesis", "Lipid storage", "Photosynthesis", "Cell locomotion"], a: 0 },
+    { q: "Which organelle is primarily associated with ATP production?", o: ["Mitochondrion", "Lysosome", "Golgi apparatus", "Nucleolus"], a: 0 },
+    { q: "The endoplasmic reticulum is involved in ______.", o: ["Intracellular transport", "Bone formation only", "Locomotion only", "Blood clotting only"], a: 0 },
+    { q: "Rough endoplasmic reticulum is associated with ______.", o: ["Ribosomes", "Lysosomes", "Centrioles", "Chloroplasts only"], a: 0 },
+    { q: "Smooth endoplasmic reticulum is particularly associated with ______.", o: ["Lipid synthesis", "Protein digestion", "DNA replication only", "Cell division only"], a: 0 },
+    { q: "The Golgi apparatus is involved in ______.", o: ["Modification and secretion of materials", "DNA storage", "Photosynthesis", "Chromosome formation only"], a: 0 },
+    { q: "Lysosomes contain numerous ______.", o: ["Digestive enzymes", "Chlorophyll molecules", "Chromosomes", "Ribosomes only"], a: 0 },
+    { q: "The digestion of engulfed material within a cell is associated with ______.", o: ["Lysosomes", "Ribosomes", "Centrioles", "Chloroplasts"], a: 0 },
+    { q: "Peroxisomes are particularly important in the breakdown of ______.", o: ["Hydrogen peroxide", "Cellulose only", "DNA only", "Ribosomes"], a: 0 },
+    { q: "Vacuoles in plant cells are important for ______.", o: ["Storage and water balance", "Protein synthesis only", "DNA replication only", "Cell movement"], a: 0 },
+    { q: "Centrioles are associated with ______.", o: ["Cell division and cilia formation", "Photosynthesis", "Food absorption only", "DNA transcription only"], a: 0 },
+    { q: "Cilia and flagella are structures primarily associated with ______.", o: ["Movement", "Photosynthesis", "Digestion", "Heredity"], a: 0 },
+    { q: "Microtubules are important components of ______.", o: ["Cilia and flagella", "Cell walls only", "Chlorophyll", "Ribosomes"], a: 0 },
+    { q: "Microfilaments are primarily composed of ______.", o: ["Actin", "Cellulose", "Chitin", "DNA"], a: 0 },
+    { q: "Microvilli increase the ______ of cells.", o: ["Surface area", "Nuclear size", "Chromosome number", "Cell wall thickness"], a: 0 },
+    { q: "The cell wall of plants contains ______.", o: ["Cellulose", "Peptidoglycan only", "Chitin only", "Glycogen"], a: 0 },
+    { q: "Chloroplasts are found mainly in ______ cells.", o: ["Plant", "Animal", "Bacterial only", "Fungal"], a: 0 },
+    { q: "The main function of chloroplasts is ______.", o: ["Photosynthesis", "Protein digestion", "Cell division", "Waste excretion"], a: 0 },
+    { q: "The plasma membrane is described as a ______ barrier.", o: ["Selectively permeable", "Completely impermeable", "Rigid and non-living", "Solid protein wall"], a: 0 },
+    { q: "Diffusion involves movement of particles from a region of ______ concentration to a region of lower concentration.", o: ["Higher", "Lower", "Equal", "Zero"], a: 0 },
+    { q: "Increasing the difference in concentration between two regions generally makes diffusion ______.", o: ["Faster", "Impossible", "Slower", "Stop completely"], a: 0 },
+    { q: "Increasing the surface area available for diffusion generally ______ diffusion.", o: ["Increases", "Prevents", "Stops", "Reverses"], a: 0 },
+    { q: "Small, fat-soluble molecules generally diffuse ______.", o: ["More readily", "Less readily", "Only through ribosomes", "Only through nuclei"], a: 0 },
+    { q: "Osmosis is associated with the movement of ______.", o: ["Water", "Proteins only", "DNA", "Ribosomes"], a: 0 },
+    { q: "Phagocytosis involves the uptake of ______.", o: ["Solid particles", "Water only", "Oxygen only", "DNA only"], a: 0 },
+    { q: "Pinocytosis involves the uptake of ______.", o: ["Fluid materials", "Solid food only", "Chromosomes", "Ribosomes"], a: 0 },
+    { q: "Reproduction involving only one parent is called ______ reproduction.", o: ["Sexual", "Asexual", "Bisexual", "Gametic"], a: 1 },
+    { q: "Sexual reproduction normally involves the fusion of ______.", o: ["Two gametes", "Two somatic cells only", "Two nuclei without gametes", "Two tissues"], a: 0 },
+    { q: "The fusion of male and female gametes is called ______.", o: ["Fertilization", "Budding", "Fragmentation", "Germination"], a: 0 },
+    { q: "The product of fertilization is the ______.", o: ["Zygote", "Spore", "Hypha", "Pseudopodium"], a: 0 },
+    { q: "Reproduction by the formation of a small outgrowth that separates from the parent is called ______.", o: ["Budding", "Fragmentation", "Binary fission", "Pollination"], a: 0 },
+    { q: "Binary fission involves the division of one organism into ______.", o: ["Two individuals", "Three individuals", "Four individuals", "Many spores"], a: 0 },
+    { q: "Amoeba commonly reproduces asexually by ______.", o: ["Binary fission", "Budding", "Seed formation", "Fertilization"], a: 0 },
+    { q: "In plants, fragmentation may be followed by ______.", o: ["Regeneration", "Fertilization only", "Pollination only", "Mutation only"], a: 0 },
+    { q: "In flowering plants, the male reproductive organ is the ______.", o: ["Stamen", "Ovary", "Ovule", "Carpel only"], a: 0 },
+    { q: "The female reproductive organ of a flowering plant is the ______.", o: ["Carpel", "Stamen", "Anther", "Filament"], a: 0 },
+    { q: "Pollen grains are produced in the ______.", o: ["Anther", "Ovary", "Stigma", "Style"], a: 0 },
+    { q: "Ovules are contained within the ______.", o: ["Ovary", "Anther", "Filament", "Stigma"], a: 0 },
+    { q: "In animals, the male reproductive organ that produces sperm is the ______.", o: ["Testis", "Ovary", "Uterus", "Oviduct"], a: 0 },
+    { q: "The female reproductive organ that produces eggs is the ______.", o: ["Ovary", "Testis", "Penis", "Epididymis"], a: 0 },
+    { q: "The human sperm cell is generally described as having a head, middle piece and ______.", o: ["Tail", "Wing", "Cilium", "Shell"], a: 0 },
+    { q: "The developing structure formed after fertilization is initially called a ______.", o: ["Zygote", "Spore", "Pollen grain", "Hypha"], a: 0 },
+    { q: "Repeated division of the zygote eventually contributes to the formation of an ______.", o: ["Embryo", "Adult immediately", "Ovule", "Anther"], a: 0 },
+    { q: "An embryo that develops inside the mother's body is characteristic of ______ animals.", o: ["Viviparous", "Oviparous", "Ovoviviparous only", "Asexual"], a: 0 },
+    { q: "Animals that lay eggs are described as ______.", o: ["Oviparous", "Viviparous", "Hermaphroditic", "Parthenogenetic"], a: 0 },
+    { q: "In ovoviviparous animals, eggs are generally ______.", o: ["Retained within the mother's body until development", "Never fertilized", "Produced by plants", "Replaced by spores"], a: 0 },
+    { q: "Fertilization occurring inside the female body is called ______ fertilization.", o: ["Internal", "External", "Artificial only", "Asexual"], a: 0 },
+    { q: "Fertilization occurring outside the female body is called ______ fertilization.", o: ["Internal", "External", "Nuclear", "Vegetative"], a: 1 },
+    { q: "Frogs commonly exhibit ______ fertilization.", o: ["External", "Internal", "Vegetative", "Asexual"], a: 0 },
+    { q: "Which of the following is an example of vegetative reproduction?", o: ["Production of new plants from vegetative parts", "Fusion of sperm and egg", "Formation of zygote", "Production of pollen only"], a: 0 },
+    { q: "Airborne spores are particularly characteristic of many ______ plants.", o: ["Non-flowering", "Flowering only", "Seed-producing only", "Angiosperm fruits"], a: 0 },
+    { q: "Competition occurs when organisms ______.", o: ["Require the same limited resources", "Never interact", "Produce identical gametes", "Stop feeding"], a: 0 },
+    { q: "Predation is an interaction in which one organism ______.", o: ["Kills and eats another organism", "Produces food for another", "Lives without feeding", "Always benefits both organisms"], a: 0 },
+    { q: "The organism that captures and eats another organism is called the ______.", o: ["Predator", "Prey", "Host", "Parasite only"], a: 0 },
+    { q: "The organism that is hunted and eaten is called the ______.", o: ["Prey", "Predator", "Producer", "Decomposer"], a: 0 },
+    { q: "Symbiosis involves ______.", o: ["Close interaction between organisms", "Only competition", "Only predation", "Complete absence of interaction"], a: 0 },
+    { q: "In parasitism, the parasite generally ______.", o: ["Benefits while the host is harmed", "Is always harmed", "Benefits the host only", "Benefits neither organism"], a: 0 },
+    { q: "A parasite that lives on the external surface of its host is a/an ______.", o: ["Ectoparasite", "Endoparasite", "Autotroph", "Producer"], a: 0 },
+    { q: "A parasite that lives inside the body of its host is a/an ______.", o: ["Endoparasite", "Ectoparasite", "Producer", "Predator"], a: 0 },
+    { q: "In mutualism, ______.", o: ["Both organisms benefit", "One benefits and the other is harmed", "Both are harmed", "Neither benefits"], a: 0 },
+    { q: "In commensalism, ______.", o: ["One organism benefits while the other is generally unaffected", "Both organisms are harmed", "Both organisms die", "One organism always kills the other"], a: 0 },
+    { q: "Heredity is the transmission of characteristics from ______.", o: ["Parents to offspring", "Environment to rocks", "Plants to soil", "Predators to prey"], a: 0 },
+    { q: "A heritable feature that varies among individuals is called a ______.", o: ["Character", "Tissue", "Habitat", "Species"], a: 0 },
+    { q: "A specific form of a gene is called an ______.", o: ["Allele", "Antibody", "Antigen", "Organelle"], a: 0 },
+    { q: "The physical appearance or observable characteristics of an organism constitute its ______.", o: ["Phenotype", "Genotype", "Allele", "Genome only"], a: 0 },
+    { q: "The genetic makeup of an individual is its ______.", o: ["Genotype", "Phenotype", "Character", "Trait only"], a: 0 },
+    { q: "An individual with two identical alleles at a locus is ______.", o: ["Homozygous", "Heterozygous", "Hybrid only", "Hemizygous"], a: 0 },
+    { q: "An individual with two different alleles at a locus is ______.", o: ["Heterozygous", "Homozygous", "Haploid", "Diploid only"], a: 0 },
+    { q: "Mendel's Law of Segregation states that alleles ______.", o: ["Separate during gamete formation", "Always remain together", "Disappear during meiosis", "Are found only in males"], a: 0 },
+    { q: "Mendel's Law of Independent Assortment concerns the ______.", o: ["Independent distribution of allele pairs", "Formation of cell walls", "Production of ATP", "Movement of cilia"], a: 0 },
+    { q: "In a typical Mendelian monohybrid cross, the F₂ phenotypic ratio is ______.", o: ["1:1", "2:1", "3:1", "9:3:3:1"], a: 2 },
+    { q: "In the same typical monohybrid cross, the F₂ genotypic ratio is ______.", o: ["3:1", "1:2:1", "9:3:3:1", "1:1"], a: 1 },
+    { q: "A cross between an individual of unknown genotype and a homozygous recessive individual is called a ______.", o: ["Test cross", "Back cross", "Reciprocal cross", "Dihybrid cross"], a: 0 },
+    { q: "A cross between an individual and one of its parents is called a ______.", o: ["Back cross", "Test cross", "Dihybrid cross", "Reciprocal cross"], a: 0 },
+    { q: "Human sex is determined by the ______ chromosomes.", o: ["Autosomes", "Sex chromosomes", "Ribosomes", "Mitochondria only"], a: 1 },
+    { q: "In humans, a female is generally represented as ______.", o: ["XX", "XY", "YY", "XO"], a: 0 }
+];
+
+let activeExam = [];
+let timeLeft = 1200; // 20 minutes countdown (20 * 60)
+let timer;
+const totalExamQuestions = 60; 
+let currentQuestionIndex = 0;
+
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function initExam() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1000);
+
+    let shuffledSelection = shufflePool([...fullMthPool]);
+    activeExam = shuffledSelection.slice(0, totalExamQuestions);
+    timeLeft = 1200; 
+    currentQuestionIndex = 0; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    startTimer();
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${String.fromCharCode(65 + i)}.${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < totalExamQuestions; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => { block.classList.toggle('active', idx === index); });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => { dot.classList.toggle('current', idx === index); });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === totalExamQuestions - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}.${item.o[item.a]}</p>` : ''}
+            </div>`;
+    });
+
+    let percentage = Math.round((score / totalExamQuestions) * 100);
+    let grade = "";
+    let remark = "";
+    let statusEmoji = "";
+
+    if (percentage >= 70) {
+        grade = "A"; remark = "Excellent! You have mastered BIO 101 concepts!"; statusEmoji = "🔥🏆";
+    } else if (percentage >= 60) {
+        grade = "B"; remark = "Very Good! You're a biology wizard in the making 😅."; statusEmoji = "😎✨";
+    } else if (percentage >= 50) {
+        grade = "C"; remark = "Good effort. Double check your genetics and cell biology terms."; statusEmoji = "👍📖";
+    } else if (percentage >= 45) {
+        grade = "D"; remark = "Pass. Practice your taxonomic classifications."; statusEmoji = "⚠️📝";
+    } else if (percentage >= 40) {
+        grade = "E"; remark = "Fair. But you still gats read bro, biology step-by-step."; statusEmoji = "👀⏳";
+    } else {
+        grade = "F"; remark = "Omo, go and read your BIO oooo! 😂"; statusEmoji = "💀❌";
+    }
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    
+    document.getElementById('result-screen').innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
+        <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
+        <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
+        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <div id="review-area">${reviewHTML}</div>
+        <button class="btn-action" onclick="location.reload()">Try Again</button>
+    `;
+    
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
