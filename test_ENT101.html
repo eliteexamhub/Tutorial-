@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - ENT 101 Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .exam-layout { display: grid; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initExam()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading ENT 101 Questions...</p>
+</div>
+
+<div class="container">
+    <header>
+        <h1>ENTREPRENEURSHIP (ENT 101 / GST 105)</h1>
+        <p>Elite Exam Hub • THEM NO BORN THIS QUESTIONS MAKE E NO COME OUT 😂</p>
+    </header>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 20:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">GO AND READ😂</div>
+    <h1 id="score-text"></h1>
+    <div id="review-area"></div>
+    <button class="btn-action" onclick="location.reload()">Try Again</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+// ENT 101 / GST 105 Complete Question Pool (155 Questions)
+const fullEntPool = [
+    { q: "The concept ‘entrepreneur’ was first coined by:", o: ["David McClelland", "Richard Cantillon", "David Hisrich", "Jean-Baptiste Say"], a: 1 },
+    { q: "The non-continuous process of combining resources of time, man, money and materials to create products, services and ideas is:", o: ["Entrepreneurship", "Management", "Intrapreneurship", "Production"], a: 0 },
+    { q: "An individual who exhibits innovative abilities, perceives market opportunities, and has the motivation, drive and ability to mobilize resources to meet market opportunities while working in an existing organization is referred to as an:", o: ["Entrepreneur", "Inventor", "Intrapreneur", "Manager"], a: 2 },
+    { q: "The characteristics of entrepreneurs as risk-bearers, coordinators and organizers, gap-fillers, leaders, and innovators or creative imitators were listed by:", o: ["Adam Smith", "David Ricardo", "John Stuart Mill", "Joseph Schumpeter"], a: 3 },
+    { q: "The two disciplines where entrepreneurship originated were:", o: ["French / English", "Economics / Business", "Economics / History", "History / French"], a: 1 },
+    { q: "The one who creates a new enterprise in a risky and uncertain environment is referred to as an:", o: ["Risk taker", "Entrepreneur", "Adventurist", "Leader"], a: 1 },
+    { q: "Which one of the following is NOT considered entrepreneurship?", o: ["The creation of a new business", "The routine management of an ongoing operation", "Innovation applied to a business context", "The combination of resources"], a: 1 },
+    { q: "The scholar who first stressed the significance of entrepreneurship for economic growth is:", o: ["Cantillon", "Mill", "Quesnay", "Ricardo"], a: 0 },
+    { q: "When an entrepreneur directs and controls all organizational activities to ensure that things are done properly and on schedule, he is performing the role of:", o: ["Leader", "Resource allocator", "Directing and controlling", "Visionary"], a: 0 },
+    { q: "An entrepreneur who starts a business with a fresh idea is simply performing the role of a:", o: ["Leader", "Resource allocator", "Director and controller", "Visionary"], a: 3 },
+    { q: "Which one of the following is an important source of idea generation due to familiarity with the needs of the market?", o: ["Commitment to opportunity", "Existing products and services", "Distribution channels", "Federal government"], a: 1 },
+    { q: "Creativity is:", o: ["The ability to bring something new into existence", "The process of doing new things", "The ability to imitate perfectly", "All of the above"], a: 0 },
+    { q: "The first step in the creative process according to Holt (1992) is:", o: ["Incubation", "Preparation", "Idea generation", "Verification"], a: 2 },
+    { q: "The following are forms of innovation EXCEPT:", o: ["Technological innovation", "Product-market innovation", "Administrative innovation", "Idea generation"], a: 3 },
+    { q: "When innovation brings about a new dominant design and a new set of core design concepts embodied in components linked together in a new architecture, it is known as:", o: ["Architectural innovation", "Radical innovation", "Modular innovation", "Incremental innovation"], a: 1 },
+    { q: "The creative process according to Holt (1992) can be classified into:", o: ["4 stages", "5 stages", "6 stages", "7 stages"], a: 1 },
+    { q: "When innovation consists of market research, product design, and innovations in advertising and promotion, it is said to be:", o: ["Technological innovation", "Product-market innovation", "Consumer-related innovation", "Administrative innovation"], a: 1 },
+    { q: "According to Adams (2005), the following are critical to individual creativity EXCEPT:", o: ["Knowledge", "Thinking", "Personal motivation", "Verification"], a: 2 },
+    { q: "The entrepreneur can assess the internal environment of the business by critically looking at:", o: ["5 Ps", "5 Ss", "5 Ws", "5 Ts"], a: 1 },
+    { q: "A written document prepared by an entrepreneur which describes all the relevant internal and external issues involved in starting a new business venture is called:", o: ["Business plan", "Feasibility study", "Appraisal", "Business structure"], a: 0 },
+    { q: "SMIEIS stands for:", o: ["Small and Medium Industry Equity Investment Schemes", "Small and Medium e-Investment Schools", "Small and Medium Industry Equity Investment Schools", "None of the above"], a: 0 },
+    { q: "The chief motivational factor for entrepreneurs to leave jobs is the frustration of not being allowed to perform at the level of which they are capable. This applies to:", o: ["Male", "Female", "Young", "All of the above"], a: 3 },
+    { q: "The difference between management and entrepreneurship is that while management is continuous, ______ is non-continuous.", o: ["Entrepreneurships", "Entrepreneur", "Environmental", "Management"], a: 0 },
+    { q: "Innovation is invention and:", o: ["Creativity", "Design", "Exploitation", "Growth"], a: 0 },
+    { q: "______ is the person who creates a business enterprise, establishes it, and nurses it to survival and success.", o: ["Entrepreneur", "Sales manager", "Feasibility report", "Feasibility study"], a: 0 },
+    { q: "When the multiplicity of environments becomes too complex to handle, international entrepreneurs often:", o: ["Go for merger", "Diversify", "Decentralize operations", "Sell out the foreign business"], a: 0 },
+    { q: "The entrepreneur utilizes resources through:", o: ["Identifying and evaluating the opportunity", "Developing a business plan", "Implementing the business plan", "Managing the enterprise"], a: 0 },
+    { q: "The difference in the entrepreneurial and managerial domains has contributed towards an increased interest in:", o: ["Forming new firms", "Partnership", "Intrapreneurship", "Private firms"], a: 0 },
+    { q: "There are ______ routes or paths to entrepreneurial opportunities.", o: ["4", "5", "7", "3"], a: 0 },
+    { q: "Which of the following allows for criticism in the process of generating a business idea?", o: ["Matrix charting", "Brainstorming", "Reverse brainstorming", "Collective notebook"], a: 2 },
+    { q: "COSIRA means in Britain:", o: ["Council for Small Industries in Rural Areas", "Committee for Small Industries in Rural Areas", "Council for Small Investment in Rural Areas", "Committee for Small Investment in Rural Areas"], a: 0 },
+    { q: "______ is an exclusionary right that conveys the right to prevent others from copying, selling, performing, displaying or making derivative versions of a work of authorship.", o: ["Patent right", "Intellectual right", "Copyright", "Royalty"], a: 2 },
+    { q: "COSIRA is to Britain while ______ is to Nigeria.", o: ["SMEs", "SMIESIS", "SMEDIS", "SMEDAN"], a: 1 },
+    { q: "Which of the following four Ps of marketing according to McCarthy (1975) is the odd one out?", o: ["Product", "Place", "Promotion", "Public relations"], a: 3 },
+    { q: "Which one of the following is the fourth step in the entrepreneurial process?", o: ["Developing successful business ideas", "Deciding to become an entrepreneur", "Growing the entrepreneurial firm", "Moving from an idea to an entrepreneurial firm"], a: 2 },
+    { q: "An individual who initiates, creates and manages a new business can be called:", o: ["A leader", "A manager", "A professional", "An entrepreneur"], a: 3 },
+    { q: "A person owning and running a small firm is known as:", o: ["A manager-owner", "An owner-manager", "A professional adapter", "An enterprise worker"], a: 1 },
+    { q: "Someone who improves an existing business can be called:", o: ["An intrapreneur", "A professional", "A co-worker", "A changeling"], a: 0 },
+    { q: "Where individual skills are collectively integrated into a group, this is known as:", o: ["Collective entrepreneurship", "Intrapreneurship", "Team entrepreneurship", "Dual innovation"], a: 2 },
+    { q: "The scanning of the business environment to identify the favourable and unfavourable conditions therein is called:", o: ["SWOT analysis", "External evaluation", "Internal evaluation", "Market analysis"], a: 0 },
+    { q: "Threats from external environmental factors can come from:", o: ["Direct competition", "Indirect competitors", "Consumers", "All of the above"], a: 3 },
+    { q: "The essence of scanning the external environment of a business is to identify:", o: ["Only strengths", "Weaknesses", "Strengths and weaknesses", "Opportunities and threats"], a: 3 },
+    { q: "The entrepreneur can assess the internal environment of a business by critically looking at:", o: ["Opportunities", "Threats and opportunities", "Strengths and threats", "Strengths and weaknesses"], a: 3 },
+    { q: "Which of the following is NOT an advantage of sole proprietorship?", o: ["Ownership of all profits", "Minimum legal restriction", "Unlimited liability", "Privacy"], a: 2 },
+    { q: "The minimum number of people required to start a sole proprietorship is:", o: ["One", "Two", "Seven", "Twenty"], a: 0 },
+    { q: "All of the following are disadvantages of sole proprietorship EXCEPT:", o: ["Limited growth", "Unlimited liability", "Lack of continuity after the death of the promoter", "Easy to raise capital"], a: 3 },
+    { q: "Partnership formation requires a minimum and maximum number of partners, respectively, of:", o: ["2 and 20", "2 and 50", "2 and 7", "7 and 20"], a: 0 },
+    { q: "The document that states all the terms of a partnership is known as:", o: ["Partnership agreement", "Article of partnership", "Article of association", "Article of partnership and article of association"], a: 3 },
+    { q: "General partners have:", o: ["Limited liability", "Unlimited liability", "Participation in the day-to-day running of the business", "Unlimited liability and participation in the day-to-day running of the business"], a: 3 },
+    { q: "The management of resources in a small firm is largely concerned with:", o: ["Operations", "Finance", "Marketing", "All of the above"], a: 3 },
+    { q: "Acquiring the use of equipment such as machinery without owning it is known as:", o: ["Leasing", "Hire purchase", "Factoring", "Acquisition"], a: 0 },
+    { q: "Which type of business should prepare a business plan for a new venture?", o: ["Sole traders only", "Limited companies only", "All businesses", "Only those asked to by the bank"], a: 2 },
+    { q: "A cash flow forecast will form part of which section of a business plan?", o: ["Operations", "Marketing", "Finance", "Executive summary"], a: 2 },
+    { q: "A key aspect of the financial section of a business plan is:", o: ["A statement of management skills", "A realistic sales forecast", "Production capacity", "A description of competitors"], a: 1 },
+    { q: "As a new company grows, the entrepreneur will need to:", o: ["Be responsive to changes in the market", "Ensure financial controls are maintained", "Build a management team", "All of the above"], a: 3 },
+    { q: "The business planning process sometimes fails because:", o: ["The planning process is poorly managed", "Plans are impractical", "Planners lack the appropriate skills", "All of the above"], a: 3 },
+    { q: "Being overoptimistic about market size when starting a new business venture could be a result of:", o: ["Proper planning", "Poor market research", "Diversifying too soon", "Focusing on sales volume rather than profit"], a: 1 },
+    { q: "Which technique is an excellent method for initially screening ideas and concepts in addition to generating new ideas?", o: ["Focus group", "Brainstorming", "Problem inventory analysis", "Reverse brainstorming"], a: 1 },
+    { q: "The importance of intellectual property should be understood by an entrepreneur even before:", o: ["Hiring a manager", "Engaging an attorney", "Developing a product", "Establishing a new venture"], a: 2 },
+    { q: "An idea for a new product is tested on potential consumers to determine consumer acceptance at the ______ stage.", o: ["Concept", "Product development", "Test marketing", "Commercialization"], a: 2 },
+    { q: "Entrepreneurship can best be described as:", o: ["A process that requires setting up a business", "Taking a significant risk in a business context", "Having a strong vision", "A process involving innovation, new products or services, and value creation"], a: 3 },
+    { q: "Which statement best describes the context for entrepreneurship?", o: ["Entrepreneurship takes place in small businesses", "Entrepreneurship takes place in large businesses", "Entrepreneurship takes place in a wide variety of contexts", "Entrepreneurship does not take place in social enterprises"], a: 2 },
+    { q: "Entrepreneurs are motivated by:", o: ["Money", "Personal values", "Pull influences", "All of the above"], a: 3 },
+    { q: "The sociological theory of entrepreneurship refers to:", o: ["Looking at individuals' personality traits", "Understanding how thought processes influence entrepreneurial capacity", "Describing how different business types influence entrepreneurial activity", "Reviewing how the environment influences who becomes entrepreneurial"], a: 3 },
+    { q: "Which one of the following is NOT considered one of the building blocks of the model entrepreneur?", o: ["Technical skills", "Management competencies", "Business awareness", "Personal attributes"], a: 2 },
+    { q: "Which of the following is LEAST likely to influence the timing of new business births?", o: ["Government policies", "Profitability", "Consumer expenditure", "Weather conditions"], a: 3 },
+    { q: "Innovation can best be defined as:", o: ["The generation of new ideas", "The evolution of new ideas", "The opposite of creativity", "The successful exploitation of new ideas"], a: 3 },
+    { q: "Which statement most accurately describes innovation?", o: ["Innovation is an absolute, not a relative concept", "Innovation is easy to measure", "Innovation is much more important to small businesses than to large businesses", "Innovation is a relative, not an absolute concept"], a: 3 },
+    { q: "Which of the following is NOT an advantage that large firms hold over small firms in managing innovation?", o: ["Large firms are more likely to attract highly skilled specialists, often for R&D", "Large firms are more able to employ patent and legal specialists", "Large firms are more able to raise venture capital and spread risk", "Large firms are more likely to come up with better ideas than small businesses"], a: 3 },
+    { q: "Which of the following does NOT form intellectual property?", o: ["Trademarks", "Patents", "Tangible assets", "Copyright"], a: 2 },
+    { q: "A business centre that offers working space and specialised support for new ventures is called an:", o: ["Isolator", "Injector", "Incubator", "Integrator"], a: 2 },
+    { q: "An entrepreneur who owns more than one business at a time is called:", o: ["An intrapreneur", "A corporate entrepreneur", "A portfolio entrepreneur", "None of the above"], a: 2 },
+    { q: "An entrepreneur who runs a business, sells it and moves onto another venture in a relatively short time is called:", o: ["A failed entrepreneur", "A serial entrepreneur", "A multiple entrepreneur", "A secondary entrepreneur"], a: 1 },
+    { q: "To provide financial assistance to entrepreneurs, the government has set up a number of:", o: ["Financial advisors", "Financial intermediaries", "Industrial estates", "Financial institutions"], a: 3 },
+    { q: "Technical feasibility examines a project with reference to:", o: ["Location", "Land and building", "Technical competence", "All of the above"], a: 3 },
+    { q: "Which of the following is a broad category of ratios used in balance-sheet analysis?", o: ["Liquidity ratios", "Net worth ratios", "Profitability ratios", "All of the above"], a: 3 },
+    { q: "A commercial banker would prefer a ______ debt-equity ratio over the years, as it indicates the financial strength of a unit.", o: ["Declining", "Increasing", "Stable", "Fluctuating"], a: 0 },
+    { q: "Term financing is mainly obtained by entrepreneurs for the establishment of:", o: ["New industrial units", "Acquisition of fixed assets", "Expansion in plant capacity", "All of the above"], a: 3 },
+    { q: "The first step in starting a new business venture is:", o: ["Idea generation", "Scanning of ideas", "Preparing a business plan", "Project implementation"], a: 0 },
+    { q: "______ is primarily concerned with the identification, qualification and evaluation of project resources.", o: ["Techno-economic analysis", "Feasibility analysis", "Input analysis", "Financial analysis"], a: 1 },
+    { q: "When a large investment is made in fixed assets, the project is termed:", o: ["Capital intensive", "Labour intensive", "Product intensive", "Market intensive"], a: 0 },
+    { q: "PERT stands for:", o: ["Programme Evaluation and Research Techniques", "Project Evaluation and Review Techniques", "Programme Evaluation and Review Techniques", "Project Evaluation and Research Techniques"], a: 2 },
+    { q: "______ is the process of identifying opportunities for new business ventures.", o: ["Project identification", "Project formulation", "Project feasibility", "Project evaluation"], a: 0 },
+    { q: "______ is the systematic development of a project idea for the eventual purpose of arriving at an investment decision.", o: ["Project identification", "Project formulation", "Project feasibility", "Project evaluation"], a: 1 },
+    { q: "______ implies the availability or otherwise of plant and machinery and technical know-how to produce the product.", o: ["Economic viability", "Financial feasibility", "Technical feasibility", "Managerial competence"], a: 2 },
+    { q: "The process of preparing an inventory of skills needed for effective implementation of a project is called:", o: ["Economic viability", "Financial feasibility", "Technical feasibility", "Managerial competence"], a: 3 },
+    { q: "A project which may not add to existing profits should be financed by:", o: ["Debentures", "Preference share capital", "Equity capital", "Public deposits"], a: 0 },
+    { q: "Which of the following is a business arrangement in which someone else is allowed to use something belonging to a company?", o: ["Patent", "Copyright", "Trademark", "Licensing"], a: 3 },
+    { q: "______ is, by definition, a company-wide consumer orientation with the aim of achieving long-run profit objectives.", o: ["Marketing concept", "Political concept", "Technological concept", "Demographic concept"], a: 0 },
+    { q: "The concept ‘environment’ can also be referred to as:", o: ["Surroundings", "External objects", "Inferences", "Circumstances"], a: 0 },
+    { q: "The business environment can be broadly classified into:", o: ["Two", "Three", "Four", "Five"], a: 0 },
+    { q: "When a development perceived as a threat by one organisation is viewed as an opportunity by another, the business environment is:", o: ["Multifaceted", "Stable", "Simple", "Potent"], a: 0 },
+    { q: "A ______ is an inherent constraint that creates a strategic disadvantage for an organisation.", o: ["Threat", "Weakness", "Strategy", "Risk"], a: 1 },
+    { q: "A business environment is made up of a number of factors that interact and interrelate with one another. It is therefore:", o: ["Complex and dynamic", "Simple", "Stable", "Potent"], a: 0 },
+    { q: "The body of regulations and laws can be classified under the:", o: ["Political/legal environment", "Socio-cultural environment", "Technological environment", "Demographic environment"], a: 0 },
+    { q: "The environment that recognises the customs, traditions and values of a community is known as the:", o: ["Demographic environment", "Socio-cultural environment", "Technological environment", "Historical environment"], a: 1 },
+    { q: "The environment on the borderline between the internal and external environment is the:", o: ["General environment", "Remote environment", "Close environment", "Intermediate environment"], a: 3 },
+    { q: "The support systems that facilitate the entrepreneurship process are listed here as:", o: ["Seven", "Six", "Five", "Four"], a: 3 },
+    { q: "An entrepreneur can assess the external environment of a business by critically looking at:", o: ["Opportunities and strengths", "Opportunities and threats", "Opportunities and weaknesses", "Weaknesses and threats"], a: 1 },
+    { q: "Which is the most common cause of business failure?", o: ["Insufficient capital", "Unstable market", "Insufficient experience", "Poor entrepreneurship"], a: 3 },
+    { q: "Which of the following statements is/are true?", o: ["Individuals who study entrepreneurship are three to four times less likely to start a business than students in other fields.", "It is impossible for entrepreneurs to also be philanthropists.", "Entrepreneurs are a relatively new phenomenon, emerging in the 17th century.", "None"], a: 3 },
+    { q: "What is a target market?", o: ["A group of customers a venture reaches by accident", "All consumers who purchase the venture's product", "A specific group of potential customers toward which a venture aims its marketing plan", "A chain of discount stores"], a: 2 },
+    { q: "Which of the following shows the process of creating something new?", o: ["Business model", "Modelling", "Innovation", "Creative flexibility"], a: 2 },
+    { q: "Which one of the following gives suggestions for new products and also helps to market new products?", o: ["Existing products and services", "Distribution channels", "Federal government", "Consumers"], a: 1 },
+    { q: "Which of the following is used by entrepreneurs to acquire experience in an international market before making a major commitment?", o: ["Merger", "Joint venture", "Minority interest", "Majority interest"], a: 2 },
+    { q: "GATT was established in 1947 under:", o: ["German leadership", "French leadership", "U.S. leadership", "U.K. leadership"], a: 2 },
+    { q: "What is the process by which individuals pursue opportunities without regard to the resources they currently control?", o: ["Start-up management", "Entrepreneurship", "Financial analysis", "Feasibility planning"], a: 1 },
+    { q: "Which is the process of entrepreneurs developing new products that, over time, make current products obsolete?", o: ["New business model", "Anatomisation", "Creative destruction", "None of the given options"], a: 2 },
+    { q: "Individuals influencing an entrepreneur's career choice and style are known as:", o: ["Role models", "Moral-support networks", "Professional-support networks", "Support systems"], a: 0 },
+    { q: "The activity which occurs when the new venture is started is called:", o: ["Motivation", "Business skills", "Departure point", "Goal orientation"], a: 2 },
+    { q: "Which one of the following is an important source of idea generation due to familiarity with the needs of the market?", o: ["Existing products and services", "Distribution channels", "Federal government", "Consumers"], a: 1 },
+    { q: "Members of distribution channels are excellent sources for new ideas because:", o: ["They are familiar with the needs of the market", "They earn a handsome profit from new business", "They do not bother if the entrepreneur bears a loss", "They have a well-developed sales force"], a: 0 },
+    { q: "Which one of the following is the most important characteristic of a successful business website?", o: ["Speed", "Innovation", "Graphics", "Products"], a: 0 },
+    { q: "Why should an entrepreneur conduct a feasibility study before starting a new venture?", o: ["To see if there are possible barriers to success", "To identify possible sources of funds", "To estimate expected sales", "To explore potential customers"], a: 0 },
+    { q: "Which of the following is TRUE for a disclosure document?", o: ["It gives recognition that the person was the inventor of the idea in the past", "It gives recognition that the person is the first inventor of the idea", "It gives recognition that the person will invent an idea in the future", "It gives recognition that the person wants to copy the idea"], a: 1 },
+    { q: "In the administrative domain, the commitment of resources is for which of the following?", o: ["Periodic intervals", "Total amount needed", "Certain tasks", "A long time"], a: 1 },
+    { q: "Which factor has allowed small companies to act as though they are big ones?", o: ["Technology", "Customers", "Economic development", "Competition"], a: 0 },
+    { q: "Which action by an entrepreneur is most likely to contribute to creative destruction?", o: ["Development of a new product", "Takeover of a competitor", "Issuing shares", "Reducing prices"], a: 0 },
+    { q: "Which is an advantage of the small firm in the innovation process?", o: ["Ability to carry out R&D", "Ability to raise finance", "Ability of the entrepreneur to carry out multiple tasks", "Ability of the entrepreneur to act on new ideas or product development"], a: 3 },
+    { q: "External links may provide incentives to:", o: ["Raise finance", "Introduce new working practices", "Introduce improvements to products", "Attend business exhibitions"], a: 2 },
+    { q: "______ data for entrepreneurship management decisions is usually found in libraries, magazines, government agencies and universities, among other sources.", o: ["Primary", "Questionnaire", "Issues", "Secondary"], a: 3 },
+    { q: "Innovative small firms are more likely to be found in:", o: ["Knowledge-based sectors", "Biotechnology", "Automobile manufacture", "Aerospace manufacture"], a: 0 },
+    { q: "Schumpeter considered that innovative entrepreneurs would:", o: ["Thrive", "Disappear", "Be absorbed within large innovative firms", "Be absorbed within non-innovative firms"], a: 2 },
+    { q: "Innovative entrepreneurs face special issues in raising:", o: ["Development capital", "Structured capital", "Human capital", "Seed capital"], a: 3 },
+    { q: "Innovative entrepreneurs may have to pay high insurance premiums due to:", o: ["The need to protect patents", "Greater employee liability", "Greater customer liability", "Greater trading risks"], a: 0 },
+    { q: "Networking by innovative entrepreneurs may be most encouraged by:", o: ["Science parks", "Business incubators", "Chambers of Commerce", "Business associations"], a: 1 },
+    { q: "The most likely problem encountered by innovative entrepreneurs in raising finance is:", o: ["Limited security since R&D is an intangible asset", "The costs of the patenting system", "The exhaustion of personal equity in R&D", "Inability of potential external funders to understand technology"], a: 2 },
+    { q: "The knowledge, experience and skills that have been obtained, preserved, catalogued and made available for sharing is called:", o: ["Intellectual rights", "Intellectual property", "Intellectual copyright", "Intellectual debtor"], a: 1 },
+    { q: "Positive external trends or changes that provide unique and distinct possibilities for innovating and creating value are called:", o: ["Strengths", "Opportunities", "Weaknesses", "Threats"], a: 1 },
+    { q: "An individual who has no prior business ownership experience as a founder, inheritor or purchaser of a business is called a ______ entrepreneur.", o: ["Habitual", "Novice", "Serial", "Portfolio"], a: 1 },
+    { q: "An individual who has prior business ownership experience is called a ______ entrepreneur.", o: ["Novice", "Habitual", "Serial", "Portfolio"], a: 1 },
+    { q: "All of the following are popular demographic factors about entrepreneurs that have been studied EXCEPT:", o: ["Self-confidence", "Gender", "Education", "Family birth order"], a: 0 },
+    { q: "The development of a new venture based on an inventor's work often requires:", o: ["Expertise of an entrepreneur", "Heavy investment from financiers", "Skilled human resources", "Highly educated staff"], a: 0 },
+    { q: "SMEDAN stands for:", o: ["Small and Medium Enterprises Development Agency of Nigeria", "Small and Medium Equity Investment Schools", "Small and Medium Industry Equity Investment Schemes", "None of the above"], a: 0 },
+    { q: "In the stage of responsibility allocation processes, the entrepreneur follows:", o: ["A highly centralised decision-making process", "A highly decentralised decision-making process", "A somewhat centralised decision-making process", "No particular standard"], a: 0 },
+    { q: "______ is the major issue that unlocks the entrepreneurial process.", o: ["Business opportunity", "Business manager", "Business stocks", "Business ethics"], a: 0 },
+    { q: "The entrepreneur was distinguished from the capital provider in the:", o: ["18th century", "17th century", "19th and 20th centuries", "Middle Ages"], a: 0 },
+    { q: "The assessment of the resources needed by an entrepreneur starts with:", o: ["An appraisal of the entrepreneur's present resources", "An assessment of the country's economic conditions", "A scan of friends and family for funds", "A survey of banks and other sources of finance"], a: 0 },
+    { q: "Intrapreneurship is also called:", o: ["Corporate venturing", "Entrepreneurship", "The act of starting a new venture", "Offering new products by an existing company"], a: 0 },
+    { q: "The uniqueness of a private limited company is that the investors have:", o: ["Limited liability", "A minimum of two persons to start the business", "Shares that are publicly subscribed", "Restrictions on the transfer of shares"], a: 3 },
+    { q: "One of the differences between public and private limited companies is:", o: ["The minimum number of owners", "The maximum number of owners", "Limited liability", "Unlimited liability of owners"], a: 0 },
+    { q: "One of the major documents of incorporation is:", o: ["Article of partnership", "Partnership agreement", "Memorandum of association", "Memorandum of incorporation"], a: 2 },
+    { q: "An entrepreneur who buys and sells collectibles such as antique furniture or artworks can be referred to as what type of entrepreneur?", o: ["An innovator", "A researcher", "A speculator", "An acquirer"], a: 2 },
+    { q: "Which of the following is a characteristic typical of most entrepreneurs?", o: ["Choose high-risk ventures", "Choose low-risk ventures", "Choose moderate or calculated-risk ventures", "Choose no-risk ventures"], a: 2 },
+    { q: "Which could provide an individual with the motivation to start a new business venture?", o: ["Financial rewards", "A desire to be independent", "Being made redundant from an existing job", "All of the above"], a: 3 },
+    { q: "Which of the following government actions could contribute to a more entrepreneurial society?", o: ["Deregulation", "Financial start-up support", "Information and advice", "All of the above"], a: 3 },
+    { q: "Which industrial sector tends to naturally promote small-scale businesses and entrepreneurship and generally has lower barriers to market entry?", o: ["Service", "Manufacturing", "Distribution", "Agriculture"], a: 0 },
+    { q: "Where there is no legal separation between the assets and liabilities of a business and those of an individual, the business is:", o: ["A sole trader", "A limited company", "A cooperative", "A partnership"], a: 0 },
+    { q: "Intellectual property laws can protect:", o: ["Trademarks", "Copyright", "Patents", "All of the above"], a: 3 },
+    { q: "A business arrangement where one party allows another party to use a business name and sell its products or services is known as:", o: ["A cooperative", "A franchise", "An owner-manager business", "A limited company"], a: 1 },
+    { q: "One of the disadvantages of a franchise business for a franchisee is:", o: ["Lack of independence", "Franchise businesses typically have a high failure rate", "Lack of brand identity", "Training is not normally provided by the franchisor"], a: 0 },
+    { q: "Which of the following is a reason for business failure?", o: ["Lack of market research", "Poor financial control", "Poor management", "All of the above"], a: 3 },
+    { q: "______ believes entrepreneurial activity is the source of innovation in an economy.", o: ["Schumpeter", "McClelland", "Porter", "Fayol"], a: 0 },
+    { q: "The systematic collection and analysis of publicly available information about competitors and developments in the marketing environment is called:", o: ["Marketing intelligence", "Marketing research", "Competitive analysis", "Environmental scanning"], a: 0 }
+];
+
+let activeExam = [];
+let timeLeft = 1200; // 20 minutes countdown (20 * 60)
+let timer;
+const totalExamQuestions = 60; 
+let currentQuestionIndex = 0;
+
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function initExam() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1000);
+
+    let shuffledSelection = shufflePool([...fullEntPool]);
+    activeExam = shuffledSelection.slice(0, totalExamQuestions);
+    timeLeft = 1200; 
+    currentQuestionIndex = 0; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    startTimer();
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${String.fromCharCode(65 + i)}.${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < totalExamQuestions; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => { block.classList.toggle('active', idx === index); });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => { dot.classList.toggle('current', idx === index); });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === totalExamQuestions - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}.${item.o[item.a]}</p>` : ''}
+            </div>`;
+    });
+
+    let percentage = Math.round((score / totalExamQuestions) * 100);
+    let grade = "";
+    let remark = "";
+    let statusEmoji = "";
+
+    if (percentage >= 70) {
+        grade = "A"; remark = "Excellent! You have mastered ENT 101 entrepreneurship fundamentals!"; statusEmoji = "🔥🏆";
+    } else if (percentage >= 60) {
+        grade = "B"; remark = "Very Good! You're an expert entrepreneur in the making 😅."; statusEmoji = "😎✨";
+    } else if (percentage >= 50) {
+        grade = "C"; remark = "Good effort. Double check your business planning and environment basics."; statusEmoji = "👍📖";
+    } else if (percentage >= 45) {
+        grade = "D"; remark = "Pass. Practice your innovation and feasibility study rules."; statusEmoji = "⚠️📝";
+    } else if (percentage >= 40) {
+        grade = "E"; remark = "Fair. But you still gats read bro, take it step-by-step."; statusEmoji = "👀⏳";
+    } else {
+        grade = "F"; remark = "Omo, go and read your ENT 101 oooo! 😂"; statusEmoji = "💀❌";
+    }
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    
+    document.getElementById('result-screen').innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
+        <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
+        <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
+        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <div id="review-area">${reviewHTML}</div>
+        <button class="btn-action" onclick="location.reload()">Try Again</button>
+    `;
+    
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
