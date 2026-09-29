@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - CHM 101 Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .exam-layout { display: grid; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initExam()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading Questions...</p>
+</div>
+
+<div class="container">
+    <header>
+        <h1>GENERAL CHEMISTRY (CHM 101)</h1>
+        <p>Elite Exam Hub • THEM NO BORN THIS QUESTIONS MAKE E NO COME OUT 😂</p>
+    </header>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 20:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">GO AND READ😂</div>
+    <h1 id="score-text"></h1>
+    <div id="review-area"></div>
+    <button class="btn-action" onclick="location.reload()">Try Again</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+const fullChmPool = [
+    { q: "A physical quantity is best described as an attribute that can be measured quantitatively. Which is an example?", o: ["Colour", "Length", "Beauty", "Taste"], a: 1 },
+    { q: "The act of comparing a physical quantity with an accepted unit is called ____.", o: ["Estimation", "Measurement", "Calibration", "Prediction"], a: 1 },
+    { q: "A unit is best defined as ____.", o: ["A random number", "An established standard for a physical quantity", "An instrument", "An error"], a: 1 },
+    { q: "The modern metric system used internationally in science is called ____.", o: ["CGS", "FPS", "SI", "MKS"], a: 2 },
+    { q: "How many SI base units are associated with the seven SI base quantities?", o: ["5", "6", "7", "8"], a: 2 },
+    { q: "The SI base unit of length is the ____.", o: ["centimetre", "metre", "kilometre", "inch"], a: 1 },
+    { q: "The SI base unit of mass is the ____.", o: ["gram", "kilogram", "tonne", "pound"], a: 1 },
+    { q: "The SI base unit of time is the ____.", o: ["minute", "hour", "second", "day"], a: 2 },
+    { q: "The SI base unit of electric current is the ____.", o: ["volt", "coulomb", "ampere", "ohm"], a: 2 },
+    { q: "Luminous intensity has the SI base unit ____.", o: ["lumen", "candela", "lux", "watt"], a: 1 },
+    { q: "Velocity is a derived quantity because it is obtained from ____.", o: ["mass and temperature", "displacement and time", "current and charge", "mass and length only"], a: 1 },
+    { q: "A derived unit is obtained from ____.", o: ["base units through algebraic relationships", "only mass", "only length", "arbitrary standards"], a: 0 },
+    { q: "The value of a physical quantity expresses its dimension in terms of ____.", o: ["a certain accepted unit", "an instrument only", "an error only", "a graph"], a: 0 },
+    { q: "Which statement about significant figures is correct?", o: ["They are the same as decimal places", "They indicate meaningful measured digits", "They remove uncertainty", "They are always four digits"], a: 1 },
+    { q: "How many significant figures are in 0.528 m?", o: ["1", "2", "3", "4"], a: 2 },
+    { q: "How many significant figures are in 5.00?", o: ["1", "2", "3", "4"], a: 2 },
+    { q: "How many significant figures are in 0.0005?", o: ["1", "2", "3", "4"], a: 0 },
+    { q: "How many significant figures are in 1.0005?", o: ["3", "4", "5", "6"], a: 2 },
+    { q: "The number 6000 is considered poorly defined for significant figures because ____.", o: ["it is negative", "the significance of the zeros is unclear", "it has no unit", "it is too large"], a: 1 },
+    { q: "Precision refers mainly to ____.", o: ["closeness to the true value", "reproducibility among repeated measurements", "size of an instrument", "absence of units"], a: 1 },
+    { q: "Accuracy refers mainly to ____.", o: ["closeness to the true or accepted value", "number of decimal places", "repeatability only", "instrument size"], a: 0 },
+    { q: "A set of measurements can be precise but inaccurate when the measurements are ____.", o: ["close together but far from the true value", "random and widely scattered", "exactly true", "unitless"], a: 0 },
+    { q: "Absolute error has ____.", o: ["no units", "the same units as the measured quantity", "only percentage units", "units of time"], a: 1 },
+    { q: "Relative error is obtained by dividing absolute error by ____.", o: ["100", "the quantity itself", "the instrument reading only", "the unit symbol"], a: 1 },
+    { q: "Relative error is normally ____.", o: ["dimensionless", "measured in metres", "measured in seconds", "measured in kilograms"], a: 0 },
+    { q: "Relative error is commonly reported as a percentage after multiplying the fractional error by ____.", o: ["10", "50", "100", "1000"], a: 2 },
+    { q: "Systematic errors are also called ____.", o: ["determinate errors", "imaginary errors", "zero errors", "accidental units"], a: 0 },
+    { q: "Who proposed that matter consists of tiny indivisible atoms in an early Greek philosophical view?", o: ["Dalton", "Democritus", "Thomson", "Bohr"], a: 1 },
+    { q: "John Dalton proposed the first scientific atomic theory relating chemical changes to the ____.", o: ["structure and behaviour of atoms", "speed of light", "shape of planets", "colour of compounds"], a: 0 },
+    { q: "According to Dalton, matter is made of tiny particles called ____.", o: ["ions", "molecules only", "atoms", "photons"], a: 2 },
+    { q: "Dalton originally stated that atoms were ____.", o: ["divisible into electrons", "indivisible", "made only of neutrons", "waves"], a: 1 },
+    { q: "Dalton stated that atoms of the same element are identical in ____.", o: ["mass and other properties", "colour only", "charge only", "shape only"], a: 0 },
+    { q: "According to Dalton, atoms of different elements differ in ____.", o: ["mass and other properties", "existence", "units", "volume only"], a: 0 },
+    { q: "Atoms combine to form compounds in ____.", o: ["random proportions only", "fixed relative numbers", "no proportions", "equal masses always"], a: 1 },
+    { q: "Michael Faraday provided early evidence that electric charge is ____.", o: ["continuous only", "discrete", "absent", "massless matter"], a: 1 },
+    { q: "Cathode rays are streams of particles moving from the ____.", o: ["anode to cathode", "cathode to anode", "nucleus to shell", "shell to nucleus"], a: 1 },
+    { q: "Cathode rays were studied using gases at ____.", o: ["high pressure", "low pressure", "zero pressure", "atmospheric pressure only"], a: 1 },
+    { q: "A glow was observed in the discharge tube when the gas pressure was ____.", o: ["low", "extremely high", "unchanged", "irrelevant"], a: 0 },
+    { q: "J. J. Thomson’s work on cathode rays contributed to the discovery of the ____.", o: ["proton", "electron", "neutron", "isotope"], a: 1 },
+    { q: "The nucleus of an atom contains mainly ____.", o: ["protons and neutrons", "electrons only", "photons only", "shells"], a: 0 },
+    { q: "The particle carrying a negative charge is the ____.", o: ["proton", "neutron", "electron", "nucleus"], a: 2 },
+    { q: "The particle carrying a positive charge is the ____.", o: ["electron", "proton", "neutron", "photon"], a: 1 },
+    { q: "The neutron has approximately ____.", o: ["no mass", "one atomic mass unit", "one electron charge", "negative mass"], a: 1 },
+    { q: "The atomic number of an element is equal to the number of ____.", o: ["neutrons", "protons", "nucleons only", "shells"], a: 1 },
+    { q: "For a neutral atom, the number of protons equals the number of ____.", o: ["neutrons", "electrons", "shells", "isotopes"], a: 1 },
+    { q: "The mass number of an atom is the total number of ____.", o: ["protons and neutrons", "electrons and protons", "electrons and neutrons", "shells"], a: 0 },
+    { q: "An atom with 17 protons has atomic number ____.", o: ["7", "17", "18", "34"], a: 1 },
+    { q: "An atom with 17 protons and 18 neutrons has mass number ____.", o: ["1", "17", "18", "35"], a: 3 },
+    { q: "Isotopes are atoms of the same element having the same number of ____.", o: ["neutrons", "protons but different numbers of neutrons", "electrons only", "shells only"], a: 1 },
+    { q: "The isotopes of an element have the same ____.", o: ["atomic number", "mass number", "neutron number", "percentage abundance"], a: 0 },
+    { q: "The symbol used for a nuclide commonly places mass number at the ____.", o: ["lower left", "upper left", "upper right", "centre only"], a: 1 },
+    { q: "An ion is formed when an atom ____.", o: ["changes its nucleus only", "gains or loses electrons", "gains protons in ordinary reactions", "loses neutrons"], a: 1 },
+    { q: "A positively charged ion is called a ____.", o: ["anion", "cation", "isotope", "neutron"], a: 1 },
+    { q: "A negatively charged ion is called an ____.", o: ["cation", "anion", "proton", "isotope"], a: 1 },
+    { q: "The outermost electron shell of an atom is called the ____.", o: ["core shell", "valence shell", "nuclear shell", "orbital shell"], a: 1 },
+    { q: "Valence electrons mainly determine the atom’s ____.", o: ["combining power and bonding behaviour", "neutron mass", "atomic nucleus size", "isotope abundance"], a: 0 },
+    { q: "The electronic configuration of hydrogen is ____.", o: ["1s¹", "1s²", "2s¹", "2p¹"], a: 0 },
+    { q: "The electronic configuration of helium is ____.", o: ["1s¹", "1s²", "2s²", "2p²"], a: 1 },
+    { q: "The electronic configuration of lithium is ____.", o: ["1s²2s¹", "1s²2p¹", "1s¹2s²", "2s²"], a: 0 },
+    { q: "The electronic configuration of argon is ____.", o: ["1s²2s²2p⁶3s²3p⁶", "1s²2s²2p⁶", "1s²2s²3p⁶", "2s²2p⁶3s²"], a: 0 },
+    { q: "The electronic configuration of potassium is ____.", o: ["[Ar]4s¹", "[Ar]3d¹", "[Ne]3s¹", "[Ar]4p¹"], a: 0 },
+    { q: "The principal quantum number is represented by ____.", o: ["l", "n", "m", "ms"], a: 1 },
+    { q: "The principal quantum number mainly determines the ____.", o: ["size and energy of an orbital/shell", "orbital orientation only", "spin direction", "nuclear charge"], a: 0 },
+    { q: "The azimuthal quantum number is represented by ____.", o: ["n", "l", "ml", "ms"], a: 1 },
+    { q: "The azimuthal quantum number determines the ____.", o: ["shape of orbital", "spin direction", "atomic mass", "number of protons"], a: 0 },
+    { q: "The magnetic quantum number is represented by ____.", o: ["n", "l", "ml", "ms"], a: 2 },
+    { q: "The magnetic quantum number determines the ____.", o: ["orientation of an orbital", "mass of electron", "shell size", "number of neutrons"], a: 0 },
+    { q: "The spin quantum number is represented by ____.", o: ["n", "l", "ml", "ms"], a: 3 },
+    { q: "The allowed values of electron spin quantum number are ____.", o: ["0 and 1", "+1 and -1", "+1/2 and -1/2", "1 and 2"], a: 2 },
+    { q: "An s-subshell is generally described as having a ____.", o: ["spherical shape", "dumbbell shape", "planar square", "triangular shape"], a: 0 },
+    { q: "A p-subshell consists of ____.", o: ["one lobe", "two lobes", "three shells", "four nuclei"], a: 1 },
+    { q: "The labels x, y and z for p orbitals indicate ____.", o: ["different masses", "axes along which the lobes are directed", "different elements", "electron charges"], a: 1 },
+    { q: "For a given principal quantum number n, l can take values from ____.", o: ["1 to n", "0 to n-1", "-n to n", "0 to n+1"], a: 1 },
+    { q: "For l = 0, the subshell is ____.", o: ["s", "p", "d", "f"], a: 0 },
+    { q: "For l = 1, the subshell is ____.", o: ["s", "p", "d", "f"], a: 1 },
+    { q: "For l = 2, the subshell is ____.", o: ["s", "p", "d", "f"], a: 2 },
+    { q: "For l = 3, the subshell is ____.", o: ["s", "p", "d", "f"], a: 3 },
+    { q: "Which quantum number specifies the spin direction of an electron?", o: ["n", "l", "ml", "ms"], a: 3 },
+    { q: "Which electron configuration corresponds to sodium?", o: ["1s²2s²2p⁶3s¹", "1s²2s²2p⁵", "1s²2s²3s¹", "1s²2p⁶3s²"], a: 0 },
+    { q: "Which electron configuration corresponds to aluminium?", o: ["1s²2s²2p⁶3s²3p¹", "1s²2s²2p⁵3s²", "1s²2s²2p⁶3p³", "1s²2s²2p⁶4s¹"], a: 0 },
+    { q: "Calcium has how many valence electrons in the configuration shown in the material?", o: ["1", "2", "6", "8"], a: 1 },
+    { q: "Who observed that chemical properties recur periodically when elements are arranged?", o: ["Newlands", "Faraday", "Thomson", "Rutherford"], a: 0 },
+    { q: "Newlands arranged known elements primarily by increasing ____.", o: ["atomic number", "atomic mass", "density", "melting point"], a: 1 },
+    { q: "Newlands called his observed relationship the ____.", o: ["law of octaves", "law of gases", "law of charges", "law of nuclei"], a: 0 },
+    { q: "Dmitri Mendeleev was a ____.", o: ["Russian chemist", "British physicist", "Greek philosopher", "French mathematician"], a: 0 },
+    { q: "Mendeleev arranged elements in order of increasing ____.", o: ["atomic mass", "atomic number", "neutron number only", "valency only"], a: 0 },
+    { q: "Mendeleev placed elements with similar chemical behaviour ____.", o: ["under one another", "randomly", "outside the table", "only in rows"], a: 0 },
+    { q: "Mendeleev had about how many elements known by 1869?", o: ["13", "63", "118", "7"], a: 1 },
+    { q: "Lithium is described as a shiny metal that is soft enough to be cut with a ____.", o: ["spoon", "knife", "ruler", "glass rod"], a: 0 },
+    { q: "Lithium reacts violently with ____.", o: ["water", "nitrogen only", "helium", "argon"], a: 0 },
+    { q: "Johann Dobereiner grouped certain elements into sets called ____.", o: ["triads", "octaves", "periods", "shells"], a: 0 },
+    { q: "Dobereiner’s triad containing chlorine also contained ____.", o: ["bromine and iodine", "sodium and potassium", "calcium and magnesium", "lithium and beryllium"], a: 0 },
+    { q: "Another Dobereiner triad was calcium, strontium and ____.", o: ["barium", "potassium", "iodine", "neon"], a: 0 },
+    { q: "The lithium triad consisted of lithium, sodium and ____.", o: ["potassium", "magnesium", "calcium", "bromine"], a: 0 },
+    { q: "In a Dobereiner triad, the atomic weight of the middle element was approximately the ____.", o: ["average of the first and third", "sum of all three", "difference of first and third", "same as the first"], a: 0 },
+    { q: "Bohr observed that chemical properties depend on the number of electrons in the ____.", o: ["outermost shell", "nucleus", "first shell only", "neutron cloud"], a: 0 },
+    { q: "The vertical columns in the periodic table are called ____.", o: ["groups", "periods", "shells", "blocks"], a: 0 },
+    { q: "The horizontal rows in the periodic table are called ____.", o: ["periods", "groups", "triads", "families only"], a: 0 },
+    { q: "Elements in the same group tend to have similar ____.", o: ["chemical properties", "mass numbers only", "neutron counts", "densities always"], a: 0 },
+    { q: "Group 1 elements are known as ____.", o: ["alkali metals", "halogens", "noble gases", "alkaline earth metals"], a: 0 },
+    { q: "Group 2 elements are known as ____.", o: ["alkaline earth metals", "halogens", "noble gases", "alkali metals"], a: 0 },
+    { q: "Group 17 elements are called ____.", o: ["halogens", "alkali metals", "noble gases", "transition metals"], a: 0 },
+    { q: "Group 18 elements are called ____.", o: ["noble gases", "halogens", "alkali metals", "alkaline earth metals"], a: 0 },
+    { q: "The periodic-table position of an element is strongly related to its ____.", o: ["electron configuration", "colour", "sample size", "container"], a: 0 },
+    { q: "An element with one electron in its outer shell is generally characteristic of ____.", o: ["Group 1", "Group 18", "Group 17", "Group 2"], a: 0 },
+    { q: "An element with seven valence electrons is generally characteristic of ____.", o: ["Group 17", "Group 1", "Group 2", "Group 18"], a: 0 },
+    { q: "An element with eight valence electrons is generally associated with ____.", o: ["noble-gas stability", "alkali-metal behaviour", "halogen behaviour", "Group 1"], a: 0 },
+    { q: "The atomic number increases across the periodic table because the number of ____.", o: ["protons increases", "neutrons always decreases", "shells disappears", "electrons becomes zero"], a: 0 },
+    { q: "The mole is a unit used to express ____.", o: ["amount of substance", "temperature", "pressure", "density"], a: 0 },
+    { q: "A balanced chemical equation obeys conservation of ____.", o: ["atoms", "colour", "volume only", "temperature"], a: 0 },
+    { q: "Before using stoichiometric ratios, a chemical equation should be ____.", o: ["balanced", "erased", "heated", "diluted"], a: 0 },
+    { q: "In Ba + 2H2O → Ba(OH)2 + H2, one mole of Ba reacts with ____.", o: ["1 mol H2O", "2 mol H2O", "3 mol H2O", "4 mol H2O"], a: 1 },
+    { q: "In Ba + 2H2O → Ba(OH)2 + H2, the coefficient of H2 is ____.", o: ["1", "2", "3", "4"], a: 0 },
+    { q: "If 5 mol Ba reacts according to Ba + 2H2O → Ba(OH)2 + H2, water required is ____.", o: ["5 mol", "10 mol", "15 mol", "20 mol"], a: 1 },
+    { q: "If 12 mol H2O is mixed with 5 mol Ba in the reaction above, the limiting reagent is ____.", o: ["Ba", "H2O", "Ba(OH)2", "H2"], a: 0 },
+    { q: "In a reaction, the reactant consumed first is called the ____.", o: ["limiting reagent", "catalyst", "product", "solvent"], a: 0 },
+    { q: "The reactant left after the limiting reagent is consumed is the ____.", o: ["excess reagent", "product", "catalyst", "solute"], a: 0 },
+    { q: "The balanced equation for ammonia formation is ____.", o: ["N2 + 3H2 → 2NH3", "N2 + H2 → NH3", "2N2 + H2 → NH3", "N + H → NH3"], a: 0 },
+    { q: "In N2 + 3H2 → 2NH3, one mole N2 requires ____.", o: ["1 mol H2", "2 mol H2", "3 mol H2", "4 mol H2"], a: 2 },
+    { q: "In N2 + 3H2 → 2NH3, one mole N2 produces ____.", o: ["1 mol NH3", "2 mol NH3", "3 mol NH3", "4 mol NH3"], a: 1 },
+    { q: "The molar mass of H2 is approximately ____.", o: ["1 g mol⁻¹", "2 g mol⁻¹", "16 g mol⁻¹", "18 g mol⁻¹"], a: 1 },
+    { q: "The molar mass of O2 is approximately ____.", o: ["16 g mol⁻¹", "18 g mol⁻¹", "32 g mol⁻¹", "44 g mol⁻¹"], a: 2 },
+    { q: "The formula for calculating moles from mass is ____.", o: ["n = m/M", "n = mM", "n = M/m", "n = m+M"], a: 0 },
+    { q: "The formula for mass from moles is ____.", o: ["m = nM", "m = n/M", "m = M/n", "m = n+M"], a: 0 },
+    { q: "In stoichiometry, coefficients represent ____.", o: ["mole ratios", "colours", "atomic numbers", "temperatures"], a: 0 },
+    { q: "The percentage yield compares actual yield with ____.", o: ["theoretical yield", "atomic number", "solvent volume", "pressure only"], a: 0 },
+    { q: "A chemical equation with unequal numbers of an element on both sides is ____.", o: ["unbalanced", "balanced", "ionic only", "neutral"], a: 0 },
+    { q: "The formula mass of a compound is obtained from the sum of the ____.", o: ["atomic masses in its formula", "atomic numbers only", "neutron numbers only", "volumes"], a: 0 },
+    { q: "If 2 mol H2 reacts completely with excess N2 in N2 + 3H2 → 2NH3, NH3 formed is ____.", o: ["1.33 mol", "2 mol", "3 mol", "6 mol"], a: 0 },
+    { q: "If 3 mol N2 reacts with excess H2, NH3 produced is ____.", o: ["3 mol", "6 mol", "9 mol", "12 mol"], a: 1 },
+    { q: "If 6 mol H2 reacts with excess N2, NH3 produced is ____.", o: ["2 mol", "3 mol", "4 mol", "6 mol"], a: 2 },
+    { q: "A limiting reagent is identified by comparing the available amounts with the ____.", o: ["stoichiometric requirements", "colour of reactants", "temperature only", "atomic symbols"], a: 0 },
+    { q: "A reactant in excess is not completely ____.", o: ["consumed", "measured", "balanced", "named"], a: 0 },
+    { q: "A coefficient of 2 before a substance in an equation means ____.", o: ["two moles/particles relative to coefficient 1", "two atoms always", "two grams always", "two litres always"], a: 0 },
+    { q: "The law of conservation of mass requires the total number of each type of ____.", o: ["atom to be conserved", "molecule to increase", "electron to vanish", "proton to change"], a: 0 },
+    { q: "Molarity is the number of moles of solute per ____.", o: ["litre of solution", "gram of solvent", "kilogram of solute", "mole of solvent"], a: 0 },
+    { q: "The symbol commonly used for molarity is ____.", o: ["M", "m", "K", "N only"], a: 0 },
+    { q: "A solution containing 1 mole solute in 1 L solution has concentration ____.", o: ["0.1 M", "1.0 M", "10 M", "100 M"], a: 1 },
+    { q: "The dilution equation given in the material is ____.", o: ["M1V1 = M2V2", "M1+V1=M2+V2", "M1/V1=M2/V2", "M1M2=V1V2"], a: 0 },
+    { q: "In M1V1=M2V2, M1 represents the concentration of the ____.", o: ["stock solution", "final solution", "solvent", "precipitate"], a: 0 },
+    { q: "In M1V1=M2V2, V1 represents the volume of the ____.", o: ["stock solution taken", "final solution", "solvent only", "gas"], a: 0 },
+    { q: "In M1V1=M2V2, M2 represents the concentration of the ____.", o: ["dilute/final solution", "stock solution", "solute crystal", "gas"], a: 0 },
+    { q: "In M1V1=M2V2, V2 represents the ____.", o: ["final volume of the dilute solution", "stock volume only", "solute mass", "gas volume only"], a: 0 },
+    { q: "To prepare a dilute solution from a stock solution, the stock is commonly transferred using a ____.", o: ["pipette", "thermometer", "balance only", "burette stand"], a: 0 },
+    { q: "After transferring stock solution into a volumetric flask, the solution is made up to the ____.", o: ["mark with distilled water", "top of the flask with solute", "bottom with acid", "zero mark on a balance"], a: 0 },
+    { q: "How much 16.0 M acetic acid is required to make 500 mL of 2.0 M solution?", o: ["6.25 mL", "31.25 mL", "62.5 mL", "125 mL"], a: 2 },
+    { q: "When diluting an acid solution, the final volume is obtained by ____.", o: ["adding solvent to the required mark", "adding more acid indefinitely", "boiling all solvent away", "freezing it"], a: 0 },
+    { q: "A stock solution is generally ____.", o: ["more concentrated than the dilute solution", "less concentrated", "pure solvent", "a solid only"], a: 0 },
+    { q: "If concentration decreases while solute moles remain constant, solution volume generally ____.", o: ["increases", "decreases to zero", "stays zero", "becomes negative"], a: 0 },
+    { q: "The concentration 0.10 M means ____.", o: ["0.10 mol solute per litre of solution", "10 mol per litre", "0.10 g per litre always", "1 mol per 10 mL"], a: 0 },
+    { q: "Which quantity must be converted to litres when using molarity in mol L⁻¹?", o: ["volume of solution", "atomic number", "mass number", "temperature always"], a: 0 },
+    { q: "A 2.0 M solution diluted to 1.0 M becomes ____.", o: ["twice as concentrated", "half as concentrated", "unchanged", "four times as concentrated"], a: 1 },
+    { q: "If M1=4 M, V1=25 mL and M2=1 M, V2 is ____.", o: ["25 mL", "50 mL", "100 mL", "200 mL"], a: 2 },
+    { q: "If M1=2 M, V1=50 mL and V2=200 mL, M2 is ____.", o: ["0.25 M", "0.5 M", "1 M", "4 M"], a: 1 },
+    { q: "Dilution changes concentration primarily by changing the amount of ____.", o: ["solvent", "atomic nuclei", "solute identity", "proton number"], a: 0 },
+    { q: "A volumetric flask is useful because it allows a solution to be prepared to a known ____.", o: ["volume", "mass number", "atomic number", "pressure only"], a: 0 },
+    { q: "Distilled water in the dilution example serves as the ____.", o: ["solvent", "solute", "precipitate", "catalyst"], a: 0 },
+    { q: "The solute is the component that is generally ____.", o: ["dissolved", "always the solvent", "always water", "never measurable"], a: 0 },
+    { q: "A concentrated solution contains relatively more ____.", o: ["solute per unit volume", "solvent per unit volume only", "empty space", "gas"], a: 0 },
+    { q: "The final solution after dilution is expected to be ____.", o: ["less concentrated", "more concentrated", "identical in volume to stock always", "pure solute"], a: 0 },
+    { q: "If V1 is increased while M1 and M2 remain fixed, V2 will ____.", o: ["increase", "decrease", "remain zero", "become negative"], a: 0 },
+    { q: "If M2 is increased while M1 and V1 remain fixed, V2 will ____.", o: ["decrease", "increase", "stay fixed always", "become infinite"], a: 0 },
+    { q: "The pH of a solution is defined as the negative logarithm of ____.", o: ["[H+]", "[OH-] only", "mass", "volume"], a: 0 },
+    { q: "The pOH of a solution is the negative logarithm of ____.", o: ["[OH-]", "[H+]", "pressure", "mass"], a: 0 },
+    { q: "At 25 °C, the relationship between pH and pOH is ____.", o: ["pH+pOH=14", "pH-pOH=14", "pH×pOH=14", "pH/pOH=14"], a: 0 },
+    { q: "A solution with pH 7 at 25 °C is generally ____.", o: ["neutral", "strongly acidic", "strongly basic", "a salt only"], a: 0 },
+    { q: "A pH less than 7 at 25 °C indicates a/an ____.", o: ["acidic solution", "neutral solution", "basic solution", "metal"], a: 0 },
+    { q: "A pH greater than 7 at 25 °C indicates a/an ____.", o: ["basic solution", "acidic solution", "neutral solution", "isotope"], a: 0 },
+    { q: "If [H+] = 1.0×10^-3 M, pH is ____.", o: ["1", "2", "3", "11"], a: 2 },
+    { q: "If [H+] = 1.0×10^-2 M, pH is ____.", o: ["2", "8", "10", "12"], a: 0 },
+    { q: "If [OH-] = 1.0×10^-2 M, pOH is ____.", o: ["2", "10", "12", "14"], a: 0 },
+    { q: "If pOH=2, pH at 25 °C is ____.", o: ["2", "7", "12", "14"], a: 2 },
+    { q: "If pH=8.5, pOH is ____.", o: ["5.5", "6.5", "8.5", "22.5"], a: 0 },
+    { q: "If pH=8.5, [H+] is approximately ____.", o: ["3.16×10^-9 M", "8.5 M", "10^-8.5 g", "3.16×10^9 M"], a: 0 },
+    { q: "A strong acid generally ____.", o: ["ionizes extensively in water", "never ionizes", "contains no hydrogen", "is always a solid"], a: 0 },
+    { q: "A weak acid ____.", o: ["ionizes only partially", "ionizes completely always", "contains no conjugate base", "cannot react"], a: 0 },
+    { q: "A buffer contains a weak acid and its ____.", o: ["conjugate base", "strong metal only", "isotope", "noble gas"], a: 0 },
+    { q: "A buffer resists large changes in ____.", o: ["pH", "atomic number", "mass number", "pressure only"], a: 0 },
+    { q: "The conjugate base of an acid is formed when the acid ____.", o: ["loses H+", "gains a neutron", "loses an electron only", "gains oxygen always"], a: 0 },
+    { q: "The conjugate acid of a base is formed when the base ____.", o: ["gains H+", "loses a proton", "loses all electrons", "gains neutrons"], a: 0 },
+    { q: "A buffer can be prepared from a weak acid and a ____.", o: ["salt containing its conjugate base", "noble gas", "pure metal only", "strong acid only"], a: 0 },
+    { q: "The pH scale is logarithmic, so a one-unit change represents a factor of ____.", o: ["10 in [H+]", "2 only", "1000 only", "1/10 always in pH itself"], a: 0 },
+    { q: "A solution with [H+]=1×10^-7 M has pH ____.", o: ["7", "1", "14", "0"], a: 0 },
+    { q: "A solution with pH 3 has [H+] of ____.", o: ["1×10^-3 M", "3 M", "1×10^3 M", "0.3 M"], a: 0 },
+    { q: "A solution with pH 12 has pOH ____.", o: ["2", "12", "14", "24"], a: 0 },
+    { q: "A high [H+] corresponds to ____.", o: ["low pH", "high pH", "pH always 7", "no acidity"], a: 0 },
+    { q: "A high [OH-] corresponds to ____.", o: ["low pOH", "high pOH", "pOH 14 always", "no basicity"], a: 0 },
+    { q: "The material describes a buffer as containing a weak acid and its ____.", o: ["conjugate base", "conjugate metal", "isotope", "solvent only"], a: 0 },
+    { q: "The pH of a solution can be calculated from [H+] using ____.", o: ["pH=-log[H+]", "pH=log[H+]", "pH=[H+]/10", "pH=14[H+]"], a: 0 },
+    { q: "Atoms and molecules combine to form ____.", o: ["compounds", "physical quantities", "errors", "units"], a: 0 },
+    { q: "The electrons chiefly involved in chemical bonding are ____.", o: ["valence electrons", "neutrons", "inner protons", "nuclear particles"], a: 0 },
+    { q: "The octet rule relates stability to having ____.", o: ["eight electrons in the outer shell", "eight protons", "eight neutrons", "eight shells"], a: 0 },
+    { q: "Ionic bonding is primarily an electrostatic attraction between ____.", o: ["oppositely charged ions", "two neutrons", "two nuclei only", "identical gases"], a: 0 },
+    { q: "A cation is attracted to an ____.", o: ["anion", "electron shell only", "isotope", "neutral atom only"], a: 0 },
+    { q: "An ionic bond commonly involves ____.", o: ["transfer of one or more electrons", "sharing neutrons", "sharing nuclei", "transfer of protons in ordinary reactions"], a: 0 },
+    { q: "An atom that loses electrons becomes ____.", o: ["positively charged", "negatively charged", "neutral always", "radioactive always"], a: 0 },
+    { q: "An atom that gains electrons becomes ____.", o: ["negatively charged", "positively charged", "a proton", "a neutron"], a: 0 },
+    { q: "Covalent bonding involves ____.", o: ["sharing of electrons", "transfer of neutrons", "loss of nuclei", "sharing of protons only"], a: 0 },
+    { q: "Covalent bonds are commonly formed between ____.", o: ["non-metal atoms", "only metals", "protons", "neutrons"], a: 0 },
+    { q: "Coordinate bonding is a type of bonding in which the shared electron pair is supplied by ____.", o: ["one atom", "both nuclei equally by definition", "neutrons", "protons"], a: 0 },
+    { q: "Electrovalent bonding is another name for ____.", o: ["ionic bonding", "covalent bonding", "coordinate bonding only", "metallic bonding"], a: 0 },
+    { q: "A species with a complete octet is generally described as relatively ____.", o: ["stable", "unstable always", "radioactive", "acidic always"], a: 0 },
+    { q: "Which species is likely to form an ionic bond with Na+?", o: ["Cl-", "Na+", "Ne", "Ar"], a: 0 },
+    { q: "Which pair is most consistent with covalent bonding?", o: ["H and H", "Na+ and Cl- as ions", "proton and neutron", "cation and anion only"], a: 0 },
+    { q: "The force holding oppositely charged ions together in an ionic solid is ____.", o: ["electrostatic attraction", "gravity only", "magnetic spin only", "nuclear fusion"], a: 0 },
+    { q: "Intermolecular forces act mainly ____.", o: ["between molecules", "inside atomic nuclei only", "between protons in nuclei only", "between neutrons only"], a: 0 },
+    { q: "Hydrogen bonding is an especially important intermolecular interaction involving ____.", o: ["hydrogen attached to a strongly electronegative atom", "any metal atom", "only carbon", "neutrons"], a: 0 },
+    { q: "Which is generally stronger within a molecule: a covalent bond or an intermolecular force?", o: ["Covalent bond", "Intermolecular force", "They are always equal", "Neither exists"], a: 0 },
+    { q: "The Lewis approach to bonding focuses on ____.", o: ["valence electrons", "neutron mass", "atomic density", "melting points"], a: 0 },
+    { q: "An atom with one valence electron tends to ____.", o: ["lose it more readily", "gain seven always", "form a noble gas", "become a neutron"], a: 0 },
+    { q: "A halogen atom tends to ____.", o: ["gain one electron", "lose seven electrons", "lose one proton", "gain eight protons"], a: 0 },
+    { q: "A noble gas generally has ____.", o: ["a filled valence shell", "one valence electron", "seven valence electrons", "no electrons"], a: 0 },
+    { q: "The simplest example of a covalent molecule is ____.", o: ["H2", "Na+", "Cl-", "He+"], a: 0 },
+    { q: "The attraction between Na+ and Cl- is best described as ____.", o: ["ionic/electrostatic", "covalent", "coordinate only", "nuclear"], a: 0 },
+    { q: "Bonding allows atoms to achieve more stable ____.", o: ["electron configurations", "mass numbers", "neutron counts", "physical dimensions only"], a: 0 },
+    { q: "The octet rule is mainly applied to ____.", o: ["valence-shell electrons", "neutrons", "atomic mass", "nuclei only"], a: 0 },
+    { q: "A reversible reaction can proceed in ____.", o: ["both forward and reverse directions", "only forward direction", "only reverse direction", "no direction"], a: 0 },
+    { q: "At equilibrium, the forward and reverse reaction rates are ____.", o: ["equal", "both zero", "always unequal", "infinite"], a: 0 },
+    { q: "At equilibrium, reactant and product concentrations are ____.", o: ["constant with time", "necessarily equal", "zero", "continuously increasing"], a: 0 },
+    { q: "Equilibrium is described as dynamic because ____.", o: ["reactions continue in both directions", "nothing happens", "all reactants disappear", "temperature is always changing"], a: 0 },
+    { q: "Increasing the concentration of a reactant generally shifts equilibrium toward the ____.", o: ["products", "reactants", "catalyst", "solvent only"], a: 0 },
+    { q: "Increasing product concentration generally shifts equilibrium toward the ____.", o: ["reactants", "products", "solvent", "catalyst"], a: 0 },
+    { q: "Removing a product generally causes equilibrium to shift toward ____.", o: ["products", "reactants", "neither side", "the catalyst"], a: 0 },
+    { q: "For N2 + 3H2 ⇌ 2NH3, increasing pressure favours the side with ____.", o: ["fewer gas molecules", "more gas molecules", "more solids", "no gas"], a: 0 },
+    { q: "For N2 + 3H2 ⇌ 2NH3, decreasing pressure favours the side with ____.", o: ["more gas molecules", "fewer gas molecules", "no molecules", "more solids"], a: 0 },
+    { q: "A catalyst changes the position of equilibrium by ____.", o: ["not changing it", "shifting it to products", "shifting it to reactants", "removing products"], a: 0 },
+    { q: "A catalyst affects equilibrium by changing the ____.", o: ["rate of reaching equilibrium", "equilibrium composition", "equilibrium constant always", "stoichiometric coefficients"], a: 0 },
+    { q: "If a pressure increase causes equilibrium to shift, the system responds according to ____.", o: ["Le Chatelier’s principle", "Dalton’s indivisibility", "significant figures", "Faraday’s law only"], a: 0 },
+    { q: "Le Chatelier’s principle describes how an equilibrium system responds to a ____.", o: ["disturbance", "unit conversion", "measurement error", "change in atomic number"], a: 0 },
+    { q: "For PCl5(g) ⇌ PCl3(g)+Cl2(g), increasing PCl3 concentration tends to shift equilibrium ____.", o: ["left", "right", "nowhere", "to solids"], a: 0 },
+    { q: "For PCl5(g) ⇌ PCl3(g)+Cl2(g), increasing PCl5 concentration tends to shift equilibrium ____.", o: ["right", "left", "nowhere", "to the catalyst"], a: 0 },
+    { q: "For PCl5(g) ⇌ PCl3(g)+Cl2(g), increasing pressure favours ____.", o: ["PCl5 side", "products", "both equally always", "no side"], a: 0 },
+    { q: "For PCl5(g) ⇌ PCl3(g)+Cl2(g), decreasing pressure favours ____.", o: ["products", "PCl5 side", "solids", "liquids"], a: 0 },
+    { q: "At equilibrium, the system is not necessarily ____.", o: ["static", "dynamic", "reversible", "balanced in rate"], a: 0 },
+    { q: "At equilibrium, equal forward and reverse rates do not mean equal ____.", o: ["concentrations", "rates", "directions", "reaction pathways"], a: 0 },
+    { q: "A change in volume of a gas equilibrium system is equivalent to changing ____.", o: ["pressure", "atomic number", "mass number", "isotope abundance"], a: 0 },
+    { q: "If a reaction has more gas moles on the reactant side, increasing pressure favours ____.", o: ["products", "reactants", "both equally", "neither"], a: 0 },
+    { q: "If a reaction has fewer gas moles on the reactant side, decreasing pressure favours ____.", o: ["products", "reactants", "catalyst", "no side"], a: 0 },
+    { q: "The equilibrium constant describes the relationship between ____.", o: ["equilibrium concentrations", "atomic masses only", "pressure units only", "significant figures"], a: 0 },
+    { q: "A very large equilibrium constant generally indicates ____.", o: ["products are favoured", "reactants are favoured", "no reaction", "zero concentration"], a: 0 },
+    { q: "A very small equilibrium constant generally indicates ____.", o: ["reactants are favoured", "products are favoured", "all products are gases", "no reactants"], a: 0 },
+    { q: "Adding a catalyst to an equilibrium mixture changes the time to equilibrium but not the ____.", o: ["equilibrium position", "identity of atoms", "reaction equation", "stoichiometric ratio"], a: 0 },
+    { q: "The principle used to predict the direction of equilibrium shift after concentration changes is ____.", o: ["Le Chatelier’s principle", "octet rule", "uncertainty principle", "law of octaves"], a: 0 },
+    { q: "Enthalpy of fusion is the heat required to convert ____.", o: ["1 mole solid to liquid at its melting point", "1 mole liquid to gas", "1 mole gas to liquid", "1 mole solid to gas directly"], a: 0 },
+    { q: "Enthalpy of vaporization refers to converting ____.", o: ["liquid to vapour", "solid to liquid", "gas to solid", "solid to gas directly"], a: 0 },
+    { q: "Enthalpy of sublimation refers to converting ____.", o: ["solid directly to gas", "gas to liquid", "liquid to solid", "liquid to gas only"], a: 0 },
+    { q: "Fusion is generally an ____.", o: ["endothermic process", "exothermic process", "nuclear process", "ionic reaction"], a: 0 },
+    { q: "Vaporization generally requires ____.", o: ["energy input", "no energy", "neutron emission", "electron capture"], a: 0 },
+    { q: "Sublimation converts a solid directly into a/an ____.", o: ["gas", "liquid", "plasma only", "ion only"], a: 0 },
+    { q: "Osmosis is the movement of solvent molecules through a ____.", o: ["semipermeable membrane", "metal sheet", "glass block", "vacuum"], a: 0 },
+    { q: "In osmosis, solvent moves from lower solute concentration toward ____.", o: ["higher solute concentration", "lower pressure only", "pure gas", "higher temperature only"], a: 0 },
+    { q: "Osmotic pressure is the pressure needed to ____.", o: ["prevent osmosis", "cause melting", "increase atomic number", "produce ions"], a: 0 },
+    { q: "A semipermeable membrane allows ____.", o: ["solvent molecules to pass selectively", "all solutes freely", "only electrons", "only neutrons"], a: 0 },
+    { q: "Osmosis is important in biological systems because water can move through ____.", o: ["cell membranes", "nuclei only", "metal wires", "crystals only"], a: 0 },
+    { q: "The van’t Hoff equation for osmotic pressure is ____.", o: ["π=nRT/V", "π=V/nRT", "π=nV/RT", "π=RT/nV"], a: 0 },
+    { q: "In π=nRT/V, n represents the ____.", o: ["moles of solute", "number of neutrons", "normality only", "number of atoms in the nucleus"], a: 0 },
+    { q: "In π=nRT/V, R is the ____.", o: ["ideal gas constant", "relative error", "reaction rate", "radius"], a: 0 },
+    { q: "In π=nRT/V, T is measured in ____.", o: ["kelvin", "Celsius only", "metres", "grams"], a: 0 },
+    { q: "In π=nRT/V, V represents the solution ____.", o: ["volume", "velocity", "valence", "viscosity"], a: 0 },
+    { q: "A solution with more solute particles has a generally higher ____.", o: ["osmotic pressure", "atomic number", "melting point always", "electron spin"], a: 0 },
+    { q: "Colligative properties depend primarily on the number of ____.", o: ["dissolved particles", "protons in nuclei", "atoms in the solvent only", "significant figures"], a: 0 },
+    { q: "Which is a colligative-type effect discussed in the material?", o: ["Osmotic pressure", "atomic mass", "orbital shape", "oxidation number"], a: 0 },
+    { q: "Proteins and polymers are examples of ____.", o: ["macromolecules", "noble gases", "simple ions", "isotopes"], a: 0 },
+    { q: "Osmotic pressure can help estimate the molar mass of ____.", o: ["macromolecules", "electrons", "protons", "neutrons"], a: 0 },
+    { q: "A dilute solution is useful for osmotic-pressure measurements because it has relatively ____.", o: ["low molarity", "high atomic number", "no solvent", "no particles"], a: 0 },
+    { q: "If solvent is separated from a solution by a semipermeable membrane, osmosis tends to occur until ____.", o: ["equilibrium is approached", "all solvent disappears", "all solute becomes gas", "nuclei decay"], a: 0 },
+    { q: "The pressure applied to stop osmosis is called ____.", o: ["osmotic pressure", "vapour pressure", "atmospheric pressure", "nuclear pressure"], a: 0 },
+    { q: "The symbol for osmotic pressure in the material is ____.", o: ["π", "α", "β", "λ"], a: 0 },
+    { q: "Increasing solute concentration generally increases osmotic ____.", o: ["pressure", "atomic mass", "spin", "charge number"], a: 0 },
+    { q: "At the same temperature and volume, doubling moles of solute approximately ____.", o: ["doubles osmotic pressure", "halves it", "leaves it zero", "changes atomic number"], a: 0 },
+    { q: "Alpha emission decreases the mass number by ____.", o: ["4", "2", "1", "0"], a: 0 },
+    { q: "Alpha emission decreases atomic number by ____.", o: ["2", "4", "1", "0"], a: 0 },
+    { q: "An alpha particle is represented as ____.", o: ["⁴₂He", "⁰₋₁e", "¹₀n", "¹₁p"], a: 0 },
+    { q: "Beta-minus emission involves release of a/an ____.", o: ["electron", "proton", "alpha particle", "neutron only"], a: 0 },
+    { q: "Beta-minus emission changes atomic number by ____.", o: ["+1", "-2", "-1", "0"], a: 0 },
+    { q: "Beta-minus emission leaves the mass number ____.", o: ["unchanged", "decreased by 4", "increased by 2", "decreased by 1"], a: 0 },
+    { q: "Gamma emission changes the mass number by ____.", o: ["0", "-4", "+1", "-2"], a: 0 },
+    { q: "Gamma emission changes atomic number by ____.", o: ["0", "+1", "-1", "-2"], a: 0 },
+    { q: "Electron capture generally changes atomic number by ____.", o: ["-1", "+1", "-2", "0"], a: 0 },
+    { q: "Electron capture leaves mass number ____.", o: ["unchanged", "decreased by 4", "increased by 1", "decreased by 2"], a: 0 },
+    { q: "The nuclear symbol A commonly represents ____.", o: ["mass number", "atomic number", "charge", "electron number"], a: 0 }
+];
+
+let activeExam = [];
+let timeLeft = 1200; // 20 minutes countdown
+let timer;
+const totalExamQuestions = 40; 
+let currentQuestionIndex = 0;
+
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function initExam() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1000);
+
+    let shuffledSelection = shufflePool([...fullChmPool]);
+    activeExam = shuffledSelection;
+    timeLeft = 1200; 
+    currentQuestionIndex = 0; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    startTimer();
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${String.fromCharCode(65 + i)}.${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < totalExamQuestions; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => { block.classList.toggle('active', idx === index); });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => { dot.classList.toggle('current', idx === index); });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === totalExamQuestions - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}.${item.o[item.a]}</p>` : ''}
+            </div>`;
+    });
+
+    let percentage = Math.round((score / totalExamQuestions) * 100);
+    let grade = "";
+    let remark = "";
+    let statusEmoji = "";
+
+    if (percentage >= 70) {
+        grade = "A"; remark = "Excellent! You have mastered CHM 101 concepts!"; statusEmoji = "🔥🏆";
+    } else if (percentage >= 60) {
+        grade = "B"; remark = "Very Good! You're a chemistry wizard in the making 😅."; statusEmoji = "😎✨";
+    } else if (percentage >= 50) {
+        grade = "C"; remark = "Good effort. Double check your stoichiometry and acid-base formulas."; statusEmoji = "👍📖";
+    } else if (percentage >= 45) {
+        grade = "D"; remark = "Pass. Practice your periodic properties and quantum numbers."; statusEmoji = "⚠️📝";
+    } else if (percentage >= 40) {
+        grade = "E"; remark = "Fair. But you still gats read bro, atomic structure step-by-step."; statusEmoji = "👀⏳";
+    } else {
+        grade = "F"; remark = "Omo, go and read your CHM oooo! 😂"; statusEmoji = "💀❌";
+    }
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    
+    document.getElementById('result-screen').innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
+        <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
+        <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
+        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <div id="review-area">${reviewHTML}</div>
+        <button class="btn-action" onclick="location.reload()">Try Again</button>
+    `;
+    
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
