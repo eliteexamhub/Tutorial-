@@ -80,13 +80,13 @@
 <div class="container">
     <header>
         <h1>INTRODUCTION TO COMPUTER SCIENCE</h1>
-        <p>Elite Exam Hub • THEM NO BORN THIS QUESTIONS MAKE E NO COME OUT 😂</p>
+        <p>Elite Exam Hub • CSC 101 EDITION 😂</p>
     </header>
 </div>
 
 <div class="exam-layout" id="exam-container">
     <div id="exam-main">
-        <div class="timer-bar" id="timer">Time Remaining: 20:00</div>
+        <div class="timer-bar" id="timer">Time Remaining: 30:00</div>
         <div id="question-list"></div>
         
         <div class="nav-controls">
@@ -107,12 +107,7 @@
     </div>
 </div>
 
-<div class="container" id="result-screen">
-    <div style="font-size: 3rem;">GO AND READ😂</div>
-    <h1 id="score-text"></h1>
-    <div id="review-area"></div>
-    <button class="btn-action" onclick="location.reload()">Try Again</button>
-</div>
+<div class="container" id="result-screen"></div>
 
 <footer>
     <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
@@ -120,8 +115,8 @@
 </footer>
 
 <script>
-// CSC 101 Question Pool (80 Questions)
 const fullCscPool = [
+    // WEEK ONE
     { q: "A computer can best be defined as a machine that is used to ______.", o: ["Produce electricity", "Process data to give required information", "Manufacture furniture", "Store only pictures"], a: 1 },
     { q: "Which of the following represents the basic stages of computer processing?", o: ["Output → Input → Processing", "Processing → Input → Output", "Input → Processing → Output", "Input → Output → Processing"], a: 2 },
     { q: "The raw facts entered into a computer are called ______.", o: ["Information", "Data", "Output", "Programs"], a: 1 },
@@ -137,6 +132,8 @@ const fullCscPool = [
     { q: "The component of a computer that performs calculations and processing is mainly the ______.", o: ["CPU", "Keyboard", "Monitor", "Speaker"], a: 0 },
     { q: "Which of the following is an example of computer input?", o: ["Printed result", "Information displayed on a monitor", "Data entered through a keyboard", "Sound from a speaker"], a: 2 },
     { q: "The output produced by a computer may be in the form of ______.", o: ["Information", "Raw data only", "Electricity only", "Instructions only"], a: 0 },
+
+    // WEEK TWO
     { q: "Which of the following is a characteristic of a computer?", o: ["Slowness", "Accuracy", "Forgetfulness", "Laziness"], a: 1 },
     { q: "The ability of a computer to perform operations very quickly is known as ______.", o: ["Speed", "Reliability", "Storage", "Efficiency"], a: 0 },
     { q: "The ability of a computer to perform repeated operations without becoming tired is related to ______.", o: ["Diligence", "Colour", "Portability", "Size"], a: 0 },
@@ -152,6 +149,8 @@ const fullCscPool = [
     { q: "Which of the following is a storage device?", o: ["Hard drive", "Mouse", "Keyboard", "Monitor"], a: 0 },
     { q: "Which of the following is NOT a physical computer component?", o: ["Keyboard", "Mouse", "Microsoft Word", "Hard drive"], a: 2 },
     { q: "The term \"humanware\" refers primarily to ______.", o: ["People who use or operate computer systems", "Computer cables", "Computer memory", "Operating systems"], a: 0 },
+
+    // WEEK THREE
     { q: "Computers are widely used in education for ______.", o: ["Teaching and learning", "Cooking only", "Building houses manually", "Farming without data"], a: 0 },
     { q: "Which of the following is an application area of computers mentioned in the material?", o: ["Banking", "Fishing only", "Dancing only", "Sleeping"], a: 0 },
     { q: "Computers are used in hospitals mainly to support ______.", o: ["Healthcare operations", "Road construction only", "Entertainment only", "Sports training only"], a: 0 },
@@ -162,6 +161,8 @@ const fullCscPool = [
     { q: "Which sector can use computers for calculations, simulations and data analysis?", o: ["Science", "Sleeping", "Cooking only", "Dancing only"], a: 0 },
     { q: "The usefulness of computers in society is largely due to their ability to ______.", o: ["Process information efficiently", "Eat food", "Sleep", "Walk"], a: 0 },
     { q: "Which of the following is NOT an application area of computing?", o: ["Education", "Banking", "Hospitals", "Human breathing"], a: 3 },
+
+    // WEEK FOUR
     { q: "Data communication refers to the transmission of digital data between ______.", o: ["Two or more computers/devices", "Two books", "Two chairs", "Two buildings without devices"], a: 0 },
     { q: "A network is a group of computers that are ______.", o: ["Connected together", "Always switched off", "Used only for games", "Not able to communicate"], a: 0 },
     { q: "LAN stands for ______.", o: ["Local Area Network", "Large Access Network", "Long Area Node", "Local Application Number"], a: 0 },
@@ -174,6 +175,8 @@ const fullCscPool = [
     { q: "Which of these is also a network topology?", o: ["Ring", "Mouse", "Scanner", "Speaker"], a: 0 },
     { q: "Which of the following is a network topology?", o: ["Star", "CPU", "RAM", "ROM"], a: 0 },
     { q: "Reliability in data communication refers to ______.", o: ["Dependability of the communication process", "Colour of the computer", "Size of the monitor", "Shape of the keyboard"], a: 0 },
+
+    // WEEK FIVE
     { q: "An operating system is best described as ______.", o: ["Software that manages computer resources", "A keyboard", "A printer", "A monitor"], a: 0 },
     { q: "Which of the following is an operating system?", o: ["Windows", "Microsoft Word", "PowerPoint", "CorelDRAW"], a: 0 },
     { q: "Which of the following is NOT an operating system?", o: ["Linux", "Windows", "macOS", "Microsoft Word"], a: 3 },
@@ -185,6 +188,8 @@ const fullCscPool = [
     { q: "Which of the following is a function of an operating system?", o: ["Managing files", "Washing computers", "Producing paper", "Designing furniture"], a: 0 },
     { q: "A multi-user operating system allows ______.", o: ["Multiple users to use computer resources", "Only one user forever", "No user to access the system", "Only printers to operate"], a: 0 },
     { q: "A real-time operating system is designed to respond to events ______.", o: ["Within a specified time", "After several years", "Only when switched off", "Without processing"], a: 0 },
+
+    // WEEK SIX
     { q: "GUI stands for ______.", o: ["Graphical User Interface", "General User Internet", "Graphic Utility Input", "General Utility Interface"], a: 0 },
     { q: "Which of the following is a feature of a GUI?", o: ["Icons", "Only punched cards", "No visual elements", "Mechanical gears"], a: 0 },
     { q: "An icon is best described as ______.", o: ["A graphical representation of an object or command", "A computer virus", "A storage cable", "A keyboard key only"], a: 0 },
@@ -196,18 +201,150 @@ const fullCscPool = [
     { q: "Which operation removes a file from its original location?", o: ["Cut", "Copy", "Paste", "Rename"], a: 0 },
     { q: "The operation used to change the name of a file or folder is ______.", o: ["Rename", "Copy", "Paste", "Refresh"], a: 0 },
     { q: "The process of placing a copied item in another location is called ______.", o: ["Paste", "Cut", "Delete", "Rename"], a: 0 },
+
+    // WEEK SEVEN
     { q: "Microsoft Word is primarily a ______ application.", o: ["Word-processing", "Spreadsheet", "Presentation", "Graphics"], a: 0 },
     { q: "Which of the following is associated with Microsoft Word?", o: ["Document creation", "Network topology", "Virus scanning only", "Hardware manufacturing"], a: 0 },
     { q: "The Quick Access Toolbar contains ______.", o: ["Frequently used commands", "Only computer games", "Network cables", "Hardware components"], a: 0 },
     { q: "Which of the following can be found in the Microsoft Word interface?", o: ["Ribbon", "Motherboard", "Hard disk platter", "CPU fan"], a: 0 },
     { q: "The title bar generally displays ______.", o: ["The document/application title", "Only the keyboard layout", "The CPU temperature", "Network cables"], a: 0 },
-    { q: "Which command is used to store a document?", o: ["Save", "Delete", "Cut", "Close"], a: 0 }
+    { q: "Which command is used to store a document?", o: ["Save", "Delete", "Cut", "Close"], a: 0 },
+    { q: "Which command is used to make a duplicate of selected text?", o: ["Copy", "Delete", "Close", "Exit"], a: 0 },
+    { q: "Which command removes selected text and places it on the clipboard?", o: ["Cut", "Copy", "Save", "Print"], a: 0 },
+    { q: "Which command inserts copied text into a document?", o: ["Paste", "Cut", "Save", "Undo"], a: 0 },
+    { q: "The keyboard shortcut for copying selected text is commonly ______.", o: ["Ctrl + C", "Ctrl + X", "Ctrl + V", "Ctrl + Z"], a: 0 },
+    { q: "The keyboard shortcut for pasting is ______.", o: ["Ctrl + P", "Ctrl + V", "Ctrl + S", "Ctrl + X"], a: 1 },
+    { q: "The keyboard shortcut for saving a document is ______.", o: ["Ctrl + S", "Ctrl + C", "Ctrl + V", "Ctrl + X"], a: 0 },
+
+    // WEEK EIGHT
+    { q: "Microsoft Excel is primarily a ______ application.", o: ["Spreadsheet", "Presentation", "Word-processing", "Graphics"], a: 0 },
+    { q: "An Excel file is commonly referred to as a ______.", o: ["Workbook", "Slide", "Document only", "Canvas"], a: 0 },
+    { q: "A workbook contains one or more ______.", o: ["Worksheets", "Keyboards", "Printers", "CPUs"], a: 0 },
+    { q: "The intersection of a row and a column in Excel is called a ______.", o: ["Cell", "Slide", "Paragraph", "Folder"], a: 0 },
+    { q: "Columns in Excel are normally identified by ______.", o: ["Letters", "Colours only", "Names of people", "Symbols only"], a: 0 },
+    { q: "Rows in Excel are normally identified by ______.", o: ["Numbers", "Letters only", "Colours", "Pictures"], a: 0 },
+    { q: "A cell reference such as A1 identifies ______.", o: ["A specific cell", "A workbook", "A worksheet only", "A printer"], a: 0 },
+    { q: "Which symbol is commonly used to begin an Excel formula?", o: ["=", "#", "@", "&"], a: 0 },
+    { q: "Which function is used to add values in Excel?", o: ["SUM", "MAX", "MIN", "IF"], a: 0 },
+    { q: "Which Excel function returns the largest value?", o: ["MAX", "MIN", "SUM", "COUNT"], a: 0 },
+    { q: "Which Excel function returns the smallest value?", o: ["MIN", "MAX", "SUM", "IF"], a: 0 },
+    { q: "Which function can be used to count numerical entries?", o: ["COUNT", "MAX", "MIN", "SUMIF"], a: 0 },
+    { q: "The function IF is used mainly to perform ______.", o: ["Logical testing", "Printing", "Drawing pictures", "Closing Excel"], a: 0 },
+    { q: "Which of the following can Excel be used to create?", o: ["Charts", "Operating systems", "Computer hardware", "Network cables"], a: 0 },
+    { q: "A spreadsheet can be useful for ______.", o: ["Calculations and data analysis", "Replacing the CPU", "Manufacturing keyboards", "Connecting electrical wires"], a: 0 },
+    { q: "Which function finds the average of a set of values?", o: ["AVERAGE", "MAX", "MIN", "COUNT"], a: 0 },
+
+    // WEEK NINE
+    { q: "Microsoft PowerPoint is mainly used to create ______.", o: ["Presentations", "Spreadsheets", "Operating systems", "Databases"], a: 0 },
+    { q: "A single page in a PowerPoint presentation is called a ______.", o: ["Slide", "Worksheet", "Cell", "Folder"], a: 0 },
+    { q: "Which of the following can be inserted into a PowerPoint slide?", o: ["Text", "Only numbers", "Only formulas", "Only operating systems"], a: 0 },
+    { q: "A PowerPoint presentation can contain ______.", o: ["Text, images and charts", "Only text", "Only numbers", "Only audio cables"], a: 0 },
+    { q: "A design template determines the ______ of a presentation.", o: ["General visual appearance", "Computer's processor speed", "Keyboard layout", "Internet speed"], a: 0 },
+    { q: "Slide transitions are effects that occur ______.", o: ["Between slides", "Inside the CPU", "Between keyboards", "During printing only"], a: 0 },
+    { q: "Animation effects can be applied to ______.", o: ["Objects on slides", "The motherboard", "The power cable", "The CPU fan"], a: 0 },
+    { q: "Which feature helps presenters organize information on a slide?", o: ["Bullets", "Motherboard", "Hard drive", "Network cable"], a: 0 },
+    { q: "A good presentation should generally avoid ______.", o: ["Excessive animation", "Clear text", "Appropriate images", "Proper organization"], a: 0 },
+    { q: "Which of the following improves readability in a presentation?", o: ["Clear and readable text", "Extremely small text", "Too many colours", "Excessive effects"], a: 0 },
+    { q: "PowerPoint can be used to present information to ______.", o: ["An audience", "Only computers", "Only printers", "Only keyboards"], a: 0 },
+    { q: "Which of the following is NOT a PowerPoint object?", o: ["Slide", "Image", "Chart", "CPU fan"], a: 3 },
+
+    // WEEK TEN
+    { q: "CorelDRAW is primarily used for ______.", o: ["Graphic design", "Spreadsheet calculations", "Operating system management", "Word processing only"], a: 0 },
+    { q: "Graphic design involves the use of visual elements to ______.", o: ["Communicate ideas", "Increase CPU speed", "Store electricity", "Replace a keyboard"], a: 0 },
+    { q: "Which of the following is associated with CorelDRAW?", o: ["Toolbox", "Worksheet", "Slide sorter", "Formula bar"], a: 0 },
+    { q: "The title bar in CorelDRAW displays information about the ______.", o: ["Application/document", "Keyboard", "Printer cable", "CPU fan"], a: 0 },
+    { q: "The menu bar contains ______.", o: ["Menus and commands", "Computer memory chips", "Network cables", "Power supplies"], a: 0 },
+    { q: "The property bar provides ______.", o: ["Context-sensitive options", "Electricity", "Network connections", "Computer memory"], a: 0 },
+    { q: "Which CorelDRAW tool is commonly used for selecting objects?", o: ["Pick Tool", "Eraser only", "Text printer", "Formula tool"], a: 0 },
+    { q: "Which tool is used for entering text in CorelDRAW?", o: ["Text Tool", "Pick Tool", "Zoom Tool", "Crop Tool"], a: 0 },
+    { q: "The Zoom Tool is used to ______.", o: ["Change the viewing magnification", "Delete the document", "Print the computer", "Shut down Windows"], a: 0 },
+    { q: "The Rectangle Tool is used to create ______.", o: ["Rectangular shapes", "Text documents", "Spreadsheets", "Operating systems"], a: 0 },
+    { q: "Which of the following is a graphic design application?", o: ["CorelDRAW", "Excel", "Windows Explorer", "Calculator"], a: 0 },
+
+    // WEEK ELEVEN
+    { q: "The Internet can best be described as ______.", o: ["A global network of interconnected computer networks", "A single computer", "A keyboard", "A printer"], a: 0 },
+    { q: "WWW stands for ______.", o: ["World Wide Web", "World Wireless Window", "Wide World Word", "Web World Work"], a: 0 },
+    { q: "HTTP stands for ______.", o: ["HyperText Transfer Protocol", "High Transfer Text Program", "Hyperlink Transfer Technology Program", "Home Text Transfer Protocol"], a: 0 },
+    { q: "HTTPS is mainly associated with ______.", o: ["Secure web communication", "Spreadsheet calculations", "Graphic design", "Word processing"], a: 0 },
+    { q: "FTP stands for ______.", o: ["File Transfer Protocol", "File Text Program", "Fast Transfer Process", "File Technology Protocol"], a: 0 },
+    { q: "DNS stands for ______.", o: ["Domain Name System", "Digital Network Service", "Data Number System", "Domain Network Software"], a: 0 },
+    { q: "DHCP stands for ______.", o: ["Dynamic Host Configuration Protocol", "Digital Host Control Program", "Dynamic Hardware Communication Protocol", "Data Host Configuration Process"], a: 0 },
+    { q: "IP stands for ______.", o: ["Internet Protocol", "Internal Program", "Internet Program", "Information Process"], a: 0 },
+    { q: "An IP address is used to ______.", o: ["Identify a device on a network", "Print documents", "Format slides", "Create spreadsheets"], a: 0 },
+    { q: "SMTP is associated with ______.", o: ["Sending email", "Creating spreadsheets", "Designing graphics", "Formatting documents"], a: 0 },
+    { q: "POP3 is associated with ______.", o: ["Receiving email", "Graphic design", "Operating systems", "Spreadsheet formulas"], a: 0 },
+    { q: "IMAP is also associated with ______.", o: ["Email access", "Graphic design", "Word processing", "Computer hardware"], a: 0 },
+    { q: "A web browser is used to ______.", o: ["Access websites", "Manufacture computers", "Increase RAM", "Replace a motherboard"], a: 0 },
+    { q: "Which of the following is a web browser?", o: ["Google Chrome", "Microsoft Excel", "CorelDRAW", "Calculator"], a: 0 },
+    { q: "A website is a collection of related ______.", o: ["Web pages", "Keyboards", "CPUs", "Printers"], a: 0 },
+
+    // MIXED FUOYE-STYLE QUESTIONS
+    { q: "Which component performs the main processing functions of a computer?", o: ["CPU", "Mouse", "Monitor", "Keyboard"], a: 0 },
+    { q: "Which of the following is an example of system software?", o: ["Operating system", "Microsoft Word document", "PowerPoint slide", "Excel worksheet"], a: 0 },
+    { q: "Which of the following is application software?", o: ["Microsoft Word", "Windows", "Linux kernel", "BIOS"], a: 0 },
+    { q: "Which device is primarily used to display computer output?", o: ["Monitor", "Keyboard", "Mouse", "Scanner"], a: 0 },
+    { q: "Which device is used to enter characters into a computer?", o: ["Keyboard", "Monitor", "Speaker", "Projector"], a: 0 },
+    { q: "Which of the following is a storage medium?", o: ["Hard drive", "Monitor", "Mouse", "Speaker"], a: 0 },
+    { q: "Which type of network covers a small geographical area such as an office?", o: ["LAN", "WAN", "MAN", "PAN only"], a: 0 },
+    { q: "Which type of network covers a wide geographical area?", o: ["WAN", "LAN", "PAN", "Bus"], a: 0 },
+    { q: "Which of the following is NOT a network topology?", o: ["Bus", "Ring", "Star", "Keyboard"], a: 3 },
+    { q: "Which operating system is associated with Macintosh computers?", o: ["macOS", "Excel", "CorelDRAW", "PowerPoint"], a: 0 },
+    { q: "Which operating system is open-source?", o: ["Linux", "Microsoft Word", "PowerPoint", "CorelDRAW"], a: 0 },
+    { q: "Which of the following is a GUI element?", o: ["Icon", "CPU", "RAM chip", "Power cable"], a: 0 },
+    { q: "Which Windows feature provides access to programs and system functions?", o: ["Start menu", "Hard drive", "CPU", "Printer"], a: 0 },
+    { q: "Which command is used to duplicate a selected file?", o: ["Copy", "Cut", "Delete", "Rename"], a: 0 },
+    { q: "Which command is used to remove a selected item from its current location before pasting it elsewhere?", o: ["Cut", "Copy", "Save", "Print"], a: 0 },
+    { q: "Which application is best suited for preparing a formal letter?", o: ["Microsoft Word", "Excel", "PowerPoint", "CorelDRAW"], a: 0 },
+    { q: "Which application is most appropriate for tabulating numerical data?", o: ["Excel", "Word", "PowerPoint", "CorelDRAW"], a: 0 },
+    { q: "Which application is most suitable for preparing lecture slides?", o: ["PowerPoint", "Excel", "WordPad", "Calculator"], a: 0 },
+    { q: "Which application is most suitable for vector graphic design among the following?", o: ["CorelDRAW", "Excel", "Word", "Calculator"], a: 0 },
+    { q: "Which Excel function returns the highest value in a range?", o: ["MAX", "MIN", "SUM", "COUNT"], a: 0 },
+    { q: "Which Excel function returns the lowest value in a range?", o: ["MIN", "MAX", "SUM", "IF"], a: 0 },
+    { q: "Which Excel function calculates a total?", o: ["SUM", "MAX", "MIN", "COUNTIF"], a: 0 },
+    { q: "Which Excel function is used for conditional testing?", o: ["IF", "SUM", "MAX", "MIN"], a: 0 },
+    { q: "Which of the following is a PowerPoint presentation component?", o: ["Slide", "Cell", "Worksheet", "Row"], a: 0 },
+    { q: "A transition occurs ______.", o: ["Between slides", "Between computer chips", "Between keyboards", "Inside a hard disk"], a: 0 },
+    { q: "Which PowerPoint feature can make objects move or appear on a slide?", o: ["Animation", "Formula", "Cell reference", "Folder"], a: 0 },
+    { q: "Which of the following is an Internet protocol?", o: ["HTTP", "Excel", "CorelDRAW", "Windows"], a: 0 },
+    { q: "Which protocol is associated with file transfer?", o: ["FTP", "SMTP", "DNS", "DHCP"], a: 0 },
+    { q: "Which protocol is associated with sending email?", o: ["SMTP", "FTP", "HTTP", "DHCP"], a: 0 },
+    { q: "Which system translates domain names into IP addresses?", o: ["DNS", "SMTP", "FTP", "GUI"], a: 0 },
+    { q: "Which protocol can automatically assign network configuration to a device?", o: ["DHCP", "HTTP", "FTP", "SMTP"], a: 0 },
+    { q: "Which of the following is used to browse the Internet?", o: ["Web browser", "Spreadsheet", "Word processor", "Calculator"], a: 0 },
+    { q: "The World Wide Web is accessed using ______.", o: ["Web browsers", "Keyboards only", "Printers only", "CPUs only"], a: 0 },
+    { q: "Which of the following is NOT an Internet protocol?", o: ["Microsoft Word", "HTTP", "FTP", "SMTP"], a: 0 },
+    { q: "Which of the following is a correct pairing?", o: ["Excel — Spreadsheet", "PowerPoint — Operating system", "Windows — Spreadsheet", "CorelDRAW — Email protocol"], a: 0 },
+    { q: "Which pairing is correct?", o: ["PowerPoint — Presentation", "Excel — Operating system", "Word — Network topology", "CorelDRAW — Email protocol"], a: 0 },
+    { q: "Which pairing is correct?", o: ["CorelDRAW — Graphic design", "Excel — Web browser", "Word — Network protocol", "Windows — Spreadsheet"], a: 0 },
+    { q: "Which pairing is correct?", o: ["Windows — Operating system", "Excel — Operating system", "PowerPoint — Network protocol", "Word — Hardware"], a: 0 },
+    { q: "Which of the following represents processed data?", o: ["Information", "Raw facts", "Unprocessed numbers", "Random characters"], a: 0 },
+    { q: "The first stage in the basic computer processing cycle is ______.", o: ["Input", "Output", "Printing", "Storage"], a: 0 },
+    { q: "The stage in which the computer manipulates data is ______.", o: ["Processing", "Input", "Output", "Printing"], a: 0 },
+    { q: "The final result of processing is called ______.", o: ["Output", "Input", "Hardware", "Program"], a: 0 },
+    { q: "Which of the following is an example of input hardware?", o: ["Mouse", "Monitor", "Speaker", "Projector"], a: 0 },
+    { q: "Which of the following is an output device?", o: ["Printer", "Keyboard", "Mouse", "Scanner"], a: 0 },
+    { q: "Which characteristic of computers refers to their ability to work continuously without fatigue?", o: ["Diligence", "Emotion", "Creativity", "Hunger"], a: 0 },
+    { q: "The ability of a computer to perform many different types of tasks is called ______.", o: ["Versatility", "Weakness", "Fatigue", "Hunger"], a: 0 },
+    { q: "Which characteristic means that computers can produce consistent results?", o: ["Reliability", "Hunger", "Emotion", "Laziness"], a: 0 },
+    { q: "Which of the following is NOT a component of a computer system discussed in the material?", o: ["Humanware", "Hardware", "Software", "Weatherware"], a: 3 },
+    { q: "Which historical computing development used punched cards?", o: ["Hollerith's tabulating system", "Mouse", "Windows GUI", "PowerPoint"], a: 0 },
+    { q: "Who is historically associated with the Analytical Engine?", o: ["Charles Babbage", "Herman Hollerith", "Blaise Pascal", "Gottfried Leibniz"], a: 0 },
+    { q: "Which historical figure is associated with the Pascaline?", o: ["Blaise Pascal", "Charles Babbage", "Herman Hollerith", "Alan Turing"], a: 0 },
+    { q: "Which of the following is a valid Excel cell reference?", o: ["B5", "5B only", "BB-5", "RowColumn"], a: 0 },
+    { q: "In Excel, the vertical divisions are called ______.", o: ["Columns", "Rows", "Slides", "Paragraphs"], a: 0 },
+    { q: "In Excel, the horizontal divisions are called ______.", o: ["Rows", "Columns", "Slides", "Pages"], a: 0 },
+    { q: "Which of the following would be most suitable for calculating students' scores and totals?", o: ["Excel", "PowerPoint", "CorelDRAW", "Paint"], a: 0 },
+    { q: "Which application would be most appropriate for designing a flyer?", o: ["CorelDRAW", "Calculator", "Excel only", "Windows Explorer"], a: 0 },
+    { q: "Which application would be most appropriate for preparing presentation slides for a lecture?", o: ["PowerPoint", "Excel", "Windows Explorer", "Calculator"], a: 0 },
+    { q: "Which application would be most appropriate for typing and formatting a term paper?", o: ["Microsoft Word", "PowerPoint", "Excel", "CorelDRAW"], a: 0 },
+    { q: "Which Internet technology is primarily associated with websites?", o: ["WWW", "Excel", "CorelDRAW", "Windows Desktop"], a: 0 },
+    { q: "Which statement BEST summarizes the purpose of computer technology?", o: ["To process, store, communicate and provide useful information", "To replace all human activities", "To function without instructions", "To operate only as a calculator"], a: 0 }
 ];
 
 let activeExam = [];
-let timeLeft = 1200; // 20 minutes countdown (20 * 60)
+let timeLeft = 1200; // 30 minutes countdown (20 * 60)
 let timer;
-const totalExamQuestions = 40; 
+const totalExamQuestions = 40;  
 let currentQuestionIndex = 0;
 
 function shufflePool(array) {
@@ -296,7 +433,7 @@ function startTimer() {
 function submitExam() {
     clearInterval(timer);
     let score = 0;
-    let reviewHTML = `<h2>Performance Review</h2>`;
+    let reviewHTML = `<h2 style="margin-top: 40px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Performance Review</h2>`;
 
     activeExam.forEach((item, idx) => {
         const sel = document.querySelector(`input[name="q${idx}"]:checked`);
@@ -318,27 +455,29 @@ function submitExam() {
     let statusEmoji = "";
 
     if (percentage >= 70) {
-        grade = "A"; remark = "Excellent! You have mastered CSC 101 computer fundamentals!"; statusEmoji = "🔥🏆";
+        grade = "A"; remark = "Excellent! You have mastered CSC 101 concepts completely!"; statusEmoji = "🔥🏆";
     } else if (percentage >= 60) {
-        grade = "B"; remark = "Very Good! You're a computer wizard in the making 😅."; statusEmoji = "😎✨";
+        grade = "B"; remark = "Very Good! You're a computing genius in the making 😅."; statusEmoji = "😎✨";
     } else if (percentage >= 50) {
-        grade = "C"; remark = "Good effort. Double check your networking and hardware basics."; statusEmoji = "👍📖";
+        grade = "C"; remark = "Good effort. Double check your OS, network, and hardware topics."; statusEmoji = "👍📖";
     } else if (percentage >= 45) {
-        grade = "D"; remark = "Pass. Practice your operating system and GUI rules."; statusEmoji = "⚠️📝";
+        grade = "D"; remark = "Pass. Review your topologies, shortcuts, and early computing history."; statusEmoji = "⚠️📝";
     } else if (percentage >= 40) {
-        grade = "E"; remark = "Fair. But you still gats read bro, take it step-by-step."; statusEmoji = "👀⏳";
+        grade = "E"; remark = "Fair. But you still gats read bro, CSC step-by-step."; statusEmoji = "👀⏳";
     } else {
         grade = "F"; remark = "Omo, go and read your CSC 101 oooo! 😂"; statusEmoji = "💀❌";
     }
 
     document.getElementById('exam-container').style.display = 'none';
-    document.getElementById('result-screen').style.display = 'block';
     
-    document.getElementById('result-screen').innerHTML = `
+    const resultScreen = document.getElementById('result-screen');
+    resultScreen.style.display = 'block';
+    
+    resultScreen.innerHTML = `
         <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
         <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
         <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
-        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <p style="font-size: 1.15rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 600;">"${remark}"</p>
         <div id="review-area">${reviewHTML}</div>
         <button class="btn-action" onclick="location.reload()">Try Again</button>
     `;
