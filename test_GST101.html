@@ -1,0 +1,3269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - GST 101 Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .exam-layout { display: grid; grid-template-columns: 1fr 280px; gap: 25px; max-width: 1150px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+        .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 20px; z-index: 999; }
+
+        @media (max-width: 900px) { 
+            .exam-layout { grid-template-columns: 1fr; } 
+            .sidebar-wrapper { position: -webkit-sticky; position: sticky; top: 10px; width: 100%; } 
+        }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); }
+        .timer-bar { position: -webkit-sticky; position: sticky; top: 20px; background: var(--green); color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; z-index: 100; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(56,118,29,0.3); font-size: 1.1rem; }
+        
+        .question-block { display: none; margin-bottom: 35px; padding-bottom: 25px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .nav-controls { display: flex; gap: 15px; margin-top: 25px; margin-bottom: 15px; }
+        .btn-nav { flex: 1; padding: 15px; background: #475569; color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .btn-nav:hover { background: #334155; }
+        .btn-nav:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+        
+        .tracker-sidebar { background: white; padding: 24px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.1); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+        .tracker-title { font-weight: 800; font-size: 1rem; margin-bottom: 15px; text-align: center; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; letter-spacing: 0.5px; }
+        .tracker-container { overflow-y: auto; padding-right: 4px; }
+        .tracker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .tracker-dot { height: 40px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s ease; }
+        .tracker-dot:hover { border-color: var(--navy); color: var(--navy); background: #e2e8f0; }
+        .tracker-dot.current { border-color: var(--navy); color: var(--navy); background: #e2e8f0; box-shadow: 0 0 0 2px var(--navy); }
+        .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
+        .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
+
+        #result-screen { display: none; text-align: center; padding: 50px 20px; }
+        
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initExam()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading GST 101 Questions...</p>
+</div>
+
+<div class="container">
+    <header>
+        <h1>GST 101 - THE ART OF SPEAKING, LISTENING & NOTE-TAKING</h1>
+        <p>Elite Exam Hub • THEM NO BORN THIS QUESTIONS MAKE E NO COME OUT 😂</p>
+    </header>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="timer-bar" id="timer">Time Remaining: 45:00</div>
+        <div id="question-list"></div>
+        
+        <div class="nav-controls">
+            <button class="btn-nav" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
+            <button class="btn-nav" id="next-btn" onclick="navigateQuestion(1)">Next</button>
+        </div>
+        
+        <button class="btn-action" onclick="submitExam()">Submit Exam</button>
+    </div>
+    
+    <div class="sidebar-wrapper">
+        <div class="tracker-sidebar">
+            <div class="tracker-title">Question Status</div>
+            <div class="tracker-container">
+                <div class="tracker-grid" id="status-panel-grid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div style="font-size: 3rem;">GO AND READ😂</div>
+    <h1 id="score-text"></h1>
+    <div id="review-area"></div>
+    <button class="btn-action" onclick="location.reload()">Try Again</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+const fullMthPool = [
+    {
+        q: "Which of the following correctly describes communication?",
+        o: [
+            "The process of keeping information secret",
+            "The process of transferring information from one person/place to another",
+            "The process of writing only",
+            "The process of speaking without listening"
+        ],
+        a: 1
+    },
+    {
+        q: "Communication is described as a process because ______.",
+        o: [
+            "It involves a chain of elements that work together to pass meaning",
+            "It only involves speaking",
+            "It does not require a receiver",
+            "It occurs only in classrooms"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following represents the broad forms of communication?",
+        o: [
+            "Speaking and reading",
+            "Listening and writing",
+            "Verbal and non-verbal communication",
+            "Formal and academic communication"
+        ],
+        a: 2
+    },
+    {
+        q: "Verbal communication may be ______.",
+        o: [
+            "Spoken or written",
+            "Visual or facial",
+            "Gestural only",
+            "Environmental only"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is an example of written communication?",
+        o: [
+            "Facial expression",
+            "Email",
+            "Hand gesture",
+            "Eye contact"
+        ],
+        a: 1
+    },
+    {
+        q: "Non-verbal communication involves ______.",
+        o: [
+            "Only written words",
+            "Gestures, facial expressions and other non-verbal cues",
+            "Only textbooks",
+            "Only speeches"
+        ],
+        a: 1
+    },
+    {
+        q: "Which of the following is an example of visual communication?",
+        o: [
+            "Graph",
+            "Conversation",
+            "Telephone call",
+            "Speech"
+        ],
+        a: 0
+    },
+    {
+        q: "According to the handbook, the most frequently used form of communication is ______.",
+        o: [
+            "Writing",
+            "Reading",
+            "Speech",
+            "Drawing"
+        ],
+        a: 2
+    },
+    {
+        q: "Speech primarily distinguishes human beings from ______ according to the discussion in the handbook.",
+        o: [
+            "Plants",
+            "Animals",
+            "Machines",
+            "Books"
+        ],
+        a: 1
+    },
+    {
+        q: "Speaking is the delivery of language through the ______.",
+        o: [
+            "Eyes",
+            "Ear",
+            "Mouth",
+            "Hand"
+        ],
+        a: 2
+    },
+    {
+        q: "Which of the following is involved in speaking?",
+        o: [
+            "Lungs",
+            "Vocal tract",
+            "Tongue",
+            "All of the above"
+        ],
+        a: 3
+    },
+    {
+        q: "Speaking is presented in the handbook as the ______ of the four language skills.",
+        o: [
+            "First",
+            "Second",
+            "Third",
+            "Fourth"
+        ],
+        a: 1
+    },
+    {
+        q: "A conversation between two or more people is called ______.",
+        o: [
+            "Monologue",
+            "Dialogue",
+            "Lecture",
+            "Debate"
+        ],
+        a: 1
+    },
+    {
+        q: "Speaking may be classified as ______.",
+        o: [
+            "Formal and informal",
+            "Written and visual",
+            "Academic and environmental",
+            "Listening and reading"
+        ],
+        a: 0
+    },
+    {
+        q: "Informal speaking is commonly used with ______.",
+        o: [
+            "Family and friends",
+            "A court of law only",
+            "A formal conference only",
+            "A university examination board"
+        ],
+        a: 0
+    },
+    {
+        q: "Formal speaking is commonly required in ______.",
+        o: [
+            "Casual conversations with friends",
+            "Business and academic situations",
+            "Private conversations at home",
+            "Informal jokes"
+        ],
+        a: 1
+    },
+    {
+        q: "Public speaking involves ______.",
+        o: [
+            "Keeping ideas private",
+            "Making ideas public and sharing them with others",
+            "Writing silently",
+            "Listening without responding"
+        ],
+        a: 1
+    },
+    {
+        q: "Public speaking is described as a central mode of ______.",
+        o: [
+            "Civic engagement",
+            "Private communication",
+            "Note-taking",
+            "Reading"
+        ],
+        a: 0
+    },
+    {
+        q: "Public speaking and everyday conversation are ______.",
+        o: [
+            "Exactly the same",
+            "Not identical",
+            "Both written activities",
+            "Both forms of note-taking"
+        ],
+        a: 1
+    },
+    {
+        q: "Public speaking is generally ______ than ordinary conversation.",
+        o: [
+            "Less structured",
+            "More highly structured",
+            "Completely unplanned",
+            "Always informal"
+        ],
+        a: 1
+    },
+    {
+        q: "Public speaking usually involves ______.",
+        o: [
+            "Strict time limitations",
+            "Unlimited time",
+            "No preparation",
+            "No audience"
+        ],
+        a: 0
+    },
+    {
+        q: "Compared with ordinary conversation, listeners in public speaking situations generally ______.",
+        o: [
+            "Can interrupt at any time",
+            "Cannot interrupt the speaker as freely",
+            "Must always speak louder than the speaker",
+            "Become the speakers"
+        ],
+        a: 1
+    },
+    {
+        q: "Before preparing a speech, a speaker should consider the ______.",
+        o: [
+            "Audience",
+            "Weather only",
+            "Building design only",
+            "Speaker's clothing only"
+        ],
+        a: 0
+    },
+    {
+        q: "Understanding the audience helps a speaker to ______.",
+        o: [
+            "Ignore the listeners",
+            "Address listeners from a perspective they can appreciate",
+            "Avoid preparing the speech",
+            "Speak without a purpose"
+        ],
+        a: 1
+    },
+    {
+        q: "Which of the following is an audience demographic trait?",
+        o: [
+            "Age",
+            "Profession",
+            "Location",
+            "All of the above"
+        ],
+        a: 3
+    },
+    {
+        q: "Good speakers are described as ______.",
+        o: [
+            "Audience-centered",
+            "Audience-blind",
+            "Speaker-centered only",
+            "Unprepared"
+        ],
+        a: 0
+    },
+    {
+        q: "A manuscript speech is a speech that is ______.",
+        o: [
+            "Written out word for word and read",
+            "Completely improvised",
+            "Never prepared",
+            "Delivered only through gestures"
+        ],
+        a: 0
+    },
+    {
+        q: "Reading a manuscript speech can affect delivery if the speaker ______.",
+        o: [
+            "Reads too quickly",
+            "Uses appropriate pauses",
+            "Maintains good eye contact",
+            "Practises properly"
+        ],
+        a: 0
+    },
+    {
+        q: "An extemporaneous speech is ______.",
+        o: [
+            "Completely unprepared",
+            "Prepared and practised but delivered with flexibility",
+            "Always memorized word for word",
+            "Always read from a book"
+        ],
+        a: 1
+    },
+    {
+        q: "An impromptu speech is delivered with ______.",
+        o: [
+            "Little or no advance preparation",
+            "Complete memorization",
+            "A full manuscript only",
+            "Several weeks of rehearsal"
+        ],
+        a: 0
+    },
+    {
+        q: "A memorized speech is delivered ______.",
+        o: [
+            "From memory",
+            "From a newspaper",
+            "By another person",
+            "Without knowing the topic"
+        ],
+        a: 0
+    },
+    {
+        q: "Which type of speech is read word for word?",
+        o: [
+            "Impromptu",
+            "Manuscript",
+            "Extemporaneous",
+            "Memorized"
+        ],
+        a: 1
+    },
+    {
+        q: "Which type of speech involves little or no preparation?",
+        o: [
+            "Manuscript",
+            "Memorized",
+            "Impromptu",
+            "Extemporaneous"
+        ],
+        a: 2
+    },
+    {
+        q: "Which type of speech allows flexibility while still requiring preparation?",
+        o: [
+            "Extemporaneous",
+            "Impromptu",
+            "Manuscript",
+            "Reading"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is NOT one of the broad forms of communication?",
+        o: [
+            "Verbal",
+            "Non-verbal",
+            "Visual",
+            "Mathematical"
+        ],
+        a: 3
+    },
+    {
+        q: "Which of the following can be used in visual communication?",
+        o: [
+            "Maps",
+            "Charts",
+            "Logos",
+            "All of the above"
+        ],
+        a: 3
+    },
+    {
+        q: "Which of the following is most closely associated with non-verbal communication?",
+        o: [
+            "Facial expression",
+            "Essay",
+            "Email",
+            "Letter"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a feature of public speaking?",
+        o: [
+            "Audience consideration",
+            "No time limitation",
+            "No preparation",
+            "Unlimited interruption"
+        ],
+        a: 0
+    },
+    {
+        q: "Why is audience analysis important?",
+        o: [
+            "It helps the speaker adapt the message",
+            "It prevents communication",
+            "It removes the need for preparation",
+            "It makes the audience irrelevant"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is an example of formal speaking?",
+        o: [
+            "Academic presentation",
+            "Casual chat with a friend",
+            "Family joke",
+            "Informal greeting"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is an example of informal speaking?",
+        o: [
+            "Court presentation",
+            "Academic defence",
+            "Conversation with a friend",
+            "Business conference"
+        ],
+        a: 2
+    },
+    {
+        q: "Which speech type requires the speaker to remember the prepared content?",
+        o: [
+            "Memorized speech",
+            "Impromptu speech",
+            "Manuscript speech",
+            "Informal speech"
+        ],
+        a: 0
+    },
+    {
+        q: "Which speech type is normally read from a prepared document?",
+        o: [
+            "Manuscript",
+            "Impromptu",
+            "Extemporaneous",
+            "Conversational"
+        ],
+        a: 0
+    },
+    {
+        q: "A speaker who has prepared but speaks without reading every word is most likely using ______.",
+        o: [
+            "Extemporaneous delivery",
+            "Manuscript delivery",
+            "Impromptu delivery",
+            "Silent delivery"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following should a speaker consider about an audience?",
+        o: [
+            "Age",
+            "Profession",
+            "Location",
+            "All of the above"
+        ],
+        a: 3
+    },
+    {
+        q: "Which of the following best describes public speaking?",
+        o: [
+            "Private thinking",
+            "Presenting ideas to an audience",
+            "Reading a novel silently",
+            "Writing notes privately"
+        ],
+        a: 1
+    },
+    {
+        q: "What makes public speaking different from ordinary conversation?",
+        o: [
+            "It is usually more structured",
+            "It has no audience",
+            "It never has a purpose",
+            "It cannot be prepared"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is important for effective speech delivery?",
+        o: [
+            "Appropriate pace",
+            "Ignoring the audience",
+            "Avoiding preparation",
+            "Speaking without purpose"
+        ],
+        a: 0
+    },
+    {
+        q: "Which statement about speaking is correct?",
+        o: [
+            "Speaking is always informal",
+            "Speaking may be formal or informal",
+            "Speaking is always written",
+            "Speaking requires no language"
+        ],
+        a: 1
+    },
+    {
+        q: "Which of the following best summarizes effective public speaking?",
+        o: [
+            "Speaking without considering listeners",
+            "Presenting ideas to an audience with appropriate preparation and delivery",
+            "Reading anything without preparation",
+            "Avoiding audience interaction completely"
+        ],
+        a: 1
+    },
+    {
+        q: "Listening involves ______.",
+        o: [
+            "Giving attention with the ear",
+            "Speaking continuously",
+            "Writing without thinking",
+            "Ignoring the speaker"
+        ],
+        a: 0
+    },
+    {
+        q: "Listening can best be described as ______.",
+        o: [
+            "Conscious processing of auditory stimuli",
+            "Random hearing of sounds",
+            "Speaking to an audience",
+            "Reading written information"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following distinguishes hearing from listening?",
+        o: [
+            "Hearing is an ability, while listening is a deliberate activity",
+            "Hearing is deliberate, while listening is automatic",
+            "They are exactly the same",
+            "Neither involves sound"
+        ],
+        a: 0
+    },
+    {
+        q: "A good listener should try to ______.",
+        o: [
+            "See a problem from the speaker's perspective",
+            "Ignore the speaker's point of view",
+            "Interrupt constantly",
+            "Change the topic immediately"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a characteristic of a good listener?",
+        o: [
+            "Asking relevant questions",
+            "Ignoring the speaker",
+            "Interrupting constantly",
+            "Refusing to understand"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a listening context?",
+        o: [
+            "Academic or conference",
+            "Situational",
+            "Social",
+            "All of the above"
+        ],
+        a: 3
+    },
+    {
+        q: "Listening in a lecture hall is most closely associated with which context?",
+        o: [
+            "Academic or conference",
+            "Environmental",
+            "Social only",
+            "Private"
+        ],
+        a: 0
+    },
+    {
+        q: "The purpose of listening ______.",
+        o: [
+            "Is always the same",
+            "May vary according to the situation",
+            "Does not depend on context",
+            "Is only entertainment"
+        ],
+        a: 1
+    },
+    {
+        q: "Which of the following is NOT a listening context identified in the handbook?",
+        o: [
+            "Academic/conference",
+            "Environmental",
+            "Social",
+            "Mathematical"
+        ],
+        a: 3
+    },
+    {
+        q: "Effective listening requires ______.",
+        o: [
+            "Attention",
+            "Distraction",
+            "Constant talking",
+            "Ignoring the speaker"
+        ],
+        a: 0
+    },
+    {
+        q: "Note-taking is useful because it helps learners ______.",
+        o: [
+            "Record important information for later use",
+            "Forget information quickly",
+            "Avoid listening",
+            "Stop learning"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a form of note-taking?",
+        o: [
+            "Guided notes",
+            "Public speaking",
+            "Dialogue",
+            "Debate"
+        ],
+        a: 0
+    },
+    {
+        q: "Guided notes usually contain ______.",
+        o: [
+            "Part of the lecture content with key points missing",
+            "No information at all",
+            "Only pictures",
+            "A complete examination paper"
+        ],
+        a: 0
+    },
+    {
+        q: "One advantage of guided notes is that they help students ______.",
+        o: [
+            "Identify important ideas",
+            "Avoid lectures",
+            "Stop paying attention",
+            "Ignore the lecturer"
+        ],
+        a: 0
+    },
+    {
+        q: "Electronic note-taking may involve the use of ______.",
+        o: [
+            "Computers",
+            "Tablets",
+            "Note-taking software",
+            "All of the above"
+        ],
+        a: 3
+    },
+    {
+        q: "Which of the following can be included in electronic notes?",
+        o: [
+            "Graphs",
+            "Digital representations",
+            "Text",
+            "All of the above"
+        ],
+        a: 3
+    },
+    {
+        q: "Which of the following is a characteristic of effective note-taking?",
+        o: [
+            "Attentive listening",
+            "Ignoring the speaker",
+            "Sleeping during the lecture",
+            "Avoiding concentration"
+        ],
+        a: 0
+    },
+    {
+        q: "During note-taking, the learner should focus on the ______.",
+        o: [
+            "Speaker",
+            "Window",
+            "Telephone",
+            "Door"
+        ],
+        a: 0
+    },
+    {
+        q: "Which activity is most directly connected with note-taking?",
+        o: [
+            "Recording important information",
+            "Avoiding information",
+            "Interrupting the speaker",
+            "Changing the topic"
+        ],
+        a: 0
+    },
+    {
+        q: "Which statement about listening is correct?",
+        o: [
+            "Listening is exactly the same as hearing",
+            "Listening involves conscious attention",
+            "Listening requires no effort",
+            "Listening has no purpose"
+        ],
+        a: 1
+    },
+    {
+        q: "A person who hears a sound without deliberately paying attention is primarily ______.",
+        o: [
+            "Hearing",
+            "Listening",
+            "Note-taking",
+            "Speaking"
+        ],
+        a: 0
+    },
+    {
+        q: "A student who carefully follows a lecturer's explanation is ______.",
+        o: [
+            "Listening",
+            "Merely hearing",
+            "Speaking",
+            "Writing a speech"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is NOT a benefit of attentive listening?",
+        o: [
+            "Better understanding",
+            "Identification of important information",
+            "Increased distraction",
+            "Better note-taking"
+        ],
+        a: 2
+    },
+    {
+        q: "A learner taking notes during a lecture should primarily ______.",
+        o: [
+            "Listen attentively",
+            "Talk continuously",
+            "Ignore the lecturer",
+            "Focus on unrelated activities"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is an electronic note-taking device?",
+        o: [
+            "Tablet",
+            "Blackboard only",
+            "Chalk only",
+            "Notebook only"
+        ],
+        a: 0
+    },
+    {
+        q: "Which method provides students with partially completed lecture notes?",
+        o: [
+            "Guided notes",
+            "Impromptu speaking",
+            "Free speaking",
+            "Dialogue"
+        ],
+        a: 0
+    },
+    {
+        q: "What is the major purpose of note-taking during a lecture?",
+        o: [
+            "To record useful information",
+            "To distract other students",
+            "To interrupt the lecturer",
+            "To avoid learning"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following best describes listening?",
+        o: [
+            "Conscious processing of auditory information",
+            "Random production of sounds",
+            "Reading a written passage",
+            "Writing without listening"
+        ],
+        a: 0
+    },
+    {
+        q: "Why should a listener ask questions when necessary?",
+        o: [
+            "To improve understanding",
+            "To distract the speaker",
+            "To end communication",
+            "To avoid learning"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is an example of social listening?",
+        o: [
+            "Listening during a social interaction",
+            "Reading a textbook alone",
+            "Writing an examination",
+            "Copying notes without listening"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is an example of academic listening?",
+        o: [
+            "Listening to a university lecture",
+            "Listening to a casual joke",
+            "Hearing traffic noise",
+            "Listening to music only"
+        ],
+        a: 0
+    },
+    {
+        q: "Environmental listening is concerned with ______.",
+        o: [
+            "Sounds in one's environment",
+            "Reading textbooks",
+            "Writing essays",
+            "Memorizing speeches"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following can make note-taking more effective?",
+        o: [
+            "Focusing on the speaker",
+            "Ignoring the main points",
+            "Avoiding attention",
+            "Talking throughout the lecture"
+        ],
+        a: 0
+    },
+    {
+        q: "A student using a laptop to record important points during a lecture is using ______.",
+        o: [
+            "Electronic note-taking",
+            "Impromptu speaking",
+            "Non-verbal communication only",
+            "Public speaking"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following can be used to create electronic notes?",
+        o: [
+            "Note-taking software",
+            "Computer",
+            "Tablet",
+            "All of the above"
+        ],
+        a: 3
+    },
+    {
+        q: "Guided notes can help learners stay ______ during lectures.",
+        o: [
+            "Focused",
+            "Distracted",
+            "Uninterested",
+            "Silent without learning"
+        ],
+        a: 0
+    },
+    {
+        q: "Listening is different from hearing because listening involves ______.",
+        o: [
+            "Conscious attention",
+            "No mental activity",
+            "Automatic reaction only",
+            "No auditory information"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a sign of poor listening?",
+        o: [
+            "Constantly ignoring the speaker",
+            "Asking relevant questions",
+            "Paying attention",
+            "Understanding the speaker's perspective"
+        ],
+        a: 0
+    },
+    {
+        q: "Which action demonstrates effective listening?",
+        o: [
+            "Trying to understand the speaker's viewpoint",
+            "Interrupting every sentence",
+            "Looking away continuously",
+            "Refusing to ask questions"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is NOT a useful note-taking behaviour?",
+        o: [
+            "Attentive listening",
+            "Focusing on the speaker",
+            "Recording important points",
+            "Deliberately ignoring key information"
+        ],
+        a: 3
+    },
+    {
+        q: "Which of the following is associated with guided notes?",
+        o: [
+            "Missing key information",
+            "No lecture content",
+            "Complete absence of structure",
+            "Only drawings"
+        ],
+        a: 0
+    },
+    {
+        q: "A listener who asks questions for clarification is demonstrating ______.",
+        o: [
+            "Active attention",
+            "Poor communication",
+            "Disinterest",
+            "Avoidance"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is most important when taking notes?",
+        o: [
+            "Identifying important information",
+            "Writing every single sound heard",
+            "Ignoring the speaker",
+            "Avoiding concentration"
+        ],
+        a: 0
+    },
+    {
+        q: "The information recorded in notes is mainly intended for ______.",
+        o: [
+            "Later use",
+            "Immediate destruction",
+            "Public entertainment",
+            "Ignoring the lecture"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a deliberate activity?",
+        o: [
+            "Listening",
+            "Hearing",
+            "Breathing",
+            "Blinking"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following best describes hearing?",
+        o: [
+            "An ability to perceive sound",
+            "A deliberate method of note-taking",
+            "A type of public speaking",
+            "A form of brainstorming"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is most appropriate during academic listening?",
+        o: [
+            "Paying close attention to the lecturer",
+            "Ignoring the lecture",
+            "Constantly chatting",
+            "Refusing to take notes"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following can be used alongside electronic note-taking?",
+        o: [
+            "Graphs",
+            "Digital representations",
+            "Text",
+            "All of the above"
+        ],
+        a: 3
+    },
+    {
+        q: "A good listener should be willing to ______.",
+        o: [
+            "Ask questions",
+            "Ignore the message",
+            "Interrupt unnecessarily",
+            "Reject every idea"
+        ],
+        a: 0
+    },
+    {
+        q: "Which statement best summarizes effective listening and note-taking?",
+        o: [
+            "Listen attentively and record important information",
+            "Hear sounds without paying attention",
+            "Write everything without understanding",
+            "Ignore the speaker and rely on memory"
+        ],
+        a: 0
+    },
+    {
+        q: "Brainstorming is a technique generally used to ______.",
+        o: [
+            "Generate ideas about a specific problem or topic",
+            "Memorize a speech",
+            "Correct grammatical errors",
+            "Deliver a lecture"
+        ],
+        a: 0
+    },
+    {
+        q: "Brainstorming is generally used in a ______ setting.",
+        o: [
+            "Group",
+            "Private examination",
+            "Silent reading",
+            "Judicial"
+        ],
+        a: 0
+    },
+    {
+        q: "Who introduced brainstorming as an idea-generation method?",
+        o: [
+            "Alex Osborn",
+            "William Shakespeare",
+            "Aristotle",
+            "Noam Chomsky"
+        ],
+        a: 0
+    },
+    {
+        q: "Brainstorming encourages ______.",
+        o: [
+            "Spontaneity",
+            "Originality",
+            "Imagination",
+            "All of the above"
+        ],
+        a: 3
+    },
+    {
+        q: "A brainstorming session should normally focus on ______.",
+        o: [
+            "A specific topic, question or problem",
+            "Every topic imaginable",
+            "Grammar only",
+            "Personal arguments"
+        ],
+        a: 0
+    },
+    {
+        q: "During brainstorming, criticism of ideas should generally be ______.",
+        o: [
+            "Deferred until the end",
+            "Done immediately",
+            "Done before ideas are generated",
+            "Used to stop discussion"
+        ],
+        a: 0
+    },
+    {
+        q: "Why are wild or exaggerated ideas allowed during brainstorming?",
+        o: [
+            "They may stimulate useful ideas",
+            "They are always correct",
+            "They eliminate creativity",
+            "They prevent participation"
+        ],
+        a: 0
+    },
+    {
+        q: "Which principle of brainstorming emphasizes generating many ideas?",
+        o: [
+            "Quantity",
+            "Silence",
+            "Criticism",
+            "Rejection"
+        ],
+        a: 0
+    },
+    {
+        q: "The more ideas generated during brainstorming, the ______.",
+        o: [
+            "Greater the range from which the group can choose",
+            "Less useful the exercise becomes",
+            "Less creative the participants become",
+            "More restricted the discussion becomes"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following should NOT dominate the early stage of brainstorming?",
+        o: [
+            "Criticism",
+            "Idea generation",
+            "Spontaneity",
+            "Imagination"
+        ],
+        a: 0
+    },
+    {
+        q: "Structured brainstorming is also called the ______ method.",
+        o: [
+            "One-at-a-time",
+            "Free-writing",
+            "Silent-reading",
+            "Manuscript"
+        ],
+        a: 0
+    },
+    {
+        q: "In structured brainstorming, a participant may say ______ when they do not have an idea.",
+        o: [
+            "Pass",
+            "Stop",
+            "Cancel",
+            "Reject"
+        ],
+        a: 0
+    },
+    {
+        q: "Which method of brainstorming is also known as mapping or webbing?",
+        o: [
+            "Clustering",
+            "Listing",
+            "Manuscript",
+            "Dialogue"
+        ],
+        a: 0
+    },
+    {
+        q: "Clustering is useful because it shows ______.",
+        o: [
+            "How ideas are connected to a central topic",
+            "Only grammatical errors",
+            "The speaker's pronunciation",
+            "How to memorize a speech"
+        ],
+        a: 0
+    },
+    {
+        q: "Which brainstorming technique involves continuous writing without stopping for a set period?",
+        o: [
+            "Free writing",
+            "Clustering",
+            "Listing",
+            "Manuscript reading"
+        ],
+        a: 0
+    },
+    {
+        q: "Free writing is primarily intended to encourage ______.",
+        o: [
+            "Continuous generation of ideas",
+            "Immediate criticism",
+            "Silence",
+            "Memorization"
+        ],
+        a: 0
+    },
+    {
+        q: "Which brainstorming technique involves writing down everything related to a topic?",
+        o: [
+            "Listing",
+            "Clustering",
+            "Impromptu speaking",
+            "Dialogue"
+        ],
+        a: 0
+    },
+    {
+        q: "In listing, items can later be ______.",
+        o: [
+            "Removed or grouped",
+            "Read aloud only",
+            "Memorized immediately",
+            "Ignored completely"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is NOT a brainstorming technique discussed in the handbook?",
+        o: [
+            "Clustering",
+            "Free writing",
+            "Listing",
+            "Memorized speech"
+        ],
+        a: 3
+    },
+    {
+        q: "Brainstorming is primarily concerned with ______.",
+        o: [
+            "Generating ideas",
+            "Delivering speeches",
+            "Correcting pronunciation",
+            "Taking examinations"
+        ],
+        a: 0
+    },
+    {
+        q: "What should participants do with criticism during the initial stage of brainstorming?",
+        o: [
+            "Defer it",
+            "Encourage constant criticism",
+            "Use it to stop ideas",
+            "Reject every idea"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following promotes creativity during brainstorming?",
+        o: [
+            "Imagination",
+            "Immediate criticism",
+            "Fear of mistakes",
+            "Silence"
+        ],
+        a: 0
+    },
+    {
+        q: "Why is spontaneity important in brainstorming?",
+        o: [
+            "It allows ideas to emerge freely",
+            "It prevents idea generation",
+            "It makes participants silent",
+            "It eliminates originality"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is an acceptable brainstorming idea?",
+        o: [
+            "An unusual idea that may stimulate another idea",
+            "Only an idea that is already proven",
+            "Only a criticism",
+            "No idea at all"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following best describes the principle of quantity in brainstorming?",
+        o: [
+            "Generate many ideas before selecting among them",
+            "Generate only one idea",
+            "Reject ideas immediately",
+            "Stop when the first idea appears"
+        ],
+        a: 0
+    },
+    {
+        q: "In one-at-a-time brainstorming, participants contribute ideas ______.",
+        o: [
+            "In turn",
+            "All at exactly the same time",
+            "Only after the session ends",
+            "Through written examinations"
+        ],
+        a: 0
+    },
+    {
+        q: "The word “pass” in structured brainstorming indicates that a participant ______.",
+        o: [
+            "Has no idea to contribute at that moment",
+            "Wants to end the session",
+            "Has rejected everyone else's ideas",
+            "Has left the group"
+        ],
+        a: 0
+    },
+    {
+        q: "Clustering is especially useful for showing ______.",
+        o: [
+            "Relationships among ideas",
+            "Speech rate",
+            "Voice pitch",
+            "Pronunciation errors"
+        ],
+        a: 0
+    },
+    {
+        q: "Another name for clustering is ______.",
+        o: [
+            "Webbing",
+            "Memorization",
+            "Dialogue",
+            "Manuscript"
+        ],
+        a: 0
+    },
+    {
+        q: "Which method involves writing continuously for a fixed period?",
+        o: [
+            "Free writing",
+            "Listing",
+            "Clustering",
+            "Structured speaking"
+        ],
+        a: 0
+    },
+    {
+        q: "Which method involves recording ideas as a list?",
+        o: [
+            "Listing",
+            "Clustering",
+            "Free speaking",
+            "Memorization"
+        ],
+        a: 0
+    },
+    {
+        q: "Brainstorming should be directed toward ______.",
+        o: [
+            "A specific topic or problem",
+            "An unlimited number of unrelated topics",
+            "Only grammatical rules",
+            "Only speech production"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is encouraged during brainstorming?",
+        o: [
+            "Originality",
+            "Immediate rejection",
+            "Silence",
+            "Fear of unusual ideas"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following can reduce the effectiveness of brainstorming?",
+        o: [
+            "Early criticism",
+            "Spontaneity",
+            "Imagination",
+            "Idea generation"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following best describes a brainstorming group?",
+        o: [
+            "A group working to generate ideas about a defined issue",
+            "A group memorizing speeches",
+            "A group taking an examination",
+            "A group reading silently"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following should occur before evaluating brainstorming ideas?",
+        o: [
+            "Idea generation",
+            "Immediate rejection",
+            "Final selection",
+            "Speech delivery"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a visual brainstorming technique?",
+        o: [
+            "Clustering",
+            "Impromptu speech",
+            "Manuscript reading",
+            "Dialogue"
+        ],
+        a: 0
+    },
+    {
+        q: "A central topic in clustering is usually surrounded by ______.",
+        o: [
+            "Related ideas",
+            "Unrelated examination questions",
+            "Speech sounds",
+            "Grammar rules only"
+        ],
+        a: 0
+    },
+    {
+        q: "Which technique allows the writer to record ideas without stopping to correct them immediately?",
+        o: [
+            "Free writing",
+            "Manuscript speaking",
+            "Clustering",
+            "Listing only"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is most closely associated with Alex Osborn?",
+        o: [
+            "Brainstorming",
+            "Subject–verb agreement",
+            "Speech organs",
+            "Note-taking"
+        ],
+        a: 0
+    },
+    {
+        q: "Brainstorming encourages participants to use their ______.",
+        o: [
+            "Imagination",
+            "Fear",
+            "Silence",
+            "Memorization only"
+        ],
+        a: 0
+    },
+    {
+        q: "The evaluation of brainstorming ideas should generally come ______.",
+        o: [
+            "After idea generation",
+            "Before the first idea",
+            "Instead of idea generation",
+            "Before the topic is chosen"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a reason for allowing wild ideas?",
+        o: [
+            "They can stimulate useful ideas",
+            "They are always correct",
+            "They eliminate discussion",
+            "They make the topic irrelevant"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is NOT a major goal of brainstorming?",
+        o: [
+            "Generating ideas",
+            "Encouraging originality",
+            "Encouraging imagination",
+            "Immediately criticizing every contribution"
+        ],
+        a: 3
+    },
+    {
+        q: "Which technique would be most appropriate for visually connecting related ideas?",
+        o: [
+            "Clustering",
+            "Memorized speaking",
+            "Manuscript delivery",
+            "Dialogue"
+        ],
+        a: 0
+    },
+    {
+        q: "Which brainstorming method requires participants to contribute one after another?",
+        o: [
+            "Structured brainstorming",
+            "Free writing",
+            "Listing",
+            "Clustering"
+        ],
+        a: 0
+    },
+    {
+        q: "Which method may allow a participant to say “pass”?",
+        o: [
+            "Structured brainstorming",
+            "Free writing",
+            "Clustering",
+            "Listing"
+        ],
+        a: 0
+    },
+    {
+        q: "Which brainstorming method is also called mapping?",
+        o: [
+            "Clustering",
+            "Listing",
+            "Free writing",
+            "One-at-a-time"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is most appropriate for generating a large number of ideas quickly?",
+        o: [
+            "Brainstorming",
+            "Memorized speech",
+            "Note-taking",
+            "Reading aloud"
+        ],
+        a: 0
+    },
+    {
+        q: "Which statement best summarizes brainstorming?",
+        o: [
+            "It is an idea-generation technique that encourages spontaneity, originality and imagination",
+            "It is a method of reading speeches",
+            "It is a method of correcting pronunciation",
+            "It is a form of examination"
+        ],
+        a: 0
+    },
+    {
+        q: "Speech sounds are produced through the coordinated action of ______.",
+        o: [
+            "Speech organs",
+            "Books",
+            "Written notes",
+            "Audience members"
+        ],
+        a: 0
+    },
+    {
+        q: "Which system supplies the air needed for speech?",
+        o: [
+            "Respiratory system",
+            "Digestive system",
+            "Skeletal system",
+            "Nervous system only"
+        ],
+        a: 0
+    },
+    {
+        q: "The vocal cords are particularly involved in the production of ______ sounds.",
+        o: [
+            "Voiced",
+            "Written",
+            "Visual",
+            "Silent"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is an important active articulator?",
+        o: [
+            "Tongue",
+            "Lung",
+            "Stomach",
+            "Heart"
+        ],
+        a: 0
+    },
+    {
+        q: "The tongue is described as being ______.",
+        o: [
+            "Mobile",
+            "Completely fixed",
+            "Unimportant in speech",
+            "Unable to change shape"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a part of the tongue?",
+        o: [
+            "Tip",
+            "Blade",
+            "Front",
+            "All of the above"
+        ],
+        a: 3
+    },
+    {
+        q: "Which part of the tongue is located at its forward end?",
+        o: [
+            "Tip",
+            "Root",
+            "Back",
+            "Velum"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is NOT a part of the tongue mentioned in the handbook?",
+        o: [
+            "Tip",
+            "Blade",
+            "Front",
+            "Elbow"
+        ],
+        a: 3
+    },
+    {
+        q: "Bilabial sounds are produced using ______.",
+        o: [
+            "Both lips",
+            "The tongue and teeth",
+            "The lower lip and upper teeth",
+            "The back of the tongue and velum"
+        ],
+        a: 0
+    },
+    {
+        q: "Which articulatory category involves the upper and lower lips?",
+        o: [
+            "Bilabial",
+            "Dental",
+            "Labiodental",
+            "Velar"
+        ],
+        a: 0
+    },
+    {
+        q: "Dental sounds involve the ______.",
+        o: [
+            "Tongue and teeth",
+            "Two lips",
+            "Lower lip and upper teeth",
+            "Back of the tongue and velum"
+        ],
+        a: 0
+    },
+    {
+        q: "Labiodental sounds involve the ______.",
+        o: [
+            "Lower lip and upper teeth",
+            "Two lips",
+            "Tongue and lower teeth only",
+            "Back of tongue and velum"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is an example of a labiodental articulatory relationship?",
+        o: [
+            "Lower lip with upper teeth",
+            "Upper lip with lower lip",
+            "Tongue with teeth only",
+            "Back of tongue with velum"
+        ],
+        a: 0
+    },
+    {
+        q: "Palato-alveolar articulation involves the ______.",
+        o: [
+            "Blade of the tongue and the hard palate/alveolar region",
+            "Two lips",
+            "Lower lip and upper teeth",
+            "Vocal cords only"
+        ],
+        a: 0
+    },
+    {
+        q: "Velar sounds are produced using the ______.",
+        o: [
+            "Back of the tongue and velum",
+            "Two lips",
+            "Tongue and front teeth",
+            "Lower lip and upper teeth"
+        ],
+        a: 0
+    },
+    {
+        q: "Which part of the tongue is used in the production of velar sounds?",
+        o: [
+            "Back",
+            "Tip only",
+            "Blade only",
+            "Front only"
+        ],
+        a: 0
+    },
+    {
+        q: "Glottal sounds are produced in the ______.",
+        o: [
+            "Glottis/vocal folds",
+            "Lips",
+            "Teeth",
+            "Tongue tip"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is an articulatory category?",
+        o: [
+            "Bilabial",
+            "Glottal",
+            "Velar",
+            "All of the above"
+        ],
+        a: 3
+    },
+    {
+        q: "The respiratory system contributes to speech by providing ______.",
+        o: [
+            "Air",
+            "Written symbols",
+            "Facial expressions",
+            "Vocabulary"
+        ],
+        a: 0
+    },
+    {
+        q: "Which organ is particularly important for shaping many speech sounds?",
+        o: [
+            "Tongue",
+            "Stomach",
+            "Kidney",
+            "Heart"
+        ],
+        a: 0
+    },
+    {
+        q: "Pitch refers to the perceived ______ of a voice.",
+        o: [
+            "Highness or lowness",
+            "Length of a word",
+            "Loudness only",
+            "Number of sentences"
+        ],
+        a: 0
+    },
+    {
+        q: "Changes in pitch or tone of the voice are called ______.",
+        o: [
+            "Inflection",
+            "Listing",
+            "Clustering",
+            "Articulation"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is most closely related to pitch?",
+        o: [
+            "Highness or lowness of the voice",
+            "Number of words written",
+            "Length of a paragraph",
+            "Size of the audience"
+        ],
+        a: 0
+    },
+    {
+        q: "Rate refers to ______.",
+        o: [
+            "The speed at which a person speaks",
+            "The highness of the voice",
+            "The movement of the tongue",
+            "The size of an audience"
+        ],
+        a: 0
+    },
+    {
+        q: "The handbook gives a common speaking rate of approximately ______ words per minute.",
+        o: [
+            "20–30",
+            "60–80",
+            "120–150",
+            "250–300"
+        ],
+        a: 2
+    },
+    {
+        q: "Which of the following can influence the appropriate speech rate?",
+        o: [
+            "The mood the speaker wants to create",
+            "Only the speaker's height",
+            "The colour of the room",
+            "The number of chairs"
+        ],
+        a: 0
+    },
+    {
+        q: "A speaker may change speech rate in order to ______.",
+        o: [
+            "Create a particular mood",
+            "Eliminate all communication",
+            "Avoid articulation",
+            "Stop breathing"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is NOT primarily concerned with speech production?",
+        o: [
+            "Respiratory system",
+            "Vocal cords",
+            "Tongue",
+            "Notebook"
+        ],
+        a: 3
+    },
+    {
+        q: "Which of the following is a speech articulator?",
+        o: [
+            "Tongue",
+            "Notebook",
+            "Pen",
+            "Paper"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following uses both lips in articulation?",
+        o: [
+            "Bilabial",
+            "Velar",
+            "Dental",
+            "Glottal"
+        ],
+        a: 0
+    },
+    {
+        q: "Which articulatory category uses the lower lip and upper teeth?",
+        o: [
+            "Labiodental",
+            "Bilabial",
+            "Velar",
+            "Glottal"
+        ],
+        a: 0
+    },
+    {
+        q: "Which articulatory category involves the tongue and teeth?",
+        o: [
+            "Dental",
+            "Bilabial",
+            "Velar",
+            "Glottal"
+        ],
+        a: 0
+    },
+    {
+        q: "Which articulatory category involves the back of the tongue and velum?",
+        o: [
+            "Velar",
+            "Dental",
+            "Bilabial",
+            "Labiodental"
+        ],
+        a: 0
+    },
+    {
+        q: "Which articulatory category is associated with the vocal folds or glottis?",
+        o: [
+            "Glottal",
+            "Bilabial",
+            "Dental",
+            "Velar"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is NOT one of the articulatory categories discussed?",
+        o: [
+            "Bilabial",
+            "Dental",
+            "Velar",
+            "Circular"
+        ],
+        a: 3
+    },
+    {
+        q: "The vocal cords contribute to speech when they ______.",
+        o: [
+            "Vibrate",
+            "Write",
+            "Move the lips",
+            "Control the tongue"
+        ],
+        a: 0
+    },
+    {
+        q: "Which system provides the airflow necessary for speech?",
+        o: [
+            "Respiratory system",
+            "Digestive system",
+            "Circulatory system",
+            "Skeletal system"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following can be changed during speech delivery?",
+        o: [
+            "Pitch",
+            "Rate",
+            "Inflection",
+            "All of the above"
+        ],
+        a: 3
+    },
+    {
+        q: "A speaker's pitch may be described as ______.",
+        o: [
+            "High or low",
+            "Long or short only",
+            "Wide or narrow",
+            "Written or spoken"
+        ],
+        a: 0
+    },
+    {
+        q: "Inflection involves changes in ______.",
+        o: [
+            "Pitch or tone",
+            "Written vocabulary only",
+            "Audience size",
+            "Speech topic"
+        ],
+        a: 0
+    },
+    {
+        q: "A speaker talking very quickly is using a ______ rate.",
+        o: [
+            "Fast",
+            "Slow",
+            "Static",
+            "Silent"
+        ],
+        a: 0
+    },
+    {
+        q: "A speaker talking slowly is using a ______ rate.",
+        o: [
+            "Slow",
+            "Fast",
+            "High",
+            "Low"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is approximately the common speaking rate cited in the handbook?",
+        o: [
+            "120–150 words per minute",
+            "10–20 words per minute",
+            "500–600 words per minute",
+            "1,000 words per minute"
+        ],
+        a: 0
+    },
+    {
+        q: "The appropriate speech rate may depend on the ______.",
+        o: [
+            "Mood the speaker wants to create",
+            "Number of pages in a textbook",
+            "Colour of the speaker's clothes",
+            "Size of the classroom only"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following best describes articulation?",
+        o: [
+            "The production of speech sounds through speech organs",
+            "Writing down lecture notes",
+            "Generating brainstorming ideas",
+            "Reading silently"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is an example of an active speech organ?",
+        o: [
+            "Tongue",
+            "Notebook",
+            "Chair",
+            "Paper"
+        ],
+        a: 0
+    },
+    {
+        q: "The tongue can produce different sounds because it can ______.",
+        o: [
+            "Assume different shapes and positions",
+            "Remain completely fixed",
+            "Produce written words",
+            "Replace the lungs"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is involved in producing voiced speech sounds?",
+        o: [
+            "Vocal-cord vibration",
+            "Paper movement",
+            "Note-taking",
+            "Audience analysis"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is NOT a feature of speech delivery?",
+        o: [
+            "Pitch",
+            "Rate",
+            "Inflection",
+            "Note-booking"
+        ],
+        a: 3
+    },
+    {
+        q: "Which statement best summarizes speech production and delivery?",
+        o: [
+            "Speech requires coordinated speech organs, while delivery can involve pitch, rate and inflection",
+            "Speech requires only writing",
+            "Speech does not involve the respiratory system",
+            "Speech delivery does not involve the voice"
+        ],
+        a: 0
+    },
+    {
+        q: "A complete sentence normally contains a ______ and a predicate.",
+        o: [
+            "Subject",
+            "Paragraph",
+            "Title",
+            "Question mark"
+        ],
+        a: 0
+    },
+    {
+        q: "The subject of a sentence identifies ______.",
+        o: [
+            "The punctuation used",
+            "Who or what the sentence is about",
+            "The number of words",
+            "The tense only"
+        ],
+        a: 1
+    },
+    {
+        q: "The predicate tells us ______.",
+        o: [
+            "Something about the subject",
+            "The title of the sentence",
+            "The number of paragraphs",
+            "The spelling of every word"
+        ],
+        a: 0
+    },
+    {
+        q: "Subject–verb agreement means that the subject and verb must agree in ______.",
+        o: [
+            "Length",
+            "Number",
+            "Spelling",
+            "Pronunciation"
+        ],
+        a: 1
+    },
+    {
+        q: "Which sentence demonstrates correct subject–verb agreement?",
+        o: [
+            "The student study every day.",
+            "The students studies every day.",
+            "The student studies every day.",
+            "The students studies every day."
+        ],
+        a: 2
+    },
+    {
+        q: "Which sentence contains a plural subject?",
+        o: [
+            "The boy reads.",
+            "The teacher speaks.",
+            "The students study.",
+            "The child sleeps."
+        ],
+        a: 2
+    },
+    {
+        q: "Which sentence contains a singular subject?",
+        o: [
+            "The boys play.",
+            "The teachers teach.",
+            "The student reads.",
+            "The children laugh."
+        ],
+        a: 2
+    },
+    {
+        q: "Which sentence is correctly written?",
+        o: [
+            "The students studies mathematics.",
+            "The student study mathematics.",
+            "The student studies mathematics.",
+            "The students studying mathematics."
+        ],
+        a: 2
+    },
+    {
+        q: "Words occurring between the subject and verb should not cause confusion about ______.",
+        o: [
+            "Subject–verb agreement",
+            "Spelling",
+            "Punctuation only",
+            "Paragraphing"
+        ],
+        a: 0
+    },
+    {
+        q: "A prepositional phrase between a subject and verb can sometimes ______.",
+        o: [
+            "Make the sentence longer",
+            "Distract from the actual subject",
+            "Remove the subject",
+            "Change every verb"
+        ],
+        a: 1
+    },
+    {
+        q: "Which word is generally treated as a singular indefinite pronoun?",
+        o: [
+            "Everyone",
+            "They",
+            "Students",
+            "People"
+        ],
+        a: 0
+    },
+    {
+        q: "Which sentence is correct?",
+        o: [
+            "Everyone are ready.",
+            "Everyone is ready.",
+            "Everyone were ready.",
+            "Everyone be ready."
+        ],
+        a: 1
+    },
+    {
+        q: "Which of the following is also generally treated as singular?",
+        o: [
+            "Everybody",
+            "Students",
+            "Teachers",
+            "Children"
+        ],
+        a: 0
+    },
+    {
+        q: "Choose the correct sentence.",
+        o: [
+            "Everybody are present.",
+            "Everybody is present.",
+            "Everybody were present.",
+            "Everybody be present."
+        ],
+        a: 1
+    },
+    {
+        q: "Which of the following is generally singular?",
+        o: [
+            "Somebody",
+            "Boys",
+            "Teachers",
+            "Students"
+        ],
+        a: 0
+    },
+    {
+        q: "Choose the correct sentence.",
+        o: [
+            "Somebody are calling you.",
+            "Somebody is calling you.",
+            "Somebody were calling you.",
+            "Somebody call you."
+        ],
+        a: 1
+    },
+    {
+        q: "Which word is generally treated as singular?",
+        o: [
+            "Anyone",
+            "People",
+            "Children",
+            "Students"
+        ],
+        a: 0
+    },
+    {
+        q: "Choose the correct sentence.",
+        o: [
+            "Anyone are allowed to participate.",
+            "Anyone is allowed to participate.",
+            "Anyone were allowed to participate.",
+            "Anyone have allowed to participate."
+        ],
+        a: 1
+    },
+    {
+        q: "When two subjects are joined by “and,” the subjects are generally treated as ______.",
+        o: [
+            "Singular",
+            "Plural",
+            "Uncountable",
+            "Abstract"
+        ],
+        a: 1
+    },
+    {
+        q: "Choose the correct sentence.",
+        o: [
+            "John and Peter is students.",
+            "John and Peter are students.",
+            "John and Peter was students.",
+            "John and Peter has students."
+        ],
+        a: 1
+    },
+    {
+        q: "Which conjunction joins two elements and commonly forms a plural subject?",
+        o: [
+            "And",
+            "Because",
+            "Although",
+            "When"
+        ],
+        a: 0
+    },
+    {
+        q: "The sentence “The teacher and the student are present” contains a ______ subject.",
+        o: [
+            "Singular",
+            "Plural",
+            "Negative",
+            "Interrogative"
+        ],
+        a: 1
+    },
+    {
+        q: "Correct grammar requires the verb to agree with the ______.",
+        o: [
+            "Nearest word only",
+            "Main subject",
+            "Longest word",
+            "Last word in the sentence"
+        ],
+        a: 1
+    },
+    {
+        q: "Which sentence correctly uses a singular verb?",
+        o: [
+            "The student in the classroom studies.",
+            "The student in the classroom study.",
+            "The students in the classroom studies.",
+            "The students in the classroom is studying."
+        ],
+        a: 0
+    },
+    {
+        q: "Which sentence correctly uses a plural verb?",
+        o: [
+            "The students in the classroom studies.",
+            "The students in the classroom study.",
+            "The students in the classroom is.",
+            "The students in the classroom was."
+        ],
+        a: 1
+    },
+    {
+        q: "The main purpose of planning a speech is to help the speaker communicate information ______.",
+        o: [
+            "Randomly",
+            "Accurately and clearly",
+            "Secretly",
+            "Slowly only"
+        ],
+        a: 1
+    },
+    {
+        q: "Speech planning can help a speaker communicate ______ information.",
+        o: [
+            "Irrelevant",
+            "Relevant",
+            "Hidden",
+            "Unrelated"
+        ],
+        a: 1
+    },
+    {
+        q: "A well-planned speech is more likely to be ______.",
+        o: [
+            "Disorganized",
+            "Clear",
+            "Confusing",
+            "Meaningless"
+        ],
+        a: 1
+    },
+    {
+        q: "Public speaking may be used to ______ an audience.",
+        o: [
+            "Inform or persuade",
+            "Confuse only",
+            "Silence permanently",
+            "Distract only"
+        ],
+        a: 0
+    },
+    {
+        q: "A speech intended mainly to provide knowledge is designed to ______.",
+        o: [
+            "Inform",
+            "Confuse",
+            "Entertain only",
+            "Interrupt"
+        ],
+        a: 0
+    },
+    {
+        q: "A speech intended to influence an audience's views or actions is generally designed to ______.",
+        o: [
+            "Persuade",
+            "List",
+            "Calculate",
+            "Translate"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following can improve the clarity of a speech?",
+        o: [
+            "Proper planning",
+            "Random ideas",
+            "Unrelated information",
+            "Lack of preparation"
+        ],
+        a: 0
+    },
+    {
+        q: "A speaker who ignores the subject of the speech may provide ______ information.",
+        o: [
+            "Relevant",
+            "Unrelated",
+            "Accurate",
+            "Organized"
+        ],
+        a: 1
+    },
+    {
+        q: "Which of the following is important when preparing a speech?",
+        o: [
+            "Organizing ideas",
+            "Avoiding all preparation",
+            "Using unrelated examples",
+            "Ignoring the audience"
+        ],
+        a: 0
+    },
+    {
+        q: "The basic purpose of sentence structure is to organize words so that they convey ______.",
+        o: [
+            "Meaning",
+            "Noise",
+            "Silence",
+            "Confusion"
+        ],
+        a: 0
+    },
+    {
+        q: "Which part of a sentence normally tells what the subject does or what happens to it?",
+        o: [
+            "Predicate",
+            "Article",
+            "Conjunction only",
+            "Preposition only"
+        ],
+        a: 0
+    },
+    {
+        q: "In “The lecturer speaks clearly,” the subject is ______.",
+        o: [
+            "Speaks",
+            "Clearly",
+            "The lecturer",
+            "Lecturer speaks"
+        ],
+        a: 2
+    },
+    {
+        q: "In “The lecturer speaks clearly,” the predicate is ______.",
+        o: [
+            "The lecturer",
+            "Speaks clearly",
+            "Clearly only",
+            "Lecturer only"
+        ],
+        a: 1
+    },
+    {
+        q: "Which sentence has correct subject–verb agreement?",
+        o: [
+            "The book are useful.",
+            "The books is useful.",
+            "The book is useful.",
+            "The books was useful."
+        ],
+        a: 2
+    },
+    {
+        q: "Which sentence has correct subject–verb agreement?",
+        o: [
+            "The books is useful.",
+            "The books are useful.",
+            "The book are useful.",
+            "The book were useful."
+        ],
+        a: 1
+    },
+    {
+        q: "Which sentence is grammatically correct?",
+        o: [
+            "The teacher and student is here.",
+            "The teacher and student are here.",
+            "The teacher and student was here.",
+            "The teacher and student has here."
+        ],
+        a: 1
+    },
+    {
+        q: "Which of the following can make subject–verb agreement difficult to identify?",
+        o: [
+            "Words or phrases between the subject and verb",
+            "The use of capital letters",
+            "The title of a book",
+            "A paragraph heading"
+        ],
+        a: 0
+    },
+    {
+        q: "Which sentence correctly uses “everyone”?",
+        o: [
+            "Everyone have a book.",
+            "Everyone has a book.",
+            "Everyone are having books.",
+            "Everyone were having a book."
+        ],
+        a: 1
+    },
+    {
+        q: "Which sentence correctly uses “somebody”?",
+        o: [
+            "Somebody are outside.",
+            "Somebody is outside.",
+            "Somebody were outside.",
+            "Somebody have outside."
+        ],
+        a: 1
+    },
+    {
+        q: "Which sentence correctly uses “anyone”?",
+        o: [
+            "Anyone are welcome.",
+            "Anyone is welcome.",
+            "Anyone were welcome.",
+            "Anyone have welcome."
+        ],
+        a: 1
+    },
+    {
+        q: "Which sentence correctly uses “everybody”?",
+        o: [
+            "Everybody are happy.",
+            "Everybody is happy.",
+            "Everybody were happy.",
+            "Everybody have happy."
+        ],
+        a: 1
+    },
+    {
+        q: "The phrase “in the classroom” in “The students in the classroom study” is an example of a ______ phrase.",
+        o: [
+            "Prepositional",
+            "Subject",
+            "Predicate only",
+            "Conjunction"
+        ],
+        a: 0
+    },
+    {
+        q: "In subject–verb agreement, a speaker should focus on the ______ rather than a distracting noun in a phrase.",
+        o: [
+            "Main subject",
+            "Last word",
+            "Longest word",
+            "First adjective"
+        ],
+        a: 0
+    },
+    {
+        q: "Good sentence construction contributes to effective ______.",
+        o: [
+            "Communication",
+            "Silence",
+            "Confusion",
+            "Interruption"
+        ],
+        a: 0
+    },
+    {
+        q: "The correct use of grammar in speech and writing helps a person communicate ideas ______.",
+        o: [
+            "Clearly",
+            "Randomly",
+            "Unnecessarily",
+            "Secretly"
+        ],
+        a: 0
+    },
+    {
+        q: "An adjective is a word that modifies or qualifies a ______.",
+        o: [
+            "Noun or pronoun",
+            "Verb only",
+            "Conjunction only",
+            "Preposition only"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is an adjective?",
+        o: [
+            "Beautiful",
+            "Quickly",
+            "Run",
+            "And"
+        ],
+        a: 0
+    },
+    {
+        q: "An adverb can modify a ______.",
+        o: [
+            "Verb",
+            "Noun only",
+            "Pronoun only",
+            "Article only"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is an adverb?",
+        o: [
+            "Quickly",
+            "Beautiful",
+            "Student",
+            "And"
+        ],
+        a: 0
+    },
+    {
+        q: "An adverb can also modify an ______.",
+        o: [
+            "Adjective",
+            "Article only",
+            "Noun only",
+            "Alphabet"
+        ],
+        a: 0
+    },
+    {
+        q: "Which word is a preposition?",
+        o: [
+            "Under",
+            "Quickly",
+            "Beautiful",
+            "Study"
+        ],
+        a: 0
+    },
+    {
+        q: "Prepositions are used to show relationships of ______.",
+        o: [
+            "Place, time, or direction",
+            "Spelling only",
+            "Pronunciation only",
+            "Paragraph length"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a preposition?",
+        o: [
+            "In",
+            "And",
+            "Quickly",
+            "Beautiful"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is NOT a preposition?",
+        o: [
+            "At",
+            "From",
+            "With",
+            "Beautiful"
+        ],
+        a: 3
+    },
+    {
+        q: "In the expression “in the classroom,” the word “in” functions as a ______.",
+        o: [
+            "Preposition",
+            "Adjective",
+            "Adverb",
+            "Conjunction"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a preposition of place?",
+        o: [
+            "Under",
+            "Because",
+            "Quickly",
+            "Although"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a preposition?",
+        o: [
+            "By",
+            "And",
+            "But",
+            "So"
+        ],
+        a: 0
+    },
+    {
+        q: "Which word can function as a preposition?",
+        o: [
+            "For",
+            "Although",
+            "Because",
+            "Or"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a preposition?",
+        o: [
+            "From",
+            "And",
+            "But",
+            "So"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a preposition?",
+        o: [
+            "With",
+            "Because",
+            "Although",
+            "Or"
+        ],
+        a: 0
+    },
+    {
+        q: "A conjunction is a word that ______ grammatical units.",
+        o: [
+            "Joins",
+            "Deletes",
+            "Replaces all",
+            "Separates permanently"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a conjunction?",
+        o: [
+            "And",
+            "Under",
+            "Quickly",
+            "Beautiful"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a coordinating conjunction?",
+        o: [
+            "But",
+            "Because",
+            "Although",
+            "When"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a coordinating conjunction?",
+        o: [
+            "Or",
+            "Although",
+            "Because",
+            "Before"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a coordinating conjunction?",
+        o: [
+            "So",
+            "Although",
+            "Because",
+            "When"
+        ],
+        a: 0
+    },
+    {
+        q: "Which group contains coordinating conjunctions?",
+        o: [
+            "And, but, or, so",
+            "Because, although, when, before",
+            "In, on, at, under",
+            "Quickly, slowly, carefully, loudly"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a subordinating conjunction?",
+        o: [
+            "Because",
+            "And",
+            "Or",
+            "So"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a subordinating conjunction?",
+        o: [
+            "Although",
+            "And",
+            "But",
+            "Or"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a subordinating conjunction?",
+        o: [
+            "Before",
+            "And",
+            "But",
+            "So"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a subordinating conjunction?",
+        o: [
+            "After",
+            "And",
+            "Or",
+            "But"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following is a subordinating conjunction?",
+        o: [
+            "When",
+            "And",
+            "Or",
+            "So"
+        ],
+        a: 0
+    },
+    {
+        q: "Which pair contains only conjunctions?",
+        o: [
+            "And, but",
+            "In, under",
+            "Quickly, slowly",
+            "Beautiful, intelligent"
+        ],
+        a: 0
+    },
+    {
+        q: "Which pair contains only prepositions?",
+        o: [
+            "In, on",
+            "And, but",
+            "Quickly, slowly",
+            "Because, although"
+        ],
+        a: 0
+    },
+    {
+        q: "Which pair contains subordinating conjunctions?",
+        o: [
+            "Because, although",
+            "And, or",
+            "In, at",
+            "Quickly, carefully"
+        ],
+        a: 0
+    },
+    {
+        q: "The word “and” is mainly used to express ______.",
+        o: [
+            "Connection",
+            "Opposition only",
+            "Location",
+            "Time only"
+        ],
+        a: 0
+    },
+    {
+        q: "An antonym is a word that has a meaning that is ______ to another word.",
+        o: [
+            "Opposite",
+            "Identical",
+            "Unrelated in every case",
+            "Longer"
+        ],
+        a: 0
+    },
+    {
+        q: "Which pair consists of antonyms?",
+        o: [
+            "Hot — Cold",
+            "Big — Large",
+            "Fast — Quick",
+            "Begin — Start"
+        ],
+        a: 0
+    },
+    {
+        q: "A synonym is a word that has the same or nearly the same ______ as another word.",
+        o: [
+            "Meaning",
+            "Spelling always",
+            "Number of letters",
+            "Pronunciation always"
+        ],
+        a: 0
+    },
+    {
+        q: "Which pair consists of synonyms?",
+        o: [
+            "Big — Large",
+            "Hot — Cold",
+            "Old — New",
+            "Happy — Sad"
+        ],
+        a: 0
+    },
+    {
+        q: "Which pair contains synonyms?",
+        o: [
+            "Begin — Start",
+            "Early — Late",
+            "Rich — Poor",
+            "Strong — Weak"
+        ],
+        a: 0
+    },
+    {
+        q: "Which pair contains antonyms?",
+        o: [
+            "Strong — Weak",
+            "Big — Large",
+            "Begin — Start",
+            "Quick — Fast"
+        ],
+        a: 0
+    },
+    {
+        q: "Homophones are words that ______.",
+        o: [
+            "Sound alike but differ in meaning and spelling",
+            "Always have identical meanings",
+            "Always have identical spelling",
+            "Have opposite meanings"
+        ],
+        a: 0
+    },
+    {
+        q: "Which pair is an example of homophones?",
+        o: [
+            "Right — Write",
+            "Big — Large",
+            "Hot — Cold",
+            "Begin — Start"
+        ],
+        a: 0
+    },
+    {
+        q: "Homonyms are words associated with the same form or pronunciation but having ______.",
+        o: [
+            "Different meanings",
+            "The same meaning always",
+            "Opposite spellings",
+            "No meaning"
+        ],
+        a: 0
+    },
+    {
+        q: "Vocabulary development involves increasing one's knowledge of ______.",
+        o: [
+            "Words and their meanings",
+            "Numbers only",
+            "Punctuation only",
+            "Paragraph length"
+        ],
+        a: 0
+    },
+    {
+        q: "Learning synonyms can help a speaker to ______.",
+        o: [
+            "Expand vocabulary",
+            "Avoid all communication",
+            "Reduce understanding",
+            "Eliminate grammar"
+        ],
+        a: 0
+    },
+    {
+        q: "Learning antonyms helps a person understand ______.",
+        o: [
+            "Contrasting meanings",
+            "Only pronunciation",
+            "Punctuation",
+            "Sentence length"
+        ],
+        a: 0
+    },
+    {
+        q: "The meaning associated with a word beyond its basic dictionary definition is called ______.",
+        o: [
+            "Connotation",
+            "Paragraph",
+            "Subject",
+            "Predicate"
+        ],
+        a: 0
+    },
+    {
+        q: "A word's basic dictionary meaning is commonly referred to as its ______.",
+        o: [
+            "Denotation",
+            "Connotation",
+            "Antonym",
+            "Homophone"
+        ],
+        a: 0
+    },
+    {
+        q: "Connotation may be ______.",
+        o: [
+            "Positive, negative, or neutral",
+            "Only positive",
+            "Only negative",
+            "Only neutral"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following describes a positive connotation?",
+        o: [
+            "A favorable association with a word",
+            "An opposite meaning",
+            "A spelling mistake",
+            "A grammatical error"
+        ],
+        a: 0
+    },
+    {
+        q: "Which of the following describes a negative connotation?",
+        o: [
+            "An unfavorable association with a word",
+            "A synonym",
+            "A punctuation mark",
+            "A verb agreement rule"
+        ],
+        a: 0
+    },
+    {
+        q: "Why is vocabulary important in effective communication?",
+        o: [
+            "It helps speakers express ideas more precisely",
+            "It prevents people from speaking",
+            "It eliminates the need for listening",
+            "It makes every sentence longer"
+        ],
+        a: 0
+    },
+    {
+        q: "A speaker who chooses words carefully is more likely to communicate ______.",
+        o: [
+            "Clearly and effectively",
+            "Randomly",
+            "Unnecessarily",
+            "Confusingly"
+        ],
+        a: 0
+    },
+    {
+        q: "The study of parts of speech and vocabulary contributes to better ______.",
+        o: [
+            "Communication",
+            "Silence",
+            "Confusion",
+            "Interruption"
+        ],
+        a: 0
+    }
+];
+
+let activeExam = [];
+let timeLeft = 1200; // 45 minutes countdown (20 * 60)
+let timer;
+const totalExamQuestions =60; 
+let currentQuestionIndex = 0;
+
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function initExam() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1000);
+
+    let shuffledSelection = shufflePool([...fullMthPool]);
+    activeExam = shuffledSelection;
+    timeLeft = 1200; 
+    currentQuestionIndex = 0; 
+    
+    renderQuestions();
+    buildStatusPanel();
+    showQuestion(currentQuestionIndex); 
+    startTimer();
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>${idx + 1}. ${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onchange="updateTrackStatus(${idx})"> ${String.fromCharCode(65 + i)}.${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function buildStatusPanel() {
+    const panelGrid = document.getElementById('status-panel-grid');
+    let dotsHTML = '';
+    for(let i = 0; i < totalExamQuestions; i++) {
+        dotsHTML += `<div class="tracker-dot" id="dot-q${i}" onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+    }
+    panelGrid.innerHTML = dotsHTML;
+}
+
+function showQuestion(index) {
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => { block.classList.toggle('active', idx === index); });
+
+    const dots = document.querySelectorAll('.tracker-dot');
+    dots.forEach((dot, idx) => { dot.classList.toggle('current', idx === index); });
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').disabled = (index === totalExamQuestions - 1);
+}
+
+function navigateQuestion(step) {
+    currentQuestionIndex += step;
+    showQuestion(currentQuestionIndex);
+}
+
+function jumpToQuestion(idx) {
+    currentQuestionIndex = idx;
+    showQuestion(currentQuestionIndex);
+}
+
+function updateTrackStatus(idx) {
+    const targetDot = document.getElementById(`dot-q${idx}`);
+    if (targetDot) targetDot.classList.add('answered');
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('timer').innerText = `Time Remaining: ${m}:${s<10?'0':''}${s}`;
+        if(timeLeft <= 0) submitExam();
+    }, 1000);
+}
+
+function submitExam() {
+    clearInterval(timer);
+    let score = 0;
+    let reviewHTML = `<h2>Performance Review</h2>`;
+
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        const correct = userVal === item.a;
+        if(correct) score++;
+
+        reviewHTML += `
+            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
+                <p><strong>${idx + 1}. ${item.q}</strong></p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
+                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}.${item.o[item.a]}</p>` : ''}
+            </div>`;
+    });
+
+    let percentage = Math.round((score / totalExamQuestions) * 100);
+    let grade = "";
+    let remark = "";
+    let statusEmoji = "";
+
+    if (percentage >= 70) {
+        grade = "A"; remark = "Excellent! You have mastered GST 101 concepts completely!"; statusEmoji = "🔥🏆";
+    } else if (percentage >= 60) {
+        grade = "B"; remark = "Very Good! You're ready to ace the exam."; statusEmoji = "😎✨";
+    } else if (percentage >= 50) {
+        grade = "C"; remark = "Good effort. Review communication principles and grammar rules."; statusEmoji = "👍📖";
+    } else if (percentage >= 45) {
+        grade = "D"; remark = "Pass. Practice your parts of speech and listening definitions."; statusEmoji = "⚠️📝";
+    } else if (percentage >= 40) {
+        grade = "E"; remark = "Fair. But you still gats read bro!"; statusEmoji = "👀⏳";
+    } else {
+        grade = "F"; remark = "Omo, go and read your GST handbook oooo! 😂"; statusEmoji = "💀❌";
+    }
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    
+    document.getElementById('result-screen').innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
+        <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
+        <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
+        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <div id="review-area">${reviewHTML}</div>
+        <button class="btn-action" onclick="location.reload()">Try Again</button>
+    `;
+    
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
