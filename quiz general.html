@@ -866,7 +866,7 @@ const masterQuestionPool = [
 
 let activeExam = [];
 let questionTimer;
-let timeLeftPerQuestion = 5;
+let timeLeftPerQuestion = 10;
 const totalExamQuestions = 2; 
 let currentQuestionIndex = 0;
 let calculatedScore = 0;
@@ -922,7 +922,7 @@ function showQuestion(index) {
 
 function startQuestionTimer() {
     clearInterval(questionTimer);
-    timeLeftPerQuestion = 5;
+    timeLeftPerQuestion = 10;
     
     const timerBar = document.getElementById('question-timer');
     timerBar.innerText = `Time Left for this Question: ${timeLeftPerQuestion}s`;
