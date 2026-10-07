@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - General Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        #sync-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container { max-width: 900px; margin: auto; flex: 1; width: 100%; box-sizing: border-box; }
+        header { text-align: center; padding: 40px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 35px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 10px 0 0 0; opacity: 0.9; font-weight: 300; }
+        
+        .exam-layout { display: flex; justify-content: center; max-width: 900px; margin: auto; align-items: start; width: 100%; box-sizing: border-box; }
+
+        #exam-main { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); width: 100%; }
+        
+        .question-timer-bar { background: #ef4444; color: white; padding: 14px; border-radius: 50px; text-align: center; font-weight: bold; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(239,68,68,0.3); font-size: 1.1rem; transition: background 0.3s; }
+        
+        .question-block { display: none; margin-bottom: 20px; padding-bottom: 15px; text-align: left; }
+        .question-block.active { display: block; }
+        
+        .question-block p { font-size: 1.05rem; line-height: 1.6; margin-top: 0; }
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 16px; margin: 12px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        /* SUBMISSION FORM STYLES */
+        #submission-screen { display: none; text-align: center; padding: 40px 20px; background: white; border-radius: 24px; box-shadow: var(--card-shadow); max-width: 580px; margin: auto; width: 100%; }
+        .form-title { font-size: 1.8rem; font-weight: 800; color: var(--navy); margin-bottom: 10px; }
+        .form-subtitle { font-size: 0.95rem; color: #64748b; margin-bottom: 30px; line-height: 1.5; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--navy); margin-bottom: 8px; }
+        .custom-input { width: 100%; padding: 14px 20px; border-radius: 14px; border: 2px solid #e2e8f0; font-family: inherit; font-size: 1rem; color: var(--navy); outline: none; transition: border-color 0.2s ease; background-color: #ffffff; }
+        .custom-input:focus { border-color: var(--green); }
+        
+        .btn-action { width: 100%; padding: 18px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 10px; transition: background 0.2s, transform 0.1s; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+
+        footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 15px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initExam()">
+
+<div id="sync-loader">
+    <div class="spinner"></div>
+    <p style="font-weight: 600; color: var(--navy);">Loading Questions...</p>
+</div>
+
+<div class="container">
+    <header>
+        <h1>GENERAL EXAM HUB</h1>
+        <p>Elite Exam Hub • 5 Seconds Per Question Speed Challenge! ⚡</p>
+    </header>
+</div>
+
+<div class="exam-layout" id="exam-container">
+    <div id="exam-main">
+        <div class="question-timer-bar" id="question-timer">Time Left for this Question: 5s</div>
+        <div id="question-list"></div>
+    </div>
+</div>
+
+<!-- SUBMISSION SCREEN (QUIZ ENDED FORM) -->
+<div class="container" id="submission-screen">
+    <div style="font-size: 3rem; margin-bottom: 10px;">🎉</div>
+    <div class="form-title">Quiz Ended!</div>
+    <div class="form-subtitle">Please input your full name and phone number to securely submit your score to the database.</div>
+    
+    <div class="input-group">
+        <label for="student-name">Full Name</label>
+        <input type="text" id="student-name" class="custom-input" placeholder="Enter your full name" required />
+    </div>
+
+    <div class="input-group">
+        <label for="student-phone">Phone Number</label>
+        <input type="tel" id="student-phone" class="custom-input" placeholder="Enter your phone number" required />
+    </div>
+
+    <button class="btn-action" id="submit-btn" onclick="submitToGoogleSheets()">Submit Result 🚀</button>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349133269825" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+// GOOGLE APPS SCRIPT WEB APP ENDPOINT
+const GOOGLE_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwPGlgAQg0RmBXjxLCUGoXF1p3TczH1uKm4Rx6eLJne946IOhSlHcbDPszNCf9RU1lG/exec";
+
+const masterQuestionPool = [
+    {
+        q: "A complete sentence normally contains a ______ and a predicate.",
+        o: ["Subject", "Paragraph", "Title", "Question mark"],
+        a: 0
+    },
+    {
+        q: "The subject of a sentence identifies ______.",
+        o: ["The punctuation used", "Who or what the sentence is about", "The number of words", "The tense only"],
+        a: 1
+    },
+    {
+        q: "The predicate tells us ______.",
+        o: ["Something about the subject", "The title of the sentence", "The number of paragraphs", "The spelling of every word"],
+        a: 0
+    },
+    {
+        q: "Subject–verb agreement means that the subject and verb must agree in ______.",
+        o: ["Length", "Number", "Spelling", "Pronunciation"],
+        a: 1
+    },
+    {
+        q: "Which sentence demonstrates correct subject–verb agreement?",
+        o: ["The student study every day.", "The students studies every day.", "The student studies every day.", "The students studies every day."],
+        a: 2
+    },
+    {
+        q: "Which sentence contains a plural subject?",
+        o: ["The boy reads.", "The teacher speaks.", "The students study.", "The child sleeps."],
+        a: 2
+    },
+    {
+        q: "Which sentence contains a singular subject?",
+        o: ["The boys play.", "The teachers teach.", "The student reads.", "The children laugh."],
+        a: 2
+    },
+    {
+        q: "Which sentence is correctly written?",
+        o: ["The students studies mathematics.", "The student study mathematics.", "The student studies mathematics.", "The students studying mathematics."],
+        a: 2
+    },
+    {
+        q: "Words occurring between the subject and verb should not cause confusion about ______.",
+        o: ["Subject–verb agreement", "Spelling", "Punctuation only", "Paragraphing"],
+        a: 0
+    },
+    {
+        q: "A prepositional phrase between a subject and verb can sometimes ______.",
+        o: ["Make the sentence longer", "Distract from the actual subject", "Remove the subject", "Change every verb"],
+        a: 1
+    },
+    {
+        q: "Which word is generally treated as a singular indefinite pronoun?",
+        o: ["Everyone", "They", "Students", "People"],
+        a: 0
+    },
+    {
+        q: "Which sentence is correct?",
+        o: ["Everyone are ready.", "Everyone is ready.", "Everyone were ready.", "Everyone be ready."],
+        a: 1
+    },
+    {
+        q: "Which of the following is also generally treated as singular?",
+        o: ["Everybody", "Students", "Teachers", "Children"],
+        a: 0
+    },
+    {
+        q: "Choose the correct sentence.",
+        o: ["Everybody are present.", "Everybody is present.", "Everybody were present.", "Everybody be present."],
+        a: 1
+    },
+    {
+        q: "Which of the following is generally singular?",
+        o: ["Somebody", "Boys", "Teachers", "Students"],
+        a: 0
+    },
+    {
+        q: "Choose the correct sentence.",
+        o: ["Somebody are calling you.", "Somebody is calling you.", "Somebody were calling you.", "Somebody call you."],
+        a: 1
+    },
+    {
+        q: "Which word is generally treated as singular?",
+        o: ["Anyone", "People", "Children", "Students"],
+        a: 0
+    },
+    {
+        q: "Choose the correct sentence.",
+        o: ["Anyone are allowed to participate.", "Anyone is allowed to participate.", "Anyone were allowed to participate.", "Anyone have allowed to participate."],
+        a: 1
+    },
+    {
+        q: "When two subjects are joined by “and,” the subjects are generally treated as ______.",
+        o: ["Singular", "Plural", "Uncountable", "Abstract"],
+        a: 1
+    },
+    {
+        q: "Choose the correct sentence.",
+        o: ["John and Peter is students.", "John and Peter are students.", "John and Peter was students.", "John and Peter has students."],
+        a: 1
+    },
+    {
+        q: "Which conjunction joins two elements and commonly forms a plural subject?",
+        o: ["And", "Because", "Although", "When"],
+        a: 0
+    },
+    {
+        q: "The sentence “The teacher and the student are present” contains a ______ subject.",
+        o: ["Singular", "Plural", "Negative", "Interrogative"],
+        a: 1
+    },
+    {
+        q: "Correct grammar requires the verb to agree with the ______.",
+        o: ["Nearest word only", "Main subject", "Longest word", "Last word in the sentence"],
+        a: 1
+    },
+    {
+        q: "Which sentence correctly uses a singular verb?",
+        o: ["The student in the classroom studies.", "The student in the classroom study.", "The students in the classroom studies.", "The students in the classroom is studying."],
+        a: 0
+    },
+    {
+        q: "Which sentence correctly uses a plural verb?",
+        o: ["The students in the classroom studies.", "The students in the classroom study.", "The students in the classroom is.", "The students in the classroom was."],
+        a: 1
+    },
+    {
+        q: "The main purpose of planning a speech is to help the speaker communicate information ______.",
+        o: ["Randomly", "Accurately and clearly", "Secretly", "Slowly only"],
+        a: 1
+    },
+    {
+        q: "Speech planning can help a speaker communicate ______ information.",
+        o: ["Irrelevant", "Relevant", "Hidden", "Unrelated"],
+        a: 1
+    },
+    {
+        q: "A well-planned speech is more likely to be ______.",
+        o: ["Disorganized", "Clear", "Confusing", "Meaningless"],
+        a: 1
+    },
+    {
+        q: "Public speaking may be used to ______ an audience.",
+        o: ["Inform or persuade", "Confuse only", "Silence permanently", "Distract only"],
+        a: 0
+    },
+    {
+        q: "A speech intended mainly to provide knowledge is designed to ______.",
+        o: ["Inform", "Confuse", "Entertain only", "Interrupt"],
+        a: 0
+    },
+    {
+        q: "A speech intended to influence an audience's views or actions is generally designed to ______.",
+        o: ["Persuade", "List", "Calculate", "Translate"],
+        a: 0
+    },
+    {
+        q: "Which of the following can improve the clarity of a speech?",
+        o: ["Proper planning", "Random ideas", "Unrelated information", "Lack of preparation"],
+        a: 0
+    },
+    {
+        q: "A speaker who ignores the subject of the speech may provide ______ information.",
+        o: ["Relevant", "Unrelated", "Accurate", "Organized"],
+        a: 1
+    },
+    {
+        q: "Which of the following is important when preparing a speech?",
+        o: ["Organizing ideas", "Avoiding all preparation", "Using unrelated examples", "Ignoring the audience"],
+        a: 0
+    },
+    {
+        q: "The basic purpose of sentence structure is to organize words so that they convey ______.",
+        o: ["Meaning", "Noise", "Silence", "Confusion"],
+        a: 0
+    },
+    {
+        q: "Which part of a sentence normally tells what the subject does or what happens to it?",
+        o: ["Predicate", "Article", "Conjunction only", "Preposition only"],
+        a: 0
+    },
+    {
+        q: "In “The lecturer speaks clearly,” the subject is ______.",
+        o: ["Speaks", "Clearly", "The lecturer", "Lecturer speaks"],
+        a: 2
+    },
+    {
+        q: "In “The lecturer speaks clearly,” the predicate is ______.",
+        o: ["The lecturer", "Speaks clearly", "Clearly only", "Lecturer only"],
+        a: 1
+    },
+    {
+        q: "Which sentence has correct subject–verb agreement?",
+        o: ["The book are useful.", "The books is useful.", "The book is useful.", "The books was useful."],
+        a: 2
+    },
+    {
+        q: "Which sentence has correct subject–verb agreement?",
+        o: ["The books is useful.", "The books are useful.", "The book are useful.", "The book were useful."],
+        a: 1
+    },
+    {
+        q: "Which sentence is grammatically correct?",
+        o: ["The teacher and student is here.", "The teacher and student are here.", "The teacher and student was here.", "The teacher and student has here."],
+        a: 1
+    },
+    {
+        q: "Which of the following can make subject–verb agreement difficult to identify?",
+        o: ["Words or phrases between the subject and verb", "The use of capital letters", "The title of a book", "A paragraph heading"],
+        a: 0
+    },
+    {
+        q: "Which sentence correctly uses “everyone”?",
+        o: ["Everyone have a book.", "Everyone has a book.", "Everyone are having books.", "Everyone were having a book."],
+        a: 1
+    },
+    {
+        q: "Which sentence correctly uses “somebody”?",
+        o: ["Somebody are outside.", "Somebody is outside.", "Somebody were outside.", "Somebody have outside."],
+        a: 1
+    },
+    {
+        q: "Which sentence correctly uses “anyone”?",
+        o: ["Anyone are welcome.", "Anyone is welcome.", "Anyone were welcome.", "Anyone have welcome."],
+        a: 1
+    },
+    {
+        q: "Which sentence correctly uses “everybody”?",
+        o: ["Everybody are happy.", "Everybody is happy.", "Everybody were happy.", "Everybody have happy."],
+        a: 1
+    },
+    {
+        q: "The phrase “in the classroom” in “The students in the classroom study” is an example of a ______ phrase.",
+        o: ["Prepositional", "Subject", "Predicate only", "Conjunction"],
+        a: 0
+    },
+    {
+        q: "In subject–verb agreement, a speaker should focus on the ______ rather than a distracting noun in a phrase.",
+        o: ["Main subject", "Last word", "Longest word", "First adjective"],
+        a: 0
+    },
+    {
+        q: "Good sentence construction contributes to effective ______.",
+        o: ["Communication", "Silence", "Confusion", "Interruption"],
+        a: 0
+    },
+    {
+        q: "The correct use of grammar in speech and writing helps a person communicate ideas ______.",
+        o: ["Clearly", "Randomly", "Unnecessarily", "Secretly"],
+        a: 0
+    },
+    {
+        q: "An adjective is a word that modifies or qualifies a ______.",
+        o: ["Noun or pronoun", "Verb only", "Conjunction only", "Preposition only"],
+        a: 0
+    },
+    {
+        q: "Which of the following is an adjective?",
+        o: ["Beautiful", "Quickly", "Run", "And"],
+        a: 0
+    },
+    {
+        q: "An adverb can modify a ______.",
+        o: ["Verb", "Noun only", "Pronoun only", "Article only"],
+        a: 0
+    },
+    {
+        q: "Which of the following is an adverb?",
+        o: ["Quickly", "Beautiful", "Student", "And"],
+        a: 0
+    },
+    {
+        q: "An adverb can also modify an ______.",
+        o: ["Adjective", "Article only", "Noun only", "Alphabet"],
+        a: 0
+    },
+    {
+        q: "Which word is a preposition?",
+        o: ["Under", "Quickly", "Beautiful", "Study"],
+        a: 0
+    },
+    {
+        q: "Prepositions are used to show relationships of ______.",
+        o: ["Place, time, or direction", "Spelling only", "Pronunciation only", "Paragraph length"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a preposition?",
+        o: ["In", "And", "Quickly", "Beautiful"],
+        a: 0
+    },
+    {
+        q: "Which of the following is NOT a preposition?",
+        o: ["At", "From", "With", "Beautiful"],
+        a: 3
+    },
+    {
+        q: "In the expression “in the classroom,” the word “in” functions as a ______.",
+        o: ["Preposition", "Adjective", "Adverb", "Conjunction"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a preposition of place?",
+        o: ["Under", "Because", "Quickly", "Although"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a preposition?",
+        o: ["By", "And", "But", "So"],
+        a: 0
+    },
+    {
+        q: "Which word can function as a preposition?",
+        o: ["For", "Although", "Because", "Or"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a preposition?",
+        o: ["From", "And", "But", "So"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a preposition?",
+        o: ["With", "Because", "Although", "Or"],
+        a: 0
+    },
+    {
+        q: "A conjunction is a word that ______ grammatical units.",
+        o: ["Joins", "Deletes", "Replaces all", "Separates permanently"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a conjunction?",
+        o: ["And", "Under", "Quickly", "Beautiful"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a coordinating conjunction?",
+        o: ["But", "Because", "Although", "When"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a coordinating conjunction?",
+        o: ["Or", "Although", "Because", "Before"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a coordinating conjunction?",
+        o: ["So", "Although", "Because", "When"],
+        a: 0
+    },
+    {
+        q: "Which group contains coordinating conjunctions?",
+        o: ["And, but, or, so", "Because, although, when, before", "In, on, at, under", "Quickly, slowly, carefully, loudly"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a subordinating conjunction?",
+        o: ["Because", "And", "Or", "So"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a subordinating conjunction?",
+        o: ["Although", "And", "But", "Or"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a subordinating conjunction?",
+        o: ["Before", "And", "But", "So"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a subordinating conjunction?",
+        o: ["After", "And", "Or", "But"],
+        a: 0
+    },
+    {
+        q: "Which of the following is a subordinating conjunction?",
+        o: ["When", "And", "Or", "So"],
+        a: 0
+    },
+    {
+        q: "Which pair contains only conjunctions?",
+        o: ["And, but", "In, under", "Quickly, slowly", "Beautiful, intelligent"],
+        a: 0
+    },
+    {
+        q: "Which pair contains only prepositions?",
+        o: ["In, on", "And, but", "Quickly, slowly", "Because, although"],
+        a: 0
+    },
+    {
+        q: "Which pair contains subordinating conjunctions?",
+        o: ["Because, although", "And, or", "In, at", "Quickly, carefully"],
+        a: 0
+    },
+    {
+        q: "The word “and” is mainly used to express ______.",
+        o: ["Connection", "Opposition only", "Location", "Time only"],
+        a: 0
+    },
+    {
+        q: "An antonym is a word that has a meaning that is ______ to another word.",
+        o: ["Opposite", "Identical", "Unrelated in every case", "Longer"],
+        a: 0
+    },
+    {
+        q: "Which pair consists of antonyms?",
+        o: ["Hot — Cold", "Big — Large", "Fast — Quick", "Begin — Start"],
+        a: 0
+    },
+    {
+        q: "A synonym is a word that has the same or nearly the same ______ as another word.",
+        o: ["Meaning", "Spelling always", "Number of letters", "Pronunciation always"],
+        a: 0
+    },
+    {
+        q: "Which pair consists of synonyms?",
+        o: ["Big — Large", "Hot — Cold", "Old — New", "Happy — Sad"],
+        a: 0
+    },
+    {
+        q: "Which pair contains synonyms?",
+        o: ["Begin — Start", "Early — Late", "Rich — Poor", "Strong — Weak"],
+        a: 0
+    },
+    {
+        q: "Which pair contains antonyms?",
+        o: ["Strong — Weak", "Big — Large", "Begin — Start", "Quick — Fast"],
+        a: 0
+    },
+    {
+        q: "Homophones are words that ______.",
+        o: ["Sound alike but differ in meaning and spelling", "Always have identical meanings", "Always have identical spelling", "Have opposite meanings"],
+        a: 0
+    },
+    {
+        q: "The concept ‘entrepreneur’ was first coined by:",
+        o: ["David McClelland", "Richard Cantillon", "David Hisrich", "Jean-Baptiste Say"],
+        a: 1
+    },
+    {
+        q: "The non-continuous process of combining resources of time, man, money and materials to create products, services and ideas is:",
+        o: ["Entrepreneurship", "Management", "Intrapreneurship", "Production"],
+        a: 0
+    },
+    {
+        q: "An individual who exhibits innovative abilities, perceives market opportunities, and has the motivation, drive and ability to mobilize resources to meet market opportunities while working in an existing organization is referred to as an:",
+        o: ["Entrepreneur", "Inventor", "Intrapreneur", "Manager"],
+        a: 2
+    },
+    {
+        q: "The characteristics of entrepreneurs as risk-bearers, coordinators and organizers, gap-fillers, leaders, and innovators or creative imitators were listed by:",
+        o: ["Adam Smith", "David Ricardo", "John Stuart Mill", "Joseph Schumpeter"],
+        a: 3
+    },
+    {
+        q: "The two disciplines where entrepreneurship originated were:",
+        o: ["French / English", "Economics / Business", "Economics / History", "History / French"],
+        a: 1
+    },
+    {
+        q: "The one who creates a new enterprise in a risky and uncertain environment is referred to as an:",
+        o: ["Risk taker", "Entrepreneur", "Adventurist", "Leader"],
+        a: 1
+    },
+    {
+        q: "Which one of the following is NOT considered entrepreneurship?",
+        o: ["The creation of a new business", "The routine management of an ongoing operation", "Innovation applied to a business context", "The combination of resources"],
+        a: 1
+    },
+    {
+        q: "The scholar who first stressed the significance of entrepreneurship for economic growth is:",
+        o: ["Cantillon", "Mill", "Quesnay", "Ricardo"],
+        a: 0
+    },
+    {
+        q: "When an entrepreneur directs and controls all organizational activities to ensure that things are done properly and on schedule, he is performing the role of:",
+        o: ["Leader", "Resource allocator", "Directing and controlling", "Visionary"],
+        a: 0
+    },
+    {
+        q: "An entrepreneur who starts a business with a fresh idea is simply performing the role of a:",
+        o: ["Leader", "Resource allocator", "Director and controller", "Visionary"],
+        a: 3
+    },
+    {
+        q: "Which one of the following is an important source of idea generation due to familiarity with the needs of the market?",
+        o: ["Commitment to opportunity", "Existing products and services", "Distribution channels", "Federal government"],
+        a: 1
+    },
+    {
+        q: "Creativity is:",
+        o: ["The ability to bring something new into existence", "The process of doing new things", "The ability to imitate perfectly", "All of the above"],
+        a: 0
+    },
+    {
+        q: "The first step in the creative process according to Holt (1992) is:",
+        o: ["Incubation", "Preparation", "Idea generation", "Verification"],
+        a: 2
+    },
+    {
+        q: "The following are forms of innovation EXCEPT:",
+        o: ["Technological innovation", "Product-market innovation", "Administrative innovation", "Idea generation"],
+        a: 3
+    },
+    {
+        q: "When innovation brings about a new dominant design and a new set of core design concepts embodied in components linked together in a new architecture, it is known as:",
+        o: ["Architectural innovation", "Radical innovation", "Modular innovation", "Incremental innovation"],
+        a: 1
+    },
+    {
+        q: "The creative process according to Holt (1992) can be classified into:",
+        o: ["4 stages", "5 stages", "6 stages", "7 stages"],
+        a: 1
+    },
+    {
+        q: "When innovation consists of market research, product design, and innovations in advertising and promotion, it is said to be:",
+        o: ["Technological innovation", "Product-market innovation", "Consumer-related innovation", "Administrative innovation"],
+        a: 1
+    },
+    {
+        q: "The entrepreneur can assess the internal environment of the business by critically looking at:",
+        o: ["5 Ps", "5 Ss", "5 Ws", "5 Ts"],
+        a: 1
+    },
+    {
+        q: "A written document prepared by an entrepreneur which describes all the relevant internal and external issues involved in starting a new business venture is called:",
+        o: ["Business plan", "Feasibility study", "Appraisal", "Business structure"],
+        a: 0
+    },
+    {
+        q: "SMIEIS stands for:",
+        o: ["Small and Medium Industry Equity Investment Schemes", "Small and Medium e-Investment Schools", "Small and Medium Industry Equity Investment Schools", "None of the above"],
+        a: 0
+    },
+    {
+        q: "Innovation is invention and:",
+        o: ["Creativity", "Design", "Exploitation", "Growth"],
+        a: 0
+    },
+    {
+        q: "______ is the person who creates a business enterprise, establishes it, and nurses it to survival and success.",
+        o: ["Entrepreneur", "Sales manager", "Feasibility report", "Feasibility study"],
+        a: 0
+    },
+    {
+        q: "There are ______ routes or paths to entrepreneurial opportunities.",
+        o: ["4", "5", "7", "3"],
+        a: 0
+    },
+    {
+        q: "Which of the following allows for criticism in the process of generating a business idea?",
+        o: ["Matrix charting", "Brainstorming", "Reverse brainstorming", "Collective notebook"],
+        a: 2
+    },
+    {
+        q: "COSIRA means in Britain:",
+        o: ["Council for Small Industries in Rural Areas", "Committee for Small Industries in Rural Areas", "Council for Small Investment in Rural Areas", "Committee for Small Investment in Rural Areas"],
+        a: 0
+    },
+    {
+        q: "______ is an exclusionary right that conveys the right to prevent others from copying, selling, performing, displaying or making derivative versions of a work of authorship.",
+        o: ["Patent right", "Intellectual right", "Copyright", "Royalty"],
+        a: 2
+    },
+    {
+        q: "Which of the following four Ps of marketing according to McCarthy (1975) is the odd one out?",
+        o: ["Product", "Place", "Promotion", "Public relations"],
+        a: 3
+    },
+    {
+        q: "Which one of the following is the fourth step in the entrepreneurial process?",
+        o: ["Developing successful business ideas", "Deciding to become an entrepreneur", "Growing the entrepreneurial firm", "Moving from an idea to an entrepreneurial firm"],
+        a: 2
+    },
+    {
+        q: "A person owning and running a small firm is known as:",
+        o: ["A manager-owner", "An owner-manager", "A professional adapter", "An enterprise worker"],
+        a: 1
+    },
+    {
+        q: "The scanning of the business environment to identify the favourable and unfavourable conditions therein is called:",
+        o: ["SWOT analysis", "External evaluation", "Internal evaluation", "Market analysis"],
+        a: 0
+    },
+    {
+        q: "Threats from external environmental factors can come from:",
+        o: ["Direct competition", "Indirect competitors", "Consumers", "All of the above"],
+        a: 3
+    },
+    {
+        q: "The minimum number of people required to start a sole proprietorship is:",
+        o: ["One", "Two", "Seven", "Twenty"],
+        a: 0
+    },
+    {
+        q: "Partnership formation requires a minimum and maximum number of partners, respectively, of:",
+        o: ["2 and 20", "2 and 50", "2 and 7", "7 and 20"],
+        a: 0
+    },
+    {
+        q: "Acquiring the use of equipment such as machinery without owning it is known as:",
+        o: ["Leasing", "Hire purchase", "Factoring", "Acquisition"],
+        a: 0
+    },
+    {
+        q: "A library can be defined as ______",
+        o: ["An educational resource centre", "A 'nest' where scholars are hatched", "A storehouse of knowledge", "All of the above"],
+        a: 3
+    },
+    {
+        q: "A library that is attached to a tertiary institution is:",
+        o: ["School library", "National library", "An Academic library", "A Research library"],
+        a: 2
+    },
+    {
+        q: "Newspapers, journals and magazines are examples of ______",
+        o: ["Books", "Pamphlet", "Serials", "None of the above"],
+        a: 2
+    },
+    {
+        q: "A printed reading material of less than 49 pages is ______",
+        o: ["Serials", "Book", "Jotter", "Pamphlet"],
+        a: 3
+    },
+    {
+        q: "When a printed reading material is more than 49 pages, it is ______",
+        o: ["Pamphlet", "Book", "Serials", "Jotter"],
+        a: 1
+    },
+    {
+        q: "Films, Slides and Television are examples of ______",
+        o: ["Instruments", "Equipment", "Audio-Visual materials", "Objects"],
+        a: 2
+    },
+    {
+        q: "______ is the apex library of a country",
+        o: ["Academic library", "Special library", "Research library", "National library"],
+        a: 3
+    },
+    {
+        q: "______ library is personally owned by an individual or an organization.",
+        o: ["Special", "Private", "Self", "Academic"],
+        a: 1
+    },
+    {
+        q: "The library aids ______",
+        o: ["Learning", "Research", "Teaching", "All of the above"],
+        a: 3
+    },
+    {
+        q: "______ is a selection tool used for selecting serials in the library",
+        o: ["Memoir", "Publisher’s catalogue", "Year book", "Accession register"],
+        a: 1
+    },
+    {
+        q: "Reference books can be ______",
+        o: ["Directional or Non directional", "Active or Passive", "Direct or Indirect", "Open access or Closed access"],
+        a: 0
+    },
+    {
+        q: "Reference books in the library usually bears the symbol before their call mark on the spine of the work",
+        o: ["RB", "RBK", "RE", "REF"],
+        a: 3
+    },
+    {
+        q: "______ is the exclusive right accorded by law to the creator of a literary work, composer, artist with regard to the use and the reproduction of his created work for economic or commercial purposes.",
+        o: ["Publishing law", "Copyright", "Cataloguing rule", "Piracy"],
+        a: 1
+    },
+    {
+        q: "______ are periodic government publications which provide information on the activities of the government",
+        o: ["Handbook", "Manual", "Directory", "Gazettes"],
+        a: 3
+    },
+    {
+        q: "______ is when fake copies of an author’s work are reproduced for commercial purposes",
+        o: ["Piracy", "Plagiarism", "Referencing", "Counterfeit"],
+        a: 0
+    },
+    {
+        q: "A book to which you can refer for authoritative facts and quick information is ______",
+        o: ["Electronic books", "Textbook", "Reference book", "Classification scheme"],
+        a: 2
+    },
+    {
+        q: "The library management software adopted by FUOYE Library is ______",
+        o: ["TEEAL", "AGORA", "HINARI", "KOHA"],
+        a: 3
+    },
+    {
+        q: "The University website is ______",
+        o: ["www.fuoye.edu.ng", "www.fouye.edu.ng", "www.fuoye.edu.ng", "www.fuye.edu.ng"],
+        a: 2
+    },
+    {
+        q: "All these are Microsoft Office desktop applications except ______",
+        o: ["Word", "Excel", "Windows", "PowerPoint"],
+        a: 2
+    },
+    {
+        q: "All these are the databases available in FUOYE Library except ______",
+        o: ["Science Direct", "TEEAL", "KOHA", "HINARI"],
+        a: 0
+    },
+    {
+        q: "All these are approaches by which information could be accessed on OPAC except ______",
+        o: ["Author", "Editor", "Subject", "Title"],
+        a: 1
+    },
+    {
+        q: "______ is the department in the library that handles matters relating to automation and internet services",
+        o: ["Information Technology Department", "Technology Department", "Information and Communication Technology Department", "Automation Department"],
+        a: 2
+    },
+    {
+        q: "______ is an electronic device which is capable of receiving information (data) in a particular form and of performing a sequence of operations",
+        o: ["Zinox", "Computer", "ICT", "DELL"],
+        a: 1
+    },
+    {
+        q: "______ are the materials that can only be accessed with the application of Information and Communication Technology (ICT)",
+        o: ["Information materials", "Electronic materials", "Technological Materials", "Information and Communication materials"],
+        a: 1
+    },
+    {
+        q: "Cataloguing is the process of describing a book where by all the ______ details are highlighted",
+        o: ["Author", "Pagination", "Bibliographic", "Publication"],
+        a: 2
+    },
+    {
+        q: "Library catalogue is the ______ to the content of the holding of a library",
+        o: ["Key pointer", "Identification", "Call mark", "Copies"],
+        a: 0
+    },
+    {
+        q: "To locate a book on the shelf, what do you need from KOHA in the circulation?",
+        o: ["Author's name", "Call mark", "Title of the book", "Pagination"],
+        a: 1
+    },
+    {
+        q: "The classification scheme used in FUOYE library is ______",
+        o: ["Library of Congress Classification Scheme", "Dewey Decimal Classification Scheme", "MOIS Classification Scheme", "Universal Decimal Classification Scheme"],
+        a: 1
+    },
+    {
+        q: "______ is a unique number assigned to the library material as soon as it arrives the library",
+        o: ["Classification number", "Pagination Number", "Accession Number", "Call mark"],
+        a: 2
+    },
+    {
+        q: "______ and ______ are the two types of catalogue you know",
+        o: ["Cataloguing and Classification", "Call mark catalogue and classification catalogue", "Card catalogue and Online Public Access Catalogue", "Card catalogue and Classification Catalogue"],
+        a: 2
+    }
+];
+
+let activeExam = [];
+let questionTimer;
+let timeLeftPerQuestion = 5;
+const totalExamQuestions = 2; 
+let currentQuestionIndex = 0;
+let calculatedScore = 0;
+
+function shufflePool(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function initExam() {
+    setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1000);
+
+    let shuffledSelection = shufflePool([...masterQuestionPool]);
+    activeExam = shuffledSelection.slice(0, totalExamQuestions);
+    currentQuestionIndex = 0; 
+    
+    renderQuestions();
+    showQuestion(currentQuestionIndex); 
+}
+
+function renderQuestions() {
+    const list = document.getElementById('question-list');
+    list.innerHTML = activeExam.map((item, idx) => `
+        <div class="question-block" id="block-q${idx}">
+            <p><strong>Question ${idx + 1} of ${totalExamQuestions}</strong></p>
+            <p><strong>${item.q}</strong></p>
+            <div class="options-group">
+                ${item.o.map((opt, i) => `
+                    <label><input type="radio" name="q${idx}" value="${i}" onclick="selectAndAdvance(${idx},${i})"> ${String.fromCharCode(65 + i)}.${opt}</label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function showQuestion(index) {
+    if (index >= totalExamQuestions) {
+        finishQuiz();
+        return;
+    }
+
+    const blocks = document.querySelectorAll('.question-block');
+    blocks.forEach((block, idx) => { block.classList.toggle('active', idx === index); });
+
+    currentQuestionIndex = index;
+    startQuestionTimer();
+}
+
+function startQuestionTimer() {
+    clearInterval(questionTimer);
+    timeLeftPerQuestion = 5;
+    
+    const timerBar = document.getElementById('question-timer');
+    timerBar.innerText = `Time Left for this Question: ${timeLeftPerQuestion}s`;
+
+    questionTimer = setInterval(() => {
+        timeLeftPerQuestion--;
+        timerBar.innerText = `Time Left for this Question: ${timeLeftPerQuestion}s`;
+
+        if (timeLeftPerQuestion <= 0) {
+            clearInterval(questionTimer);
+            showQuestion(currentQuestionIndex + 1);
+        }
+    }, 1000);
+}
+
+function selectAndAdvance(qIdx, optIdx) {
+    clearInterval(questionTimer);
+    const radio = document.querySelector(`input[name="q${qIdx}"][value="${optIdx}"]`);
+    if (radio) radio.checked = true;
+
+    setTimeout(() => {
+        showQuestion(currentQuestionIndex + 1);
+    }, 300);
+}
+
+function finishQuiz() {
+    clearInterval(questionTimer);
+    
+    calculatedScore = 0;
+    activeExam.forEach((item, idx) => {
+        const sel = document.querySelector(`input[name="q${idx}"]:checked`);
+        const userVal = sel ? parseInt(sel.value) : null;
+        if (userVal === item.a) {
+            calculatedScore++;
+        }
+    });
+
+    document.getElementById('exam-container').style.display = 'none';
+    document.getElementById('submission-screen').style.display = 'block';
+    window.scrollTo(0, 0);
+}
+
+async function submitToGoogleSheets() {
+    const fullName = document.getElementById('student-name').value.trim();
+    const phone = document.getElementById('student-phone').value.trim();
+
+    if (!fullName || !phone) {
+        alert("Please enter both your full name and phone number.");
+        return;
+    }
+
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.innerText = "Submitting to Database... ⏳";
+    submitBtn.disabled = true;
+
+    const payload = {
+        name: fullName,
+        phone: phone,
+        score: calculatedScore,
+        total: totalExamQuestions
+    };
+
+    try {
+        await fetch(GOOGLE_SCRIPT_WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+        });
+
+        alert("Your score will be updated to the leaderboard soon. Hoping to see you at the top! 🚀");
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("Submission Error:", error);
+        alert("Your score will be updated to the leaderboard soon. Hoping to see you at the top! 🚀");
+        window.location.href = "index.html";
+    }
+}
+</script>
+</body>
+</html>
