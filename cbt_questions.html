@@ -12,6 +12,7 @@
             --navy-dark: #001226;
             --green: #38761d;
             --green-bright: #4bb543;
+            --gold: #f59e0b;
             --bg-light: #f8fafc;
             --card-shadow: 0 10px 30px -5px rgba(0, 31, 63, 0.08);
         }
@@ -77,6 +78,111 @@
             color: #ffffff;
         }
 
+        /* ELITE PIN VERIFICATION SECTION */
+        .pin-section {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 4px solid var(--gold);
+            padding: 35px 20px;
+            color: white;
+            text-align: center;
+        }
+
+        .pin-box {
+            max-width: 550px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 25px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .pin-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .pin-status-badge {
+            display: inline-block;
+            background: #22c55e;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        .pin-input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .pin-input {
+            flex: 1;
+            padding: 12px 18px;
+            border-radius: 12px;
+            border: 2px solid #334155;
+            background: #0f172a;
+            color: white;
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+            text-align: center;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .pin-input:focus {
+            border-color: var(--gold);
+        }
+
+        .verify-btn {
+            background: var(--gold);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .verify-btn:hover {
+            background: #d97706;
+            color: white;
+        }
+
+        /* LOCKED STATE OVERLAY */
+        #lockedNotice {
+            text-align: center;
+            padding: 80px 20px;
+            color: #64748b;
+        }
+
+        #lockedNotice .lock-icon {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+        }
+
+        #lockedNotice h2 {
+            font-size: 1.5rem;
+            color: var(--navy);
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        #portalContent {
+            display: none; /* Hidden by default until activated */
+        }
+
         .hero-banner {
             background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
             color: #ffffff;
@@ -120,6 +226,7 @@
             margin: 40px auto;
             padding: 0 20px;
             flex: 1;
+            width: 100%;
         }
 
         .category-section {
@@ -133,9 +240,6 @@
             border-left: 5px solid var(--green);
             padding-left: 12px;
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
         }
 
         .course-grid {
@@ -211,10 +315,11 @@
             header { padding: 15px 20px; }
             .hero-title { font-size: 1.7rem; }
             .course-grid { grid-template-columns: 1fr; }
+            .pin-input-group { flex-direction: column; }
         }
     </style>
 </head>
-<body>
+<body onload="checkDeviceActivation()">
 
     <header>
         <a href="#" class="brand-logo">
@@ -225,17 +330,43 @@
         </div>
     </header>
 
-    <div class="hero-banner">
-        <h1 class="hero-title">CBT Examination Portal</h1>
-        <p class="hero-subtitle">Select your course code to initiate your practice test session.</p>
-        
-        <div class="search-wrapper">
-            <input type="text" id="searchInput" class="search-input" placeholder="Search course code or title (e.g. GST101, MTH101)..." onkeyup="filterCourses()">
+    <!-- TOP ELITE PIN VERIFICATION SECTION -->
+    <div class="pin-section">
+        <div class="pin-box">
+            <div class="pin-title">👑 ELITE ACCESS VERIFICATION</div>
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 15px;">Enter your unique one-time activation PIN below to unlock the CBT Portal on this device.</p>
+            
+            <div class="pin-input-group" id="pinFormGroup">
+                <input type="text" id="userPinInput" class="pin-input" placeholder="ENTER PIN (e.g. ELITE-9982)" />
+                <button class="verify-btn" id="verifyBtn" onclick="verifyPinWithSheets()">Activate Device 🔓</button>
+            </div>
+            <div id="verifiedBadge" style="display: none;">
+                <span class="pin-status-badge">✅ Device Activated & Unlocked</span>
+            </div>
         </div>
     </div>
 
-    <div class="container" id="coursesContainer">
-        <!-- Dynamic Faculty and Department Sections will render here -->
+    <!-- LOCKED NOTICE (SHOWN WHEN NOT ACTIVATED) -->
+    <div id="lockedNotice">
+        <div class="lock-icon">🔒</div>
+        <h2>Portal is Locked</h2>
+        <p>Please enter a valid Elite PIN in the activation box above to access your course modules.</p>
+    </div>
+
+    <!-- MAIN PORTAL CONTENT (UNLOCKED UPON ACTIVATION) -->
+    <div id="portalContent">
+        <div class="hero-banner">
+            <h1 class="hero-title">CBT Examination Portal</h1>
+            <p class="hero-subtitle">Select your course code to initiate your practice test session.</p>
+            
+            <div class="search-wrapper">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search course code or title (e.g. GST101, MTH101)..." onkeyup="filterCourses()">
+            </div>
+        </div>
+
+        <div class="container" id="coursesContainer">
+            <!-- Dynamic Faculty and Department Sections render here -->
+        </div>
     </div>
 
     <footer>
@@ -243,7 +374,59 @@
     </footer>
 
     <script>
-        // Master Catalog of Faculties, Departments, and Deduplicated Courses
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6JEanT9sB31CbNNxI0vpSmusJMzGCG_C9V8yrhhelWzVYIkYchIOT9Ns7ecGG0GgD/exec";
+
+        // 1. Auto-sync Check on Page Load
+        function checkDeviceActivation() {
+            const savedPin = localStorage.getItem('elite_active_pin');
+            if (savedPin) {
+                unlockPortal();
+            }
+        }
+
+        // 2. Verify Single-Use PIN with Google Sheets
+        async function verifyPinWithSheets() {
+            const inputPin = document.getElementById('userPinInput').value.trim();
+            const verifyBtn = document.getElementById('verifyBtn');
+
+            if (!inputPin) {
+                alert("Please enter a valid Elite PIN.");
+                return;
+            }
+
+            verifyBtn.innerText = "Verifying... ⏳";
+            verifyBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=verifyPin&pin=${encodeURIComponent(inputPin)}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    alert("PIN Verified! Portal unlocked successfully.");
+                    localStorage.setItem('elite_active_pin', inputPin);
+                    unlockPortal();
+                } else {
+                    alert(result.message);
+                }
+            } catch (err) {
+                console.error("PIN Verification Error:", err);
+                alert("Error connecting to server. Please check your network and try again.");
+            } finally {
+                verifyBtn.innerText = "Activate Device 🔓";
+                verifyBtn.disabled = false;
+            }
+        }
+
+        // Function to reveal the portal content
+        function unlockPortal() {
+            document.getElementById('pinFormGroup').style.display = 'none';
+            document.getElementById('verifiedBadge').style.display = 'block';
+            document.getElementById('lockedNotice').style.display = 'none';
+            document.getElementById('portalContent').style.display = 'block';
+            renderCourses(courseData);
+        }
+
+        // Course Catalog Data
         const courseData = [
             {
                 category: "General University Courses (GST / ENT)",
@@ -449,13 +632,11 @@
             }
         ];
 
-        // Helper function to turn course code into standard HTML filename (e.g. "GST 101" -> "test_GST101.html")
         function formatCourseFileName(code) {
             const cleanCode = code.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
             return `test_${cleanCode}.html`;
         }
 
-        // Render Courses into the Container
         function renderCourses(data) {
             const container = document.getElementById('coursesContainer');
             container.innerHTML = '';
@@ -493,27 +674,17 @@
             });
         }
 
-        // Filter Logic for Real-time Search
         function filterCourses() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            
             const filteredData = courseData.map(sec => {
                 const matchedCourses = sec.courses.filter(c => 
                     c.code.toLowerCase().includes(query) || 
                     c.name.toLowerCase().includes(query)
                 );
-                return {
-                    category: sec.category,
-                    courses: matchedCourses
-                };
+                return { category: sec.category, courses: matchedCourses };
             });
-
             renderCourses(filteredData);
         }
-
-        // Initial Load
-        renderCourses(courseData);
     </script>
-
 </body>
 </html>
