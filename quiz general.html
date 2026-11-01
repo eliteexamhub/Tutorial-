@@ -922,7 +922,7 @@ function showQuestion(index) {
 
 function startQuestionTimer() {
     clearInterval(questionTimer);
-    timeLeftPerQuestion = 10;
+    timeLeftPerQuestion = 15;
     
     const timerBar = document.getElementById('question-timer');
     timerBar.innerText = `Time Left for this Question: ${timeLeftPerQuestion}s`;
