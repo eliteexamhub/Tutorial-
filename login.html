@@ -264,10 +264,10 @@
 <body>
 
     <header>
-        <a href="homepage.html" class="brand-logo">
+        <a href="index.html" class="brand-logo">
             ELITE <span>EXAM HUB</span>
         </a>
-        <a href="homepage.html" class="back-home">← Back to Home</a>
+        <a href="index.html" class="back-home">← Back to Home</a>
     </header>
 
     <div class="auth-wrapper">
@@ -397,7 +397,7 @@
             status.className = "status-message success";
         }
 
-        // SIGN UP: SAVES DATA TO GOOGLE SHEETS
+        // SIGN UP: SAVES DATA TO GOOGLE SHEETS VIA GET PARAMETERS
         async function handleSignUp(event) {
             event.preventDefault();
             const typedCode = document.getElementById('verifyCode').value.trim();
@@ -417,44 +417,38 @@
             }
 
             btn.disabled = true;
-            status.innerText = "Saving account...";
+            status.innerText = "Saving account to database...";
             status.className = "status-message success";
 
-            const payload = {
+            const params = new URLSearchParams({
                 action: "signup",
-                fullName: document.getElementById('fullName').value,
-                phone: document.getElementById('phoneNumber').value,
-                gmail: document.getElementById('signupEmail').value,
-                faculty: document.getElementById('faculty').value,
-                department: document.getElementById('department').value,
-                username: document.getElementById('signupUsername').value,
-                password: document.getElementById('signupPassword').value
-            };
+                fullName: document.getElementById('fullName').value.trim(),
+                phone: document.getElementById('phoneNumber').value.trim(),
+                gmail: document.getElementById('signupEmail').value.trim(),
+                faculty: document.getElementById('faculty').value.trim(),
+                department: document.getElementById('department').value.trim(),
+                username: document.getElementById('signupUsername').value.trim(),
+                password: document.getElementById('signupPassword').value.trim()
+            });
 
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
+                await fetch(`${SCRIPT_URL}?${params.toString()}`, {
+                    method: 'GET',
+                    mode: 'no-cors'
                 });
-                const res = await response.json();
 
-                if (res.result === "success") {
-                    status.innerText = "✓ Account created!. Switch to Login tab.";
-                    status.className = "status-message success";
-                    setTimeout(() => { switchTab('login'); }, 1500);
-                } else {
-                    status.innerText = "❌ " + res.message;
-                    status.className = "status-message error";
-                    btn.disabled = false;
-                }
-            } catch (err) {
-                status.innerText = "✓ Account created!.";
+                status.innerText = "✓ Account created successfully! Switch to Login tab.";
                 status.className = "status-message success";
                 setTimeout(() => { switchTab('login'); }, 1500);
+            } catch (err) {
+                console.error("Sign-up Error:", err);
+                status.innerText = "❌ Connection error. Please try again.";
+                status.className = "status-message error";
+                btn.disabled = false;
             }
         }
 
-        // LOGIN: VERIFIES USERNAME & PASSWORD FROM GOOGLE SHEETS -> ROUTES TO CBT QUESTIONS
+        // LOGIN: VERIFIES USERNAME & PASSWORD
         async function handleLogin(event) {
             event.preventDefault();
             const status = document.getElementById('loginStatus');
@@ -464,17 +458,17 @@
             status.innerText = "Verifying credentials...";
             status.className = "status-message success";
 
-            const payload = {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            const params = new URLSearchParams({
                 action: "login",
-                username: document.getElementById('loginUsername').value,
-                password: document.getElementById('loginPassword').value
-            };
+                username: username,
+                password: password
+            });
 
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
+                const response = await fetch(`${SCRIPT_URL}?${params.toString()}`);
                 const res = await response.json();
 
                 if (res.result === "success") {
@@ -484,17 +478,17 @@
                         window.location.href = "cbt_questions.html"; 
                     }, 1200);
                 } else {
-                    status.innerText = "❌ " + res.message;
+                    status.innerText = "❌ " + (res.message || "Invalid username or password");
                     status.className = "status-message error";
                     btn.disabled = false;
                 }
             } catch (err) {
-                status.innerText = "❌ Error connecting to sheet verification service.";
+                console.error("Login Error:", err);
+                status.innerText = "❌ Error connecting to login verification service.";
                 status.className = "status-message error";
                 btn.disabled = false;
             }
         }
     </script>
-
 </body>
 </html>
