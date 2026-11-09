@@ -9,6 +9,8 @@
         :root { 
             --navy: #001f3f; 
             --green: #38761d; 
+            --green-light: #eef7ed;
+            --red-light: #fef2f2;
             --light-bg: #f8fafc; 
             --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
             --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
@@ -62,6 +64,12 @@
         .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
         .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
 
+        /* REVIEW STYLES */
+        .review-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; text-align: left; box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; }
+        .explanation-box { margin-top: 12px; padding: 14px; border-radius: 10px; font-size: 0.92rem; line-height: 1.5; }
+        .explanation-box.correct-bg { background: var(--green-light); border-left: 4px solid var(--green); color: #1e4620; }
+        .explanation-box.wrong-bg { background: var(--red-light); border-left: 4px solid #d32f2f; color: #991b1b; }
+
         #result-screen { display: none; text-align: center; padding: 50px 20px; }
         
         footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
@@ -80,7 +88,7 @@
 <div class="container">
     <header>
         <h1>GENERAL BIOLOGY (BIO 101)</h1>
-        <p>Elite Exam Hub • THEM NO BORN THIS QUESTIONS MAKE E NO COME OUT 😂</p>
+        <p>Elite Exam Hub • Master Review & Explanations Edition ⚡</p>
     </header>
 </div>
 
@@ -108,10 +116,7 @@
 </div>
 
 <div class="container" id="result-screen">
-    <div style="font-size: 3rem;">GO AND READ😂</div>
-    <h1 id="score-text"></h1>
-    <div id="review-area"></div>
-    <button class="btn-action" onclick="location.reload()">Try Again</button>
+    <!-- Populated automatically upon exam submission -->
 </div>
 
 <footer>
@@ -120,212 +125,212 @@
 </footer>
 
 <script>
-// Pool of 200 questions for BIO101
+// Pool of BIO101 questions with pre-loaded AI explanations (exp)
 const fullMthPool = [
-    { q: "Biology is primarily concerned with the study of ______.", o: ["Matter", "Life and living organisms", "Rocks and minerals", "The atmosphere"], a: 1 },
-    { q: "The science that deals with the study of diseases, their causes, symptoms and effects is called ______.", o: ["Anatomy", "Pathology", "Ecology", "Taxonomy"], a: 1 },
-    { q: "Which of the following is NOT a major area of biology?", o: ["Botany", "Zoology", "Geology", "Microbiology"], a: 2 },
-    { q: "The branch of biology concerned mainly with plants is ______.", o: ["Zoology", "Botany", "Cytology", "Physiology"], a: 1 },
-    { q: "Zoology is the scientific study of ______.", o: ["Plants", "Animals", "Cells only", "Microorganisms only"], a: 1 },
-    { q: "The branch of biology concerned with the study of cells is called ______.", o: ["Cytology", "Ecology", "Taxonomy", "Genetics"], a: 0 },
-    { q: "The study of heredity and variation is known as ______.", o: ["Genetics", "Ecology", "Anatomy", "Histology"], a: 0 },
-    { q: "Ecology is primarily concerned with ______.", o: ["Cell division", "Interactions between organisms and their environment", "Naming organisms", "Human anatomy"], a: 1 },
-    { q: "Which biological discipline is most directly concerned with the classification and naming of organisms?", o: ["Taxonomy", "Physiology", "Embryology", "Pathology"], a: 0 },
-    { q: "A scientist who studies microorganisms is primarily involved in ______.", o: ["Microbiology", "Astronomy", "Geology", "Economics"], a: 0 },
-    { q: "Which of the following is a characteristic of living organisms?", o: ["Respiration", "Rusting", "Melting", "Crystallization"], a: 0 },
-    { q: "The ability of an organism to respond to changes in its environment is called ______.", o: ["Sensitivity", "Nutrition", "Excretion", "Growth"], a: 0 },
-    { q: "The process by which organisms obtain or manufacture food is called ______.", o: ["Excretion", "Nutrition", "Respiration", "Reproduction"], a: 1 },
-    { q: "Which process removes metabolic waste products from an organism?", o: ["Growth", "Excretion", "Nutrition", "Reproduction"], a: 1 },
-    { q: "The production of new individuals by living organisms is called ______.", o: ["Adaptation", "Reproduction", "Respiration", "Sensitivity"], a: 1 },
-    { q: "An increase in the size and/or mass of an organism is known as ______.", o: ["Growth", "Nutrition", "Adaptation", "Movement"], a: 0 },
-    { q: "The ability of organisms to survive under particular environmental conditions is associated with ______.", o: ["Adaptation", "Excretion", "Digestion", "Respiration"], a: 0 },
-    { q: "Which of the following is included among the characteristics of living organisms listed in the document?", o: ["Competition", "Magnetism", "Combustion", "Corrosion"], a: 0 },
-    { q: "Which of the following is NOT a characteristic of living organisms listed in the document?", o: ["Movement", "Respiration", "Reproduction", "Evaporation"], a: 3 },
-    { q: "Biology is described in the document as a broad subject because it encompasses the study of ______.", o: ["Only human beings", "Only plants", "Life processes from molecular levels to communities", "Only microorganisms"], a: 2 },
-    { q: "Biodiversity refers to ______.", o: ["The study of rocks", "The great variety of living organisms and their habitats", "The study of cells", "The study of weather"], a: 1 },
-    { q: "Systematics is the scientific study of ______.", o: ["Biological diversity and its evolution", "Weather patterns", "Human diseases only", "Soil chemistry"], a: 0 },
-    { q: "Taxonomy is a subdivision of ______.", o: ["Ecology", "Systematics", "Physiology", "Anatomy"], a: 1 },
-    { q: "Who is regarded as the Father of Modern Taxonomy?", o: ["Charles Darwin", "Aristotle", "Carolus Linnaeus", "Gregor Mendel"], a: 2 },
-    { q: "Classification is best described as the ______.", o: ["Random arrangement of organisms", "Orderly arrangement of organisms into groups based on similarities", "Destruction of organisms", "Naming of planets"], a: 1 },
-    { q: "Which of the following represents the correct taxonomic hierarchy from highest to lowest?", o: ["Species → Genus → Family → Order → Class → Phylum → Kingdom", "Kingdom → Phylum → Class → Order → Family → Genus → Species", "Kingdom → Species → Genus → Family → Class → Order → Phylum", "Phylum → Kingdom → Class → Species → Family → Genus → Order"], a: 1 },
-    { q: "The basic unit of biological classification is the ______.", o: ["Genus", "Family", "Species", "Kingdom"], a: 2 },
-    { q: "A species consists of organisms that can ______.", o: ["Never reproduce", "Interbreed successfully and produce offspring", "Belong to different kingdoms", "Always live in different habitats"], a: 1 },
-    { q: "Which scientist laid the foundations for modern biological nomenclature?", o: ["Carolus Linnaeus", "Lamarck", "Watson", "Haeckel"], a: 0 },
-    { q: "Linnaeus initially distinguished which two kingdoms?", o: ["Monera and Protista", "Animalia and Vegetabilia", "Fungi and Plantae", "Protista and Fungi"], a: 1 },
-    { q: "The scientific naming system in which an organism is given two names is called ______.", o: ["Trinomial nomenclature", "Binomial nomenclature", "Numerical nomenclature", "Molecular nomenclature"], a: 1 },
-    { q: "The first word in a scientific name represents the ______.", o: ["Species", "Genus", "Family", "Order"], a: 1 },
-    { q: "The second word in a binomial scientific name represents the ______.", o: ["Species-specific name", "Kingdom", "Family", "Phylum"], a: 0 },
-    { q: "In scientific nomenclature, the genus name begins with a ______ letter.", o: ["Lowercase", "Capital", "Numerical", "Greek"], a: 1 },
-    { q: "Which scientific name is correctly written?", o: ["homo Sapiens", "Homo Sapiens", "Homo sapiens", "homo sapiens"], a: 2 },
-    { q: "Why is binomial nomenclature useful?", o: ["It gives organisms standard names worldwide", "It prevents reproduction", "It changes habitats", "It eliminates biodiversity"], a: 0 },
-    { q: "The three-domain system includes Bacteria, Archaea and ______.", o: ["Plantae", "Eukarya", "Animalia", "Protista"], a: 1 },
-    { q: "Organisms in the domain Bacteria are generally ______.", o: ["Prokaryotic", "Multicellular animals", "Fungi", "Plants"], a: 0 },
-    { q: "Organisms belonging to Eukarya possess ______.", o: ["No DNA", "A true nucleus", "No cell membrane", "No ribosomes"], a: 1 },
-    { q: "The kingdom Monera consists mainly of ______ organisms.", o: ["Prokaryotic", "Multicellular eukaryotic", "Viral", "Fungal"], a: 0 },
-    { q: "Which of the following is an example of a prokaryote?", o: ["Bacterium", "Mushroom", "Amoeba", "Fern"], a: 0 },
-    { q: "The hereditary material of bacteria is located in the ______.", o: ["True nucleus", "Nucleoid", "Golgi body", "Chloroplast"], a: 1 },
-    { q: "Which structure is absent in typical prokaryotic cells?", o: ["Ribosome", "Plasma membrane", "Membrane-bound nucleus", "Cytoplasm"], a: 2 },
-    { q: "The bacterial cell wall commonly contains ______.", o: ["Cellulose only", "Peptidoglycan", "Chitin only", "Glycogen"], a: 1 },
-    { q: "Gram-positive bacteria have a cell wall that is relatively rich in ______.", o: ["Protein-sugar complexes", "Cellulose", "Chitin", "Lipid only"], a: 0 },
-    { q: "Gram-negative bacteria possess an additional ______ layer.", o: ["Lipid", "Cellulose", "Chitin", "Nuclear"], a: 0 },
-    { q: "Which of the following is NOT one of the three major bacterial groups based on habitat mentioned in the document?", o: ["Halophiles", "Thermophiles", "Methanogens", "Protozoans"], a: 3 },
-    { q: "Organisms that live in extremely salty environments are called ______.", o: ["Thermophiles", "Halophiles", "Methanogens", "Saprophytes"], a: 1 },
-    { q: "Organisms adapted to very high temperatures are called ______.", o: ["Halophiles", "Thermophiles", "Parasites", "Protozoans"], a: 1 },
-    { q: "Methanogens are associated with the production of ______.", o: ["Oxygen", "Methane", "Nitrogen", "Hydrogen peroxide"], a: 1 },
-    { q: "Spherical bacteria are called ______.", o: ["Bacilli", "Cocci", "Vibrios", "Spirilla"], a: 1 },
-    { q: "Rod-shaped bacteria are called ______.", o: ["Bacilli", "Cocci", "Vibrios", "Spirilla"], a: 0 },
-    { q: "Comma-shaped bacteria are called ______.", o: ["Cocci", "Bacilli", "Vibrios", "Spirilla"], a: 2 },
-    { q: "Spiral-shaped bacteria are called ______.", o: ["Spirilla", "Cocci", "Bacilli", "Vibrios"], a: 0 },
-    { q: "Which of the following is an autotrophic mode of nutrition in bacteria?", o: ["Parasitic", "Saprophytic", "Photosynthetic", "Holozoic"], a: 2 },
-    { q: "The kingdom Protista contains mainly ______ organisms.", o: ["Prokaryotic", "Eukaryotic", "Viral", "Acellular"], a: 1 },
-    { q: "Most protists are ______.", o: ["Unicellular", "Acellular", "Multicellular animals", "Vascular plants"], a: 0 },
-    { q: "Amoeba moves mainly by means of ______.", o: ["Cilia", "Flagella", "Pseudopodia", "Wings"], a: 2 },
-    { q: "Paramecium moves using ______.", o: ["Cilia", "Pseudopodia", "Roots", "Hyphae"], a: 0 },
-    { q: "Euglena is an example of a ______.", o: ["Plant-like protist", "Fungus", "Bacterium", "Mammal"], a: 0 },
-    { q: "Protozoans are generally classified as ______.", o: ["Animal-like protists", "Plant-like protists", "Fungi", "Bacteria"], a: 0 },
-    { q: "Algae are generally described in the document as ______.", o: ["Plant-like protists", "Animal-like protists", "Prokaryotes only", "Fungi"], a: 0 },
-    { q: "Which organism is an example of a fungus?", o: ["Mushroom", "Amoeba", "Paramecium", "Euglena"], a: 0 },
-    { q: "Fungi obtain nutrients mainly by ______.", o: ["Absorption", "Photosynthesis", "Ingestion followed by chewing", "Filtration"], a: 0 },
-    { q: "The vegetative body of most fungi is called the ______.", o: ["Mycelium", "Nucleus", "Thallus", "Capsule"], a: 0 },
-    { q: "Individual fungal filaments are called ______.", o: ["Hyphae", "Cilia", "Pseudopodia", "Rhizoids"], a: 0 },
-    { q: "Fungi reproduce by ______.", o: ["Only binary fission", "Spores and other methods", "Only seeds", "Only eggs"], a: 1 },
-    { q: "Which of the following is a characteristic of fungi?", o: ["They are photosynthetic", "They are non-vascular", "They possess chloroplasts", "They produce their own food"], a: 1 },
-    { q: "The cell wall of fungi is chemically associated with ______.", o: ["Chitin", "Cellulose only", "Peptidoglycan", "Calcium carbonate only"], a: 0 },
-    { q: "Fungi may obtain nutrition as ______.", o: ["Saprophytes, parasites or symbionts", "Only autotrophs", "Only herbivores", "Only carnivores"], a: 0 },
-    { q: "The plant kingdom is broadly divided into groups based on characteristics such as ______.", o: ["Seeds and vascular tissues", "Hair colour", "Blood groups", "Body temperature"], a: 0 },
-    { q: "Cryptogams are plants that ______.", o: ["Have well-developed reproductive organs", "Do not have well-developed reproductive organs", "Always produce fruits", "Always produce flowers"], a: 1 },
-    { q: "Phanerogams are plants that ______.", o: ["Have well-developed reproductive organs", "Lack reproductive organs", "Are all fungi", "Are all bacteria"], a: 0 },
-    { q: "Bryophytes are generally ______ plants.", o: ["Vascular", "Non-vascular", "Seed-producing", "Flowering"], a: 1 },
-    { q: "Which of the following is an example of a bryophyte?", o: ["Moss", "Maize", "Pine", "Mango"], a: 0 },
-    { q: "Pteridophytes are characterized by the presence of ______.", o: ["Vascular tissues", "Flowers only", "Fruits only", "Seeds only"], a: 0 },
-    { q: "Which of the following is an example of a pteridophyte?", o: ["Fern", "Moss", "Mushroom", "Mango"], a: 0 },
-    { q: "Gymnosperms produce seeds that are generally ______.", o: ["Enclosed within fruits", "Naked or exposed", "Produced inside flowers", "Produced by fungi"], a: 1 },
-    { q: "Angiosperms are commonly known as ______ plants.", o: ["Flowering", "Non-vascular", "Seedless", "Fungal"], a: 0 },
-    { q: "A major difference between gymnosperms and angiosperms is that angiosperm seeds are generally ______.", o: ["Naked", "Enclosed in fruits", "Produced by spores", "Absent"], a: 1 },
-    { q: "Which of the following is a monocotyledon?", o: ["Maize", "Bean", "Pea", "Groundnut"], a: 0 },
-    { q: "Which of the following is a dicotyledon?", o: ["Maize", "Bean", "Grass", "Rice"], a: 1 },
-    { q: "Monocotyledons typically possess ______ cotyledon.", o: ["One", "Two", "Three", "Four"], a: 0 },
-    { q: "Dicotyledons typically possess ______ cotyledons.", o: ["One", "Two", "Three", "Four"], a: 1 },
-    { q: "Which plant group has seeds but does not produce flowers?", o: ["Gymnosperms", "Angiosperms", "Bryophytes", "Pteridophytes"], a: 0 },
-    { q: "Animals are generally described as ______ organisms.", o: ["Eukaryotic and multicellular", "Prokaryotic and unicellular", "Acellular", "Photosynthetic"], a: 0 },
-    { q: "Animals obtain food mainly through ______ nutrition.", o: ["Heterotrophic", "Autotrophic", "Photosynthetic", "Chemosynthetic"], a: 0 },
-    { q: "The presence of a true body cavity is characteristic of ______.", o: ["Coelomates", "Acoelomates", "Pseudocoelomates", "Prokaryotes"], a: 0 },
-    { q: "Animals without a body cavity are called ______.", o: ["Coelomates", "Acoelomates", "Pseudocoelomates", "Vertebrates"], a: 1 },
-    { q: "Animals with a false body cavity are called ______.", o: ["Coelomates", "Acoelomates", "Pseudocoelomates", "Diploblasts"], a: 2 },
-    { q: "Sponges belong to the phylum ______.", o: ["Porifera", "Annelida", "Mollusca", "Arthropoda"], a: 0 },
-    { q: "A characteristic feature of Porifera is the presence of numerous ______.", o: ["Pores", "Wings", "Feathers", "Scales"], a: 0 },
-    { q: "Hydra belongs to the phylum ______.", o: ["Coelenterata/Cnidaria", "Mollusca", "Annelida", "Chordata"], a: 0 },
-    { q: "Cnidarians generally possess ______ symmetry.", o: ["Bilateral", "Radial", "Asymmetrical", "Spiral"], a: 1 },
-    { q: "Cnidarians are generally ______.", o: ["Triploblastic", "Diploblastic", "Monoblastic", "Acoelomate vertebrates"], a: 1 },
-    { q: "Planaria belongs to the phylum ______.", o: ["Platyhelminthes", "Nematoda", "Annelida", "Mollusca"], a: 0 },
-    { q: "Members of Platyhelminthes are commonly called ______.", o: ["Flatworms", "Roundworms", "Segmented worms", "Sponges"], a: 0 },
-    { q: "Ascaris belongs to the phylum ______.", o: ["Nematoda", "Annelida", "Mollusca", "Arthropoda"], a: 0 },
-    { q: "Members of Nematoda are commonly known as ______.", o: ["Flatworms", "Roundworms", "Segmented worms", "Ringworms"], a: 1 },
-    { q: "Earthworms belong to the phylum ______.", o: ["Annelida", "Nematoda", "Mollusca", "Echinodermata"], a: 0 },
-    { q: "A major characteristic of annelids is ______ segmentation.", o: ["Absent", "Present", "Random", "Radial"], a: 1 },
-    { q: "Annelids generally possess a ______ body cavity.", o: ["True coelom", "No cavity", "False cavity", "Nuclear cavity"], a: 0 },
-    { q: "Which of the following belongs to Annelida?", o: ["Leech", "Ascaris", "Tapeworm", "Hydra"], a: 0 },
-    { q: "Arthropods possess an ______ skeleton.", o: ["Internal", "External", "Fluid", "Cartilaginous"], a: 1 },
-    { q: "Which of the following is an arthropod?", o: ["Butterfly", "Earthworm", "Starfish", "Snail"], a: 0 },
-    { q: "One major characteristic of Arthropoda is ______ appendages.", o: ["Jointed", "Unjointed", "Leaf-like", "Root-like"], a: 0 },
-    { q: "Which organism belongs to Mollusca?", o: ["Snail", "Earthworm", "Spider", "Starfish"], a: 0 },
-    { q: "The body of a typical mollusc is divided into structures including the ______.", o: ["Visceral mass and muscular foot", "Head and wings only", "Thorax and abdomen only", "Root and shoot"], a: 0 },
-    { q: "Molluscs generally possess a ______ circulatory system.", o: ["Open", "Closed only", "Double closed", "Pulmonary"], a: 0 },
-    { q: "Starfish belongs to the phylum ______.", o: ["Echinodermata", "Mollusca", "Arthropoda", "Annelida"], a: 0 },
-    { q: "Adult echinoderms typically possess ______ symmetry.", o: ["Bilateral", "Radial", "Asymmetrical", "None"], a: 1 },
-    { q: "Echinoderms possess a characteristic ______ system.", o: ["Water vascular", "Blood vascular only", "Air vascular", "Root vascular"], a: 0 },
-    { q: "Which of the following is an echinoderm?", o: ["Sea cucumber", "Snail", "Butterfly", "Earthworm"], a: 0 },
-    { q: "Chordates are characterized by the presence of a ______.", o: ["Notochord", "Shell", "Hypha", "Pseudopodium"], a: 0 },
-    { q: "The notochord is a ______ structure.", o: ["Rod-shaped", "Flat", "Hollow sphere", "Spiral shell"], a: 0 },
-    { q: "Vertebrates possess a vertebral column developed from the ______.", o: ["Notochord", "Cell wall", "Hypha", "Shell"], a: 0 },
-    { q: "Which of the following is a vertebrate?", o: ["Dog", "Earthworm", "Snail", "Sponge"], a: 0 },
-    { q: "Fish generally possess ______ chambers in their heart.", o: ["Two", "Three", "Four", "Five"], a: 0 },
-    { q: "Adult amphibians generally have a ______-chambered heart.", o: ["Two", "Three", "Four", "Five"], a: 1 },
-    { q: "Birds generally possess a ______-chambered heart.", o: ["Two", "Three", "Four", "Five"], a: 2 },
-    { q: "Cytology is the study of ______.", o: ["Cells", "Ecosystems", "Evolution", "Fossils"], a: 0 },
-    { q: "Which two major types of cells are compared in the document?", o: ["Plant and fungal cells", "Prokaryotic and eukaryotic cells", "Animal and bacterial cells only", "Viral and fungal cells"], a: 1 },
-    { q: "A major difference between prokaryotic and eukaryotic cells is that eukaryotic cells possess a ______.", o: ["True nucleus", "Nucleoid only", "Cell wall only", "Capsule"], a: 0 },
-    { q: "The genetic material of prokaryotes is located in the ______.", o: ["Nucleoid region", "Golgi apparatus", "Nucleus", "Lysosome"], a: 0 },
-    { q: "Ribosomes are primarily involved in ______.", o: ["Protein synthesis", "Lipid storage", "Photosynthesis", "Cell locomotion"], a: 0 },
-    { q: "Which organelle is primarily associated with ATP production?", o: ["Mitochondrion", "Lysosome", "Golgi apparatus", "Nucleolus"], a: 0 },
-    { q: "The endoplasmic reticulum is involved in ______.", o: ["Intracellular transport", "Bone formation only", "Locomotion only", "Blood clotting only"], a: 0 },
-    { q: "Rough endoplasmic reticulum is associated with ______.", o: ["Ribosomes", "Lysosomes", "Centrioles", "Chloroplasts only"], a: 0 },
-    { q: "Smooth endoplasmic reticulum is particularly associated with ______.", o: ["Lipid synthesis", "Protein digestion", "DNA replication only", "Cell division only"], a: 0 },
-    { q: "The Golgi apparatus is involved in ______.", o: ["Modification and secretion of materials", "DNA storage", "Photosynthesis", "Chromosome formation only"], a: 0 },
-    { q: "Lysosomes contain numerous ______.", o: ["Digestive enzymes", "Chlorophyll molecules", "Chromosomes", "Ribosomes only"], a: 0 },
-    { q: "The digestion of engulfed material within a cell is associated with ______.", o: ["Lysosomes", "Ribosomes", "Centrioles", "Chloroplasts"], a: 0 },
-    { q: "Peroxisomes are particularly important in the breakdown of ______.", o: ["Hydrogen peroxide", "Cellulose only", "DNA only", "Ribosomes"], a: 0 },
-    { q: "Vacuoles in plant cells are important for ______.", o: ["Storage and water balance", "Protein synthesis only", "DNA replication only", "Cell movement"], a: 0 },
-    { q: "Centrioles are associated with ______.", o: ["Cell division and cilia formation", "Photosynthesis", "Food absorption only", "DNA transcription only"], a: 0 },
-    { q: "Cilia and flagella are structures primarily associated with ______.", o: ["Movement", "Photosynthesis", "Digestion", "Heredity"], a: 0 },
-    { q: "Microtubules are important components of ______.", o: ["Cilia and flagella", "Cell walls only", "Chlorophyll", "Ribosomes"], a: 0 },
-    { q: "Microfilaments are primarily composed of ______.", o: ["Actin", "Cellulose", "Chitin", "DNA"], a: 0 },
-    { q: "Microvilli increase the ______ of cells.", o: ["Surface area", "Nuclear size", "Chromosome number", "Cell wall thickness"], a: 0 },
-    { q: "The cell wall of plants contains ______.", o: ["Cellulose", "Peptidoglycan only", "Chitin only", "Glycogen"], a: 0 },
-    { q: "Chloroplasts are found mainly in ______ cells.", o: ["Plant", "Animal", "Bacterial only", "Fungal"], a: 0 },
-    { q: "The main function of chloroplasts is ______.", o: ["Photosynthesis", "Protein digestion", "Cell division", "Waste excretion"], a: 0 },
-    { q: "The plasma membrane is described as a ______ barrier.", o: ["Selectively permeable", "Completely impermeable", "Rigid and non-living", "Solid protein wall"], a: 0 },
-    { q: "Diffusion involves movement of particles from a region of ______ concentration to a region of lower concentration.", o: ["Higher", "Lower", "Equal", "Zero"], a: 0 },
-    { q: "Increasing the difference in concentration between two regions generally makes diffusion ______.", o: ["Faster", "Impossible", "Slower", "Stop completely"], a: 0 },
-    { q: "Increasing the surface area available for diffusion generally ______ diffusion.", o: ["Increases", "Prevents", "Stops", "Reverses"], a: 0 },
-    { q: "Small, fat-soluble molecules generally diffuse ______.", o: ["More readily", "Less readily", "Only through ribosomes", "Only through nuclei"], a: 0 },
-    { q: "Osmosis is associated with the movement of ______.", o: ["Water", "Proteins only", "DNA", "Ribosomes"], a: 0 },
-    { q: "Phagocytosis involves the uptake of ______.", o: ["Solid particles", "Water only", "Oxygen only", "DNA only"], a: 0 },
-    { q: "Pinocytosis involves the uptake of ______.", o: ["Fluid materials", "Solid food only", "Chromosomes", "Ribosomes"], a: 0 },
-    { q: "Reproduction involving only one parent is called ______ reproduction.", o: ["Sexual", "Asexual", "Bisexual", "Gametic"], a: 1 },
-    { q: "Sexual reproduction normally involves the fusion of ______.", o: ["Two gametes", "Two somatic cells only", "Two nuclei without gametes", "Two tissues"], a: 0 },
-    { q: "The fusion of male and female gametes is called ______.", o: ["Fertilization", "Budding", "Fragmentation", "Germination"], a: 0 },
-    { q: "The product of fertilization is the ______.", o: ["Zygote", "Spore", "Hypha", "Pseudopodium"], a: 0 },
-    { q: "Reproduction by the formation of a small outgrowth that separates from the parent is called ______.", o: ["Budding", "Fragmentation", "Binary fission", "Pollination"], a: 0 },
-    { q: "Binary fission involves the division of one organism into ______.", o: ["Two individuals", "Three individuals", "Four individuals", "Many spores"], a: 0 },
-    { q: "Amoeba commonly reproduces asexually by ______.", o: ["Binary fission", "Budding", "Seed formation", "Fertilization"], a: 0 },
-    { q: "In plants, fragmentation may be followed by ______.", o: ["Regeneration", "Fertilization only", "Pollination only", "Mutation only"], a: 0 },
-    { q: "In flowering plants, the male reproductive organ is the ______.", o: ["Stamen", "Ovary", "Ovule", "Carpel only"], a: 0 },
-    { q: "The female reproductive organ of a flowering plant is the ______.", o: ["Carpel", "Stamen", "Anther", "Filament"], a: 0 },
-    { q: "Pollen grains are produced in the ______.", o: ["Anther", "Ovary", "Stigma", "Style"], a: 0 },
-    { q: "Ovules are contained within the ______.", o: ["Ovary", "Anther", "Filament", "Stigma"], a: 0 },
-    { q: "In animals, the male reproductive organ that produces sperm is the ______.", o: ["Testis", "Ovary", "Uterus", "Oviduct"], a: 0 },
-    { q: "The female reproductive organ that produces eggs is the ______.", o: ["Ovary", "Testis", "Penis", "Epididymis"], a: 0 },
-    { q: "The human sperm cell is generally described as having a head, middle piece and ______.", o: ["Tail", "Wing", "Cilium", "Shell"], a: 0 },
-    { q: "The developing structure formed after fertilization is initially called a ______.", o: ["Zygote", "Spore", "Pollen grain", "Hypha"], a: 0 },
-    { q: "Repeated division of the zygote eventually contributes to the formation of an ______.", o: ["Embryo", "Adult immediately", "Ovule", "Anther"], a: 0 },
-    { q: "An embryo that develops inside the mother's body is characteristic of ______ animals.", o: ["Viviparous", "Oviparous", "Ovoviviparous only", "Asexual"], a: 0 },
-    { q: "Animals that lay eggs are described as ______.", o: ["Oviparous", "Viviparous", "Hermaphroditic", "Parthenogenetic"], a: 0 },
-    { q: "In ovoviviparous animals, eggs are generally ______.", o: ["Retained within the mother's body until development", "Never fertilized", "Produced by plants", "Replaced by spores"], a: 0 },
-    { q: "Fertilization occurring inside the female body is called ______ fertilization.", o: ["Internal", "External", "Artificial only", "Asexual"], a: 0 },
-    { q: "Fertilization occurring outside the female body is called ______ fertilization.", o: ["Internal", "External", "Nuclear", "Vegetative"], a: 1 },
-    { q: "Frogs commonly exhibit ______ fertilization.", o: ["External", "Internal", "Vegetative", "Asexual"], a: 0 },
-    { q: "Which of the following is an example of vegetative reproduction?", o: ["Production of new plants from vegetative parts", "Fusion of sperm and egg", "Formation of zygote", "Production of pollen only"], a: 0 },
-    { q: "Airborne spores are particularly characteristic of many ______ plants.", o: ["Non-flowering", "Flowering only", "Seed-producing only", "Angiosperm fruits"], a: 0 },
-    { q: "Competition occurs when organisms ______.", o: ["Require the same limited resources", "Never interact", "Produce identical gametes", "Stop feeding"], a: 0 },
-    { q: "Predation is an interaction in which one organism ______.", o: ["Kills and eats another organism", "Produces food for another", "Lives without feeding", "Always benefits both organisms"], a: 0 },
-    { q: "The organism that captures and eats another organism is called the ______.", o: ["Predator", "Prey", "Host", "Parasite only"], a: 0 },
-    { q: "The organism that is hunted and eaten is called the ______.", o: ["Prey", "Predator", "Producer", "Decomposer"], a: 0 },
-    { q: "Symbiosis involves ______.", o: ["Close interaction between organisms", "Only competition", "Only predation", "Complete absence of interaction"], a: 0 },
-    { q: "In parasitism, the parasite generally ______.", o: ["Benefits while the host is harmed", "Is always harmed", "Benefits the host only", "Benefits neither organism"], a: 0 },
-    { q: "A parasite that lives on the external surface of its host is a/an ______.", o: ["Ectoparasite", "Endoparasite", "Autotroph", "Producer"], a: 0 },
-    { q: "A parasite that lives inside the body of its host is a/an ______.", o: ["Endoparasite", "Ectoparasite", "Producer", "Predator"], a: 0 },
-    { q: "In mutualism, ______.", o: ["Both organisms benefit", "One benefits and the other is harmed", "Both are harmed", "Neither benefits"], a: 0 },
-    { q: "In commensalism, ______.", o: ["One organism benefits while the other is generally unaffected", "Both organisms are harmed", "Both organisms die", "One organism always kills the other"], a: 0 },
-    { q: "Heredity is the transmission of characteristics from ______.", o: ["Parents to offspring", "Environment to rocks", "Plants to soil", "Predators to prey"], a: 0 },
-    { q: "A heritable feature that varies among individuals is called a ______.", o: ["Character", "Tissue", "Habitat", "Species"], a: 0 },
-    { q: "A specific form of a gene is called an ______.", o: ["Allele", "Antibody", "Antigen", "Organelle"], a: 0 },
-    { q: "The physical appearance or observable characteristics of an organism constitute its ______.", o: ["Phenotype", "Genotype", "Allele", "Genome only"], a: 0 },
-    { q: "The genetic makeup of an individual is its ______.", o: ["Genotype", "Phenotype", "Character", "Trait only"], a: 0 },
-    { q: "An individual with two identical alleles at a locus is ______.", o: ["Homozygous", "Heterozygous", "Hybrid only", "Hemizygous"], a: 0 },
-    { q: "An individual with two different alleles at a locus is ______.", o: ["Heterozygous", "Homozygous", "Haploid", "Diploid only"], a: 0 },
-    { q: "Mendel's Law of Segregation states that alleles ______.", o: ["Separate during gamete formation", "Always remain together", "Disappear during meiosis", "Are found only in males"], a: 0 },
-    { q: "Mendel's Law of Independent Assortment concerns the ______.", o: ["Independent distribution of allele pairs", "Formation of cell walls", "Production of ATP", "Movement of cilia"], a: 0 },
-    { q: "In a typical Mendelian monohybrid cross, the F₂ phenotypic ratio is ______.", o: ["1:1", "2:1", "3:1", "9:3:3:1"], a: 2 },
-    { q: "In the same typical monohybrid cross, the F₂ genotypic ratio is ______.", o: ["3:1", "1:2:1", "9:3:3:1", "1:1"], a: 1 },
-    { q: "A cross between an individual of unknown genotype and a homozygous recessive individual is called a ______.", o: ["Test cross", "Back cross", "Reciprocal cross", "Dihybrid cross"], a: 0 },
-    { q: "A cross between an individual and one of its parents is called a ______.", o: ["Back cross", "Test cross", "Dihybrid cross", "Reciprocal cross"], a: 0 },
-    { q: "Human sex is determined by the ______ chromosomes.", o: ["Autosomes", "Sex chromosomes", "Ribosomes", "Mitochondria only"], a: 1 },
-    { q: "In humans, a female is generally represented as ______.", o: ["XX", "XY", "YY", "XO"], a: 0 }
+    { q: "Biology is primarily concerned with the study of ______.", o: ["Matter", "Life and living organisms", "Rocks and minerals", "The atmosphere"], a: 1, exp: "Biology is the core branch of science dedicated to studying life, living organisms, and their vital processes." },
+    { q: "The science that deals with the study of diseases, their causes, symptoms and effects is called ______.", o: ["Anatomy", "Pathology", "Ecology", "Taxonomy"], a: 1, exp: "Pathology focuses specifically on understanding diseases, structural changes, and functional alterations in living tissues." },
+    { q: "Which of the following is NOT a major area of biology?", o: ["Botany", "Zoology", "Geology", "Microbiology"], a: 2, exp: "Geology is the study of the Earth's physical structure and rocks, whereas Botany, Zoology, and Microbiology are biological sciences." },
+    { q: "The branch of biology concerned mainly with plants is ______.", o: ["Zoology", "Botany", "Cytology", "Physiology"], a: 1, exp: "Botany is the specialized scientific field focused on plant life, structures, and functions." },
+    { q: "Zoology is the scientific study of ______.", o: ["Plants", "Animals", "Cells only", "Microorganisms only"], a: 1, exp: "Zoology is the branch of biology that examines animal biology, classification, and physiology." },
+    { q: "The branch of biology concerned with the study of cells is called ______.", o: ["Cytology", "Ecology", "Taxonomy", "Genetics"], a: 0, exp: "Cytology (or Cell Biology) examines cell structure, function, organellar mechanics, and division." },
+    { q: "The study of heredity and variation is known as ______.", o: ["Genetics", "Ecology", "Anatomy", "Histology"], a: 0, exp: "Genetics investigates how genetic traits and variations are passed from parents to offspring." },
+    { q: "Ecology is primarily concerned with ______.", o: ["Cell division", "Interactions between organisms and their environment", "Naming organisms", "Human anatomy"], a: 1, exp: "Ecology studies how living organisms interact with each other and their surrounding ecosystems." },
+    { q: "Which biological discipline is most directly concerned with the classification and naming of organisms?", o: ["Taxonomy", "Physiology", "Embryology", "Pathology"], a: 0, exp: "Taxonomy defines, names, and classifies groups of biological organisms based on shared characteristics." },
+    { q: "A scientist who studies microorganisms is primarily involved in ______.", o: ["Microbiology", "Astronomy", "Geology", "Economics"], a: 0, exp: "Microbiology deals with microscopic organisms such as bacteria, microscopic algae, fungi, and protozoa." },
+    { q: "Which of the following is a characteristic of living organisms?", o: ["Respiration", "Rusting", "Melting", "Crystallization"], a: 0, exp: "Respiration is a vital metabolic process common to living organisms, unlike non-living processes like rusting or melting." },
+    { q: "The ability of an organism to respond to changes in its environment is called ______.", o: ["Sensitivity", "Nutrition", "Excretion", "Growth"], a: 0, exp: "Sensitivity (irritability) allows living beings to detect and react to internal or environmental stimuli." },
+    { q: "The process by which organisms obtain or manufacture food is called ______.", o: ["Excretion", "Nutrition", "Respiration", "Reproduction"], a: 1, exp: "Nutrition is the intake or synthesis of nutrients needed for energy, growth, and tissue repair." },
+    { q: "Which process removes metabolic waste products from an organism?", o: ["Growth", "Excretion", "Nutrition", "Reproduction"], a: 1, exp: "Excretion eliminates toxic nitrogenous wastes and metabolic byproducts from the body." },
+    { q: "The production of new individuals by living organisms is called ______.", o: ["Adaptation", "Reproduction", "Respiration", "Sensitivity"], a: 1, exp: "Reproduction ensures species survival through asexual or sexual generation of offspring." },
+    { q: "An increase in the size and/or mass of an organism is known as ______.", o: ["Growth", "Nutrition", "Adaptation", "Movement"], a: 0, exp: "Growth is an irreversible quantitative increase in cell size or cell number." },
+    { q: "The ability of organisms to survive under particular environmental conditions is associated with ______.", o: ["Adaptation", "Excretion", "Digestion", "Respiration"], a: 0, exp: "Adaptation involves physical or behavioral traits that enhance survival within a specific habitat." },
+    { q: "Which of the following is included among the characteristics of living organisms listed in the document?", o: ["Competition", "Magnetism", "Combustion", "Corrosion"], a: 0, exp: "Competition for resources is a fundamental ecological behavior exhibited by living populations." },
+    { q: "Which of the following is NOT a characteristic of living organisms listed in the document?", o: ["Movement", "Respiration", "Reproduction", "Evaporation"], a: 3, exp: "Evaporation is a purely physical phase change of water, not a metabolic characteristic of living beings." },
+    { q: "Biology is described in the document as a broad subject because it encompasses the study of ______.", o: ["Only human beings", "Only plants", "Life processes from molecular levels to communities", "Only microorganisms"], a: 2, exp: "Biology spans molecular biology up to biome ecology." },
+    { q: "Biodiversity refers to ______.", o: ["The study of rocks", "The great variety of living organisms and their habitats", "The study of cells", "The study of weather"], a: 1, exp: "Biodiversity measures biological variation across ecosystems, species, and genetic levels." },
+    { q: "Systematics is the scientific study of ______.", o: ["Biological diversity and its evolution", "Weather patterns", "Human diseases only", "Soil chemistry"], a: 0, exp: "Systematics investigates species relationships and evolutionary histories." },
+    { q: "Taxonomy is a subdivision of ______.", o: ["Ecology", "Systematics", "Physiology", "Anatomy"], a: 1, exp: "Taxonomy operates inside systematics to categorize evolutionary relationships." },
+    { q: "Who is regarded as the Father of Modern Taxonomy?", o: ["Charles Darwin", "Aristotle", "Carolus Linnaeus", "Gregor Mendel"], a: 2, exp: "Carolus Linnaeus established binomial nomenclature and hierarchical classification." },
+    { q: "Classification is best described as the ______.", o: ["Random arrangement of organisms", "Orderly arrangement of organisms into groups based on similarities", "Destruction of organisms", "Naming of planets"], a: 1, exp: "Classification arranges organisms into structured taxa based on shared traits." },
+    { q: "Which of the following represents the correct taxonomic hierarchy from highest to lowest?", o: ["Species → Genus → Family → Order → Class → Phylum → Kingdom", "Kingdom → Phylum → Class → Order → Family → Genus → Species", "Kingdom → Species → Genus → Family → Class → Order → Phylum", "Phylum → Kingdom → Class → Species → Family → Genus → Order"], a: 1, exp: "Standard hierarchy: Kingdom, Phylum, Class, Order, Family, Genus, Species." },
+    { q: "The basic unit of biological classification is the ______.", o: ["Genus", "Family", "Species", "Kingdom"], a: 2, exp: "Species is the primary operational rank in biological classification." },
+    { q: "A species consists of organisms that can ______.", o: ["Never reproduce", "Interbreed successfully and produce offspring", "Belong to different kingdoms", "Always live in different habitats"], a: 1, exp: "Members of a species interbreed in nature to produce fertile offspring." },
+    { q: "Which scientist laid the foundations for modern biological nomenclature?", o: ["Carolus Linnaeus", "Lamarck", "Watson", "Haeckel"], a: 0, exp: "Linnaeus formalized the two-word naming system for all living things." },
+    { q: "Linnaeus initially distinguished which two kingdoms?", o: ["Monera and Protista", "Animalia and Vegetabilia", "Fungi and Plantae", "Protista and Fungi"], a: 1, exp: "Linnaeus divided nature into Animalia (Animals) and Vegetabilia (Plants)." },
+    { q: "The scientific naming system in which an organism is given two names is called ______.", o: ["Trinomial nomenclature", "Binomial nomenclature", "Numerical nomenclature", "Molecular nomenclature"], a: 1, exp: "Binomial nomenclature assigns a Genus name and Species descriptor." },
+    { q: "The first word in a scientific name represents the ______.", o: ["Species", "Genus", "Family", "Order"], a: 1, exp: "The first word denotes the Genus and is always capitalized." },
+    { q: "The second word in a binomial scientific name represents the ______.", o: ["Species-specific name", "Kingdom", "Family", "Phylum"], a: 0, exp: "The second word is the specific epithet (species identifier) written in lowercase." },
+    { q: "In scientific nomenclature, the genus name begins with a ______ letter.", o: ["Lowercase", "Capital", "Numerical", "Greek"], a: 1, exp: "Genus names strictly begin with a capital letter (e.g., Homo)." },
+    { q: "Which scientific name is correctly written?", o: ["homo Sapiens", "Homo Sapiens", "Homo sapiens", "homo sapiens"], a: 2, exp: "'Homo sapiens' correctly capitalizes Genus and lowercases species." },
+    { q: "Why is binomial nomenclature useful?", o: ["It gives organisms standard names worldwide", "It prevents reproduction", "It changes habitats", "It eliminates biodiversity"], a: 0, exp: "It establishes universal scientific naming across different languages." },
+    { q: "The three-domain system includes Bacteria, Archaea and ______.", o: ["Plantae", "Eukarya", "Animalia", "Protista"], a: 1, exp: "Carl Woese's domain system consists of Bacteria, Archaea, and Eukarya." },
+    { q: "Organisms in the domain Bacteria are generally ______.", o: ["Prokaryotic", "Multicellular animals", "Fungi", "Plants"], a: 0, exp: "Bacteria are unicellular prokaryotes lacking membrane-bound organelles." },
+    { q: "Organisms belonging to Eukarya possess ______.", o: ["No DNA", "A true nucleus", "No cell membrane", "No ribosomes"], a: 1, exp: "Eukaryotes are characterized by a true membrane-enclosed nucleus." },
+    { q: "The kingdom Monera consists mainly of ______ organisms.", o: ["Prokaryotic", "Multicellular eukaryotic", "Viral", "Fungal"], a: 0, exp: "Kingdom Monera comprises prokaryotic organisms (bacteria & cyanobacteria)." },
+    { q: "Which of the following is an example of a prokaryote?", o: ["Bacterium", "Mushroom", "Amoeba", "Fern"], a: 0, exp: "Bacteria lack a true nucleus, making them prokaryotic." },
+    { q: "The hereditary material of bacteria is located in the ______.", o: ["True nucleus", "Nucleoid", "Golgi body", "Chloroplast"], a: 1, exp: "Bacterial circular DNA concentrates in an irregular region called the nucleoid." },
+    { q: "Which structure is absent in typical prokaryotic cells?", o: ["Ribosome", "Plasma membrane", "Membrane-bound nucleus", "Cytoplasm"], a: 2, exp: "Prokaryotes lack membrane-enclosed nuclei and internal membrane organelles." },
+    { q: "The bacterial cell wall commonly contains ______.", o: ["Cellulose only", "Peptidoglycan", "Chitin only", "Glycogen"], a: 1, exp: "Bacterial cell walls rely on peptidoglycan (murein) meshwork." },
+    { q: "Gram-positive bacteria have a cell wall that is relatively rich in ______.", o: ["Protein-sugar complexes", "Cellulose", "Chitin", "Lipid only"], a: 0, exp: "Gram-positive cell walls possess a thick peptidoglycan polymer layer." },
+    { q: "Gram-negative bacteria possess an additional ______ layer.", o: ["Lipid", "Cellulose", "Chitin", "Nuclear"], a: 0, exp: "Gram-negative bacteria feature an outer lipopolysaccharide membrane." },
+    { q: "Which of the following is NOT one of the three major bacterial groups based on habitat mentioned in the document?", o: ["Halophiles", "Thermophiles", "Methanogens", "Protozoans"], a: 3, exp: "Protozoans are eukaryotic protists, not environmental archaebacteria." },
+    { q: "Organisms that live in extremely salty environments are called ______.", o: ["Thermophiles", "Halophiles", "Methanogens", "Saprophytes"], a: 1, exp: "Halophiles are adapted to high-salt environments." },
+    { q: "Organisms adapted to very high temperatures are called ______.", o: ["Halophiles", "Thermophiles", "Parasites", "Protozoans"], a: 1, exp: "Thermophiles thrive in high-temperature heat habitats." },
+    { q: "Methanogens are associated with the production of ______.", o: ["Oxygen", "Methane", "Nitrogen", "Hydrogen peroxide"], a: 1, exp: "Methanogenic archaebacteria produce methane gas under anaerobic conditions." },
+    { q: "Spherical bacteria are called ______.", o: ["Bacilli", "Cocci", "Vibrios", "Spirilla"], a: 1, exp: "Cocci (singular: Coccus) are spherical bacterial cells." },
+    { q: "Rod-shaped bacteria are called ______.", o: ["Bacilli", "Cocci", "Vibrios", "Spirilla"], a: 0, exp: "Bacilli (singular: Bacillus) represent rod-shaped bacterial cells." },
+    { q: "Comma-shaped bacteria are called ______.", o: ["Cocci", "Bacilli", "Vibrios", "Spirilla"], a: 2, exp: "Vibrios are comma-curved bacterial rods." },
+    { q: "Spiral-shaped bacteria are called ______.", o: ["Spirilla", "Cocci", "Bacilli", "Vibrios"], a: 0, exp: "Spirilla are rigid spiral-shaped bacteria." },
+    { q: "Which of the following is an autotrophic mode of nutrition in bacteria?", o: ["Parasitic", "Saprophytic", "Photosynthetic", "Holozoic"], a: 2, exp: "Photosynthetic bacteria synthesize organic food using light energy." },
+    { q: "The kingdom Protista contains mainly ______ organisms.", o: ["Prokaryotic", "Eukaryotic", "Viral", "Acellular"], a: 1, exp: "Protists are predominantly unicellular eukaryotic organisms." },
+    { q: "Most protists are ______.", o: ["Unicellular", "Acellular", "Multicellular animals", "Vascular plants"], a: 0, exp: "Protista comprises simple unicellular or colonial eukaryotes." },
+    { q: "Amoeba moves mainly by means of ______.", o: ["Cilia", "Flagella", "Pseudopodia", "Wings"], a: 2, exp: "Amoeba extends pseudopodia ('false feet') for amoeboid locomotion." },
+    { q: "Paramecium moves using ______.", o: ["Cilia", "Pseudopodia", "Roots", "Hyphae"], a: 0, exp: "Paramecium uses hair-like cilia beating rhythmically to propel itself." },
+    { q: "Euglena is an example of a ______.", o: ["Plant-like protist", "Fungus", "Bacterium", "Mammal"], a: 0, exp: "Euglena contains chloroplasts for photosynthesis, making it plant-like." },
+    { q: "Protozoans are generally classified as ______.", o: ["Animal-like protists", "Plant-like protists", "Fungi", "Bacteria"], a: 0, exp: "Protozoa are heterotrophic, animal-like protists." },
+    { q: "Algae are generally described in the document as ______.", o: ["Plant-like protists", "Animal-like protists", "Prokaryotes only", "Fungi"], a: 0, exp: "Algae are photosynthetic plant-like protists." },
+    { q: "Which organism is an example of a fungus?", o: ["Mushroom", "Amoeba", "Paramecium", "Euglena"], a: 0, exp: "Mushrooms are spore-bearing multicellular fungi." },
+    { q: "Fungi obtain nutrients mainly by ______.", o: ["Absorption", "Photosynthesis", "Ingestion followed by chewing", "Filtration"], a: 0, exp: "Fungi secrete digestive enzymes externally and absorb dissolved nutrients." },
+    { q: "The vegetative body of most fungi is called the ______.", o: ["Mycelium", "Nucleus", "Thallus", "Capsule"], a: 0, exp: "Mycelium forms the interwoven mass of hyphae in fungi." },
+    { q: "Individual fungal filaments are called ______.", o: ["Hyphae", "Cilia", "Pseudopodia", "Rhizoids"], a: 0, exp: "Hyphae are thread-like microscopic filaments forming fungal structures." },
+    { q: "Fungi reproduce by ______.", o: ["Only binary fission", "Spores and other methods", "Only seeds", "Only eggs"], a: 1, exp: "Fungi reproduce sexually and asexually predominantly through spores." },
+    { q: "Which of the following is a characteristic of fungi?", o: ["They are photosynthetic", "They are non-vascular", "They possess chloroplasts", "They produce their own food"], a: 1, exp: "Fungi lack vascular transport systems and chloroplasts." },
+    { q: "The cell wall of fungi is chemically associated with ______.", o: ["Chitin", "Cellulose only", "Peptidoglycan", "Calcium carbonate only"], a: 0, exp: "Fungal cell walls are composed of structural chitin polymers." },
+    { q: "Fungi may obtain nutrition as ______.", o: ["Saprophytes, parasites or symbionts", "Only autotrophs", "Only herbivores", "Only carnivores"], a: 0, exp: "Fungi act as saprophytes, parasites, or mutualistic symbionts." },
+    { q: "The plant kingdom is broadly divided into groups based on characteristics such as ______.", o: ["Seeds and vascular tissues", "Hair colour", "Blood groups", "Body temperature"], a: 0, exp: "Plants are classified by vascular tissues (xylem/phloem) and seed production." },
+    { q: "Cryptogams are plants that ______.", o: ["Have well-developed reproductive organs", "Do not have well-developed reproductive organs", "Always produce fruits", "Always produce flowers"], a: 1, exp: "Cryptogams (seedless plants) lack flowers or distinct seeds." },
+    { q: "Phanerogams are plants that ______.", o: ["Have well-developed reproductive organs", "Lack reproductive organs", "Are all fungi", "Are all bacteria"], a: 0, exp: "Phanerogams possess clear reproductive structures and produce seeds." },
+    { q: "Bryophytes are generally ______ plants.", o: ["Vascular", "Non-vascular", "Seed-producing", "Flowering"], a: 1, exp: "Bryophytes (mosses) lack true vascular conducting tissues." },
+    { q: "Which of the following is an example of a bryophyte?", o: ["Moss", "Maize", "Pine", "Mango"], a: 0, exp: "Mosses represent non-vascular bryophytes." },
+    { q: "Pteridophytes are characterized by the presence of ______.", o: ["Vascular tissues", "Flowers only", "Fruits only", "Seeds only"], a: 0, exp: "Pteridophytes (ferns) are seedless vascular plants." },
+    { q: "Which of the following is an example of a pteridophyte?", o: ["Fern", "Moss", "Mushroom", "Mango"], a: 0, exp: "Ferns belong to Pteridophyta." },
+    { q: "Gymnosperms produce seeds that are generally ______.", o: ["Enclosed within fruits", "Naked or exposed", "Produced inside flowers", "Produced by fungi"], a: 1, exp: "Gymnosperm seeds are exposed on cones ('naked seeds')." },
+    { q: "Angiosperms are commonly known as ______ plants.", o: ["Flowering", "Non-vascular", "Seedless", "Fungal"], a: 0, exp: "Angiosperms produce flowers and enclosed seeds within fruits." },
+    { q: "A major difference between gymnosperms and angiosperms is that angiosperm seeds are generally ______.", o: ["Naked", "Enclosed in fruits", "Produced by spores", "Absent"], a: 1, exp: "Angiosperm ovules develop into seeds housed within protective ovaries (fruits)." },
+    { q: "Which of the following is a monocotyledon?", o: ["Maize", "Bean", "Pea", "Groundnut"], a: 0, exp: "Maize is a monocot grass with one cotyledon." },
+    { q: "Which of the following is a dicotyledon?", o: ["Maize", "Bean", "Grass", "Rice"], a: 1, exp: "Beans are dicots featuring two seed cotyledons." },
+    { q: "Monocotyledons typically possess ______ cotyledon.", o: ["One", "Two", "Three", "Four"], a: 0, exp: "Monocots carry a single embryo cotyledon." },
+    { q: "Dicotyledons typically possess ______ cotyledons.", o: ["One", "Two", "Three", "Four"], a: 1, exp: "Dicots carry two embryo seed leaves." },
+    { q: "Which plant group has seeds but does not produce flowers?", o: ["Gymnosperms", "Angiosperms", "Bryophytes", "Pteridophytes"], a: 0, exp: "Gymnosperms develop seeds without forming true flowers." },
+    { q: "Animals are generally described as ______ organisms.", o: ["Eukaryotic and multicellular", "Prokaryotic and unicellular", "Acellular", "Photosynthetic"], a: 0, exp: "Animals are multicellular, eukaryotic, heterotrophic organisms." },
+    { q: "Animals obtain food mainly through ______ nutrition.", o: ["Heterotrophic", "Autotrophic", "Photosynthetic", "Chemosynthetic"], a: 0, exp: "Animals ingest preformed organic material (heterotrophy)." },
+    { q: "The presence of a true body cavity is characteristic of ______.", o: ["Coelomates", "Acoelomates", "Pseudocoelomates", "Prokaryotes"], a: 0, exp: "Coelomates possess a fluid-filled body cavity lined by mesoderm." },
+    { q: "Animals without a body cavity are called ______.", o: ["Coelomates", "Acoelomates", "Pseudocoelomates", "Vertebrates"], a: 1, exp: "Acoelomates lack an internal coelomic cavity." },
+    { q: "Animals with a false body cavity are called ______.", o: ["Coelomates", "Acoelomates", "Pseudocoelomates", "Diploblasts"], a: 2, exp: "Pseudocoelomates possess body cavities not fully lined by mesoderm." },
+    { q: "Sponges belong to the phylum ______.", o: ["Porifera", "Annelida", "Mollusca", "Arthropoda"], a: 0, exp: "Sponges form phylum Porifera." },
+    { q: "A characteristic feature of Porifera is the presence of numerous ______.", o: ["Pores", "Wings", "Feathers", "Scales"], a: 0, exp: "Poriferans feature ostia pores for filter feeding." },
+    { q: "Hydra belongs to the phylum ______.", o: ["Coelenterata/Cnidaria", "Mollusca", "Annelida", "Chordata"], a: 0, exp: "Hydra is a freshwater cnidarian." },
+    { q: "Cnidarians generally possess ______ symmetry.", o: ["Bilateral", "Radial", "Asymmetrical", "Spiral"], a: 1, exp: "Cnidarians display radial body symmetry." },
+    { q: "Cnidarians are generally ______.", o: ["Triploblastic", "Diploblastic", "Monoblastic", "Acoelomate vertebrates"], a: 1, exp: "Cnidarians develop from two germ layers (ectoderm and endoderm)." },
+    { q: "Planaria belongs to the phylum ______.", o: ["Platyhelminthes", "Nematoda", "Annelida", "Mollusca"], a: 0, exp: "Planarians are free-living flatworms (Platyhelminthes)." },
+    { q: "Members of Platyhelminthes are commonly called ______.", o: ["Flatworms", "Roundworms", "Segmented worms", "Sponges"], a: 0, exp: "Platyhelminthes comprises dorsoventrally flattened worms." },
+    { q: "Ascaris belongs to the phylum ______.", o: ["Nematoda", "Annelida", "Mollusca", "Arthropoda"], a: 0, exp: "Ascaris is a parasitic roundworm (Nematoda)." },
+    { q: "Members of Nematoda are commonly known as ______.", o: ["Flatworms", "Roundworms", "Segmented worms", "Ringworms"], a: 1, exp: "Nematodes are unsegmented roundworms." },
+    { q: "Earthworms belong to the phylum ______.", o: ["Annelida", "Nematoda", "Mollusca", "Echinodermata"], a: 0, exp: "Earthworms are segmented ringed worms (Annelida)." },
+    { q: "A major characteristic of annelids is ______ segmentation.", o: ["Absent", "Present", "Random", "Radial"], a: 1, exp: "Annelids demonstrate metameric body segmentation." },
+    { q: "Annelids generally possess a ______ body cavity.", o: ["True coelom", "No cavity", "False cavity", "Nuclear cavity"], a: 0, exp: "Annelids are true coelomate invertebrates." },
+    { q: "Which of the following belongs to Annelida?", o: ["Leech", "Ascaris", "Tapeworm", "Hydra"], a: 0, exp: "Leeches are segmented annelids." },
+    { q: "Arthropods possess an ______ skeleton.", o: ["Internal", "External", "Fluid", "Cartilaginous"], a: 1, exp: "Arthropods feature a chitinous exoskeleton." },
+    { q: "Which of the following is an arthropod?", o: ["Butterfly", "Earthworm", "Starfish", "Snail"], a: 0, exp: "Butterflies are insects within Arthropoda." },
+    { q: "One major characteristic of Arthropoda is ______ appendages.", o: ["Jointed", "Unjointed", "Leaf-like", "Root-like"], a: 0, exp: "'Arthropoda' translates directly to 'jointed feet/appendages'." },
+    { q: "Which organism belongs to Mollusca?", o: ["Snail", "Earthworm", "Spider", "Starfish"], a: 0, exp: "Snails are soft-bodied molluscs." },
+    { q: "The body of a typical mollusc is divided into structures including the ______.", o: ["Visceral mass and muscular foot", "Head and wings only", "Thorax and abdomen only", "Root and shoot"], a: 0, exp: "Mollusc anatomy includes a muscular foot, head, and visceral mass." },
+    { q: "Molluscs generally possess a ______ circulatory system.", o: ["Open", "Closed only", "Double closed", "Pulmonary"], a: 0, exp: "Most molluscs have open circulatory systems (except cephalopods)." },
+    { q: "Starfish belongs to the phylum ______.", o: ["Echinodermata", "Mollusca", "Arthropoda", "Annelida"], a: 0, exp: "Starfish are spiny-skinned echinoderms." },
+    { q: "Adult echinoderms typically possess ______ symmetry.", o: ["Bilateral", "Radial", "Asymmetrical", "None"], a: 1, exp: "Adult echinoderms exhibit pentaradial symmetry." },
+    { q: "Echinoderms possess a characteristic ______ system.", o: ["Water vascular", "Blood vascular only", "Air vascular", "Root vascular"], a: 0, exp: "Echinoderms use a water vascular system for locomotion and feeding." },
+    { q: "Which of the following is an echinoderm?", o: ["Sea cucumber", "Snail", "Butterfly", "Earthworm"], a: 0, exp: "Sea cucumbers belong to Echinodermata." },
+    { q: "Chordates are characterized by the presence of a ______.", o: ["Notochord", "Shell", "Hypha", "Pseudopodium"], a: 0, exp: "All chordates possess a dorsal supporting notochord at some developmental stage." },
+    { q: "The notochord is a ______ structure.", o: ["Rod-shaped", "Flat", "Hollow sphere", "Spiral shell"], a: 0, exp: "The notochord is a flexible rod-shaped skeletal support structure." },
+    { q: "Vertebrates possess a vertebral column developed from the ______.", o: ["Notochord", "Cell wall", "Hypha", "Shell"], a: 0, exp: "The embryonic notochord is replaced by the vertebral column in adult vertebrates." },
+    { q: "Which of the following is a vertebrate?", o: ["Dog", "Earthworm", "Snail", "Sponge"], a: 0, exp: "Dogs possess a backbone (vertebral column)." },
+    { q: "Fish generally possess ______ chambers in their heart.", o: ["Two", "Three", "Four", "Five"], a: 0, exp: "Fish have a single-circuit, 2-chambered heart (one atrium, one ventricle)." },
+    { q: "Adult amphibians generally have a ______-chambered heart.", o: ["Two", "Three", "Four", "Five"], a: 1, exp: "Amphibian hearts contain 3 chambers (two atria, one ventricle)." },
+    { q: "Birds generally possess a ______-chambered heart.", o: ["Two", "Three", "Four", "Five"], a: 2, exp: "Birds and mammals have fully separated 4-chambered hearts." },
+    { q: "Cytology is the study of ______.", o: ["Cells", "Ecosystems", "Evolution", "Fossils"], a: 0, exp: "Cytology is cell biology." },
+    { q: "Which two major types of cells are compared in the document?", o: ["Plant and fungal cells", "Prokaryotic and eukaryotic cells", "Animal and bacterial cells only", "Viral and fungal cells"], a: 1, exp: "Basic cell organization divides into prokaryotes vs. eukaryotes." },
+    { q: "A major difference between prokaryotic and eukaryotic cells is that eukaryotic cells possess a ______.", o: ["True nucleus", "Nucleoid only", "Cell wall only", "Capsule"], a: 0, exp: "Eukaryotic cells carry membrane-bound true nuclei." },
+    { q: "The genetic material of prokaryotes is located in the ______.", o: ["Nucleoid region", "Golgi apparatus", "Nucleus", "Lysosome"], a: 0, exp: "Prokaryotic DNA lies in the un-enclosed nucleoid." },
+    { q: "Ribosomes are primarily involved in ______.", o: ["Protein synthesis", "Lipid storage", "Photosynthesis", "Cell locomotion"], a: 0, exp: "Ribosomes translate mRNA into amino acid chains (protein synthesis)." },
+    { q: "Which organelle is primarily associated with ATP production?", o: ["Mitochondrion", "Lysosome", "Golgi apparatus", "Nucleolus"], a: 0, exp: "Mitochondria generate cellular energy (ATP) via aerobic respiration." },
+    { q: "The endoplasmic reticulum is involved in ______.", o: ["Intracellular transport", "Bone formation only", "Locomotion only", "Blood clotting only"], a: 0, exp: "Endoplasmic reticulum forms a network for protein and lipid transport." },
+    { q: "Rough endoplasmic reticulum is associated with ______.", o: ["Ribosomes", "Lysosomes", "Centrioles", "Chloroplasts only"], a: 0, exp: "Rough ER is studded with protein-synthesizing ribosomes." },
+    { q: "Smooth endoplasmic reticulum is particularly associated with ______.", o: ["Lipid synthesis", "Protein digestion", "DNA replication only", "Cell division only"], a: 0, exp: "Smooth ER synthesizes lipids and detoxifies metabolic compounds." },
+    { q: "The Golgi apparatus is involved in ______.", o: ["Modification and secretion of materials", "DNA storage", "Photosynthesis", "Chromosome formation only"], a: 0, exp: "Golgi bodies package, modify, and route cellular secretions." },
+    { q: "Lysosomes contain numerous ______.", o: ["Digestive enzymes", "Chlorophyll molecules", "Chromosomes", "Ribosomes only"], a: 0, exp: "Lysosomes carry hydrolytic enzymes to break down waste." },
+    { q: "The digestion of engulfed material within a cell is associated with ______.", o: ["Lysosomes", "Ribosomes", "Centrioles", "Chloroplasts"], a: 0, exp: "Lysosomes fuse with food vacuoles to digest engulfed substances." },
+    { q: "Peroxisomes are particularly important in the breakdown of ______.", o: ["Hydrogen peroxide", "Cellulose only", "DNA only", "Ribosomes"], a: 0, exp: "Peroxisomes break down toxic metabolic hydrogen peroxide into water and oxygen." },
+    { q: "Vacuoles in plant cells are important for ______.", o: ["Storage and water balance", "Protein synthesis only", "DNA replication only", "Cell movement"], a: 0, exp: "Central plant vacuoles maintain cell turgor pressure and store nutrients." },
+    { q: "Centrioles are associated with ______.", o: ["Cell division and cilia formation", "Photosynthesis", "Food absorption only", "DNA transcription only"], a: 0, exp: "Centrioles organize microtubule spindle structures during cell division." },
+    { q: "Cilia and flagella are structures primarily associated with ______.", o: ["Movement", "Photosynthesis", "Digestion", "Heredity"], a: 0, exp: "Cilia and flagella are motile appendages used for cellular movement." },
+    { q: "Microtubules are important components of ______.", o: ["Cilia and flagella", "Cell walls only", "Chlorophyll", "Ribosomes"], a: 0, exp: "Microtubules form the structural 9+2 arrangement inside cilia and flagella." },
+    { q: "Microfilaments are primarily composed of ______.", o: ["Actin", "Cellulose", "Chitin", "DNA"], a: 0, exp: "Microfilaments consist of actin protein chains." },
+    { q: "Microvilli increase the ______ of cells.", o: ["Surface area", "Nuclear size", "Chromosome number", "Cell wall thickness"], a: 0, exp: "Microvilli are membrane folds that maximize absorption surface area." },
+    { q: "The cell wall of plants contains ______.", o: ["Cellulose", "Peptidoglycan only", "Chitin only", "Glycogen"], a: 0, exp: "Plant cell walls consist of structural cellulose microfibrils." },
+    { q: "Chloroplasts are found mainly in ______ cells.", o: ["Plant", "Animal", "Bacterial only", "Fungal"], a: 0, exp: "Chloroplasts occur in photosynthetic plant and algal cells." },
+    { q: "The main function of chloroplasts is ______.", o: ["Photosynthesis", "Protein digestion", "Cell division", "Waste excretion"], a: 0, exp: "Chloroplasts convert light energy into glucose via photosynthesis." },
+    { q: "The plasma membrane is described as a ______ barrier.", o: ["Selectively permeable", "Completely impermeable", "Rigid and non-living", "Solid protein wall"], a: 0, exp: "Plasma membranes selectively regulate molecule entry and exit." },
+    { q: "Diffusion involves movement of particles from a region of ______ concentration to a region of lower concentration.", o: ["Higher", "Lower", "Equal", "Zero"], a: 0, exp: "Diffusion moves solutes down their concentration gradient (high to low)." },
+    { q: "Increasing the difference in concentration between two regions generally makes diffusion ______.", o: ["Faster", "Impossible", "Slower", "Stop completely"], a: 0, exp: "A steeper concentration gradient speeds up passive diffusion rates." },
+    { q: "Increasing the surface area available for diffusion generally ______ diffusion.", o: ["Increases", "Prevents", "Stops", "Reverses"], a: 0, exp: "Greater surface area provides more exchange space, accelerating diffusion." },
+    { q: "Small, fat-soluble molecules generally diffuse ______.", o: ["More readily", "Less readily", "Only through ribosomes", "Only through nuclei"], a: 0, exp: "Lipid-soluble nonpolar molecules cross the phospholipid bilayer easily." },
+    { q: "Osmosis is associated with the movement of ______.", o: ["Water", "Proteins only", "DNA", "Ribosomes"], a: 0, exp: "Osmosis is the net diffusion of water across a semipermeable membrane." },
+    { q: "Phagocytosis involves the uptake of ______.", o: ["Solid particles", "Water only", "Oxygen only", "DNA only"], a: 0, exp: "Phagocytosis ('cell eating') engulfs large solid particles." },
+    { q: "Pinocytosis involves the uptake of ______.", o: ["Fluid materials", "Solid food only", "Chromosomes", "Ribosomes"], a: 0, exp: "Pinocytosis ('cell drinking') ingests extracellular fluids." },
+    { q: "Reproduction involving only one parent is called ______ reproduction.", o: ["Sexual", "Asexual", "Bisexual", "Gametic"], a: 1, exp: "Asexual reproduction creates genetically identical offspring from one parent." },
+    { q: "Sexual reproduction normally involves the fusion of ______.", o: ["Two gametes", "Two somatic cells only", "Two nuclei without gametes", "Two tissues"], a: 0, exp: "Sexual reproduction requires fertilization of haploid gametes (sperm and egg)." },
+    { q: "The fusion of male and female gametes is called ______.", o: ["Fertilization", "Budding", "Fragmentation", "Germination"], a: 0, exp: "Fertilization combines genetic material from two gametes." },
+    { q: "The product of fertilization is the ______.", o: ["Zygote", "Spore", "Hypha", "Pseudopodium"], a: 0, exp: "Sperm and egg fusion forms a single diploid cell called a zygote." },
+    { q: "Reproduction by the formation of a small outgrowth that separates from the parent is called ______.", o: ["Budding", "Fragmentation", "Binary fission", "Pollination"], a: 0, exp: "Budding develops a new individual from a parent outgrowth (e.g., Yeast, Hydra)." },
+    { q: "Binary fission involves the division of one organism into ______.", o: ["Two individuals", "Three individuals", "Four individuals", "Many spores"], a: 0, exp: "Binary fission splits a single parent cell into two equal daughter cells." },
+    { q: "Amoeba commonly reproduces asexually by ______.", o: ["Binary fission", "Budding", "Seed formation", "Fertilization"], a: 0, exp: "Amoeba undergoes mitotic binary fission." },
+    { q: "In plants, fragmentation may be followed by ______.", o: ["Regeneration", "Fertilization only", "Pollination only", "Mutation only"], a: 0, exp: "Severed plant fragments regenerate missing structures to form complete plants." },
+    { q: "In flowering plants, the male reproductive organ is the ______.", o: ["Stamen", "Ovary", "Ovule", "Carpel only"], a: 0, exp: "The stamen (anther + filament) forms the male floral organ." },
+    { q: "The female reproductive organ of a flowering plant is the ______.", o: ["Carpel", "Stamen", "Anther", "Filament"], a: 0, exp: "The carpel/pistil (stigma, style, ovary) forms the female floral structure." },
+    { q: "Pollen grains are produced in the ______.", o: ["Anther", "Ovary", "Stigma", "Style"], a: 0, exp: "Anthers produce microspores that develop into pollen grains." },
+    { q: "Ovules are contained within the ______.", o: ["Ovary", "Anther", "Filament", "Stigma"], a: 0, exp: "Ovules develop inside the protective floral ovary." },
+    { q: "In animals, the male reproductive organ that produces sperm is the ______.", o: ["Testis", "Ovary", "Uterus", "Oviduct"], a: 0, exp: "Testes synthesize male gametes (sperm) and hormones." },
+    { q: "The female reproductive organ that produces eggs is the ______.", o: ["Ovary", "Testis", "Penis", "Epididymis"], a: 0, exp: "Ovaries synthesize female gametes (ova/eggs)." },
+    { q: "The human sperm cell is generally described as having a head, middle piece and ______.", o: ["Tail", "Wing", "Cilium", "Shell"], a: 0, exp: "Sperm structure consists of a head (DNA), midpiece (mitochondria), and tail (flagellum)." },
+    { q: "The developing structure formed after fertilization is initially called a ______.", o: ["Zygote", "Spore", "Pollen grain", "Hypha"], a: 0, exp: "Fertilization immediately results in a single-celled zygote." },
+    { q: "Repeated division of the zygote eventually contributes to the formation of an ______.", o: ["Embryo", "Adult immediately", "Ovule", "Anther"], a: 0, exp: "Mitotic cleavage of the zygote yields a multicellular embryo." },
+    { q: "An embryo that develops inside the mother's body is characteristic of ______ animals.", o: ["Viviparous", "Oviparous", "Ovoviviparous only", "Asexual"], a: 0, exp: "Viviparous animals nourish embryos internally and give live birth." },
+    { q: "Animals that lay eggs are described as ______.", o: ["Oviparous", "Viviparous", "Hermaphroditic", "Parthenogenetic"], a: 0, exp: "Oviparous animals lay eggs that hatch outside the mother's body." },
+    { q: "In ovoviviparous animals, eggs are generally ______.", o: ["Retained within the mother's body until development", "Never fertilized", "Produced by plants", "Replaced by spores"], a: 0, exp: "Ovoviviparous embryos hatch from retained internal eggs without placental connection." },
+    { q: "Fertilization occurring inside the female body is called ______ fertilization.", o: ["Internal", "External", "Artificial only", "Asexual"], a: 0, exp: "Internal fertilization deposits sperm inside the female reproductive tract." },
+    { q: "Fertilization occurring outside the female body is called ______ fertilization.", o: ["Internal", "External", "Nuclear", "Vegetative"], a: 1, exp: "External fertilization releases gametes into liquid environments." },
+    { q: "Frogs commonly exhibit ______ fertilization.", o: ["External", "Internal", "Vegetative", "Asexual"], a: 0, exp: "Amphibians spawn eggs and sperm externally into water." },
+    { q: "Which of the following is an example of vegetative reproduction?", o: ["Production of new plants from vegetative parts", "Fusion of sperm and egg", "Formation of zygote", "Production of pollen only"], a: 0, exp: "Vegetative propagation uses stems, roots, or leaves instead of seeds." },
+    { q: "Airborne spores are particularly characteristic of many ______ plants.", o: ["Non-flowering", "Flowering only", "Seed-producing only", "Angiosperm fruits"], a: 0, exp: "Non-flowering cryptogams (mosses, ferns) rely on airborne spore dispersal." },
+    { q: "Competition occurs when organisms ______.", o: ["Require the same limited resources", "Never interact", "Produce identical gametes", "Stop feeding"], a: 0, exp: "Competition arises when organisms vie for limited food, space, or mates." },
+    { q: "Predation is an interaction in which one organism ______.", o: ["Kills and eats another organism", "Produces food for another", "Lives without feeding", "Always benefits both organisms"], a: 0, exp: "Predation involves a predator consuming a prey organism." },
+    { q: "The organism that captures and eats another organism is called the ______.", o: ["Predator", "Prey", "Host", "Parasite only"], a: 0, exp: "The hunting organism is the predator." },
+    { q: "The organism that is hunted and eaten is called the ______.", o: ["Prey", "Predator", "Producer", "Decomposer"], a: 0, exp: "The consumed organism is the prey." },
+    { q: "Symbiosis involves ______.", o: ["Close interaction between organisms", "Only competition", "Only predation", "Complete absence of interaction"], a: 0, exp: "Symbiosis describes persistent ecological relationships between species." },
+    { q: "In parasitism, the parasite generally ______.", o: ["Benefits while the host is harmed", "Is always harmed", "Benefits the host only", "Benefits neither organism"], a: 0, exp: "Parasites derive nutrients at the expense of their hosts (+/- relationship)." },
+    { q: "A parasite that lives on the external surface of its host is a/an ______.", o: ["Ectoparasite", "Endoparasite", "Autotroph", "Producer"], a: 0, exp: "Ectoparasites (e.g., Lice, Ticks) attach externally." },
+    { q: "A parasite that lives inside the body of its host is a/an ______.", o: ["Endoparasite", "Ectoparasite", "Producer", "Predator"], a: 0, exp: "Endoparasites (e.g., Tapeworms) live internally within host tissue." },
+    { q: "In mutualism, ______.", o: ["Both organisms benefit", "One benefits and the other is harmed", "Both are harmed", "Neither benefits"], a: 0, exp: "Mutualism provides reciprocal benefits to both species (+/+ relationship)." },
+    { q: "In commensalism, ______.", o: ["One organism benefits while the other is generally unaffected", "Both organisms are harmed", "Both organisms die", "One organism always kills the other"], a: 0, exp: "Commensalism benefits one species while leaving the other unharmed (+/0 relationship)." },
+    { q: "Heredity is the transmission of characteristics from ______.", o: ["Parents to offspring", "Environment to rocks", "Plants to soil", "Predators to prey"], a: 0, exp: "Heredity passes genetic traits generationally." },
+    { q: "A heritable feature that varies among individuals is called a ______.", o: ["Character", "Tissue", "Habitat", "Species"], a: 0, exp: "A character is an inherited attribute (e.g., eye color)." },
+    { q: "A specific form of a gene is called an ______.", o: ["Allele", "Antibody", "Antigen", "Organelle"], a: 0, exp: "Alleles represent variant nucleotide sequences of a gene." },
+    { q: "The physical appearance or observable characteristics of an organism constitute its ______.", o: ["Phenotype", "Genotype", "Allele", "Genome only"], a: 0, exp: "Phenotype is the expressed structural or functional trait." },
+    { q: "The genetic makeup of an individual is its ______.", o: ["Genotype", "Phenotype", "Character", "Trait only"], a: 0, exp: "Genotype lists the underlying allele combinations." },
+    { q: "An individual with two identical alleles at a locus is ______.", o: ["Homozygous", "Heterozygous", "Hybrid only", "Hemizygous"], a: 0, exp: "Homozygotes carry identical gene alleles (e.g., AA or aa)." },
+    { q: "An individual with two different alleles at a locus is ______.", o: ["Heterozygous", "Homozygous", "Haploid", "Diploid only"], a: 0, exp: "Heterozygotes carry two different gene alleles (e.g., Aa)." },
+    { q: "Mendel's Law of Segregation states that alleles ______.", o: ["Separate during gamete formation", "Always remain together", "Disappear during meiosis", "Are found only in males"], a: 0, exp: "Allele pairs segregate into separate gametes during meiosis." },
+    { q: "Mendel's Law of Independent Assortment concerns the ______.", o: ["Independent distribution of allele pairs", "Formation of cell walls", "Production of ATP", "Movement of cilia"], a: 0, exp: "Unlinked gene pairs assort into gametes independently." },
+    { q: "In a typical Mendelian monohybrid cross, the F₂ phenotypic ratio is ______.", o: ["1:1", "2:1", "3:1", "9:3:3:1"], a: 2, exp: "Monohybrid F2 phenotypic ratio yields 3 dominant to 1 recessive." },
+    { q: "In the same typical monohybrid cross, the F₂ genotypic ratio is ______.", o: ["3:1", "1:2:1", "9:3:3:1", "1:1"], a: 1, exp: "Monohybrid F2 genotypic ratio yields 1 AA : 2 Aa : 1 aa." },
+    { q: "A cross between an individual of unknown genotype and a homozygous recessive individual is called a ______.", o: ["Test cross", "Back cross", "Reciprocal cross", "Dihybrid cross"], a: 0, exp: "Test crosses reveal unknown genotypes using recessive test partners." },
+    { q: "A cross between an individual and one of its parents is called a ______.", o: ["Back cross", "Test cross", "Dihybrid cross", "Reciprocal cross"], a: 0, exp: "Back crosses mate offspring back to parent generations." },
+    { q: "Human sex is determined by the ______ chromosomes.", o: ["Autosomes", "Sex chromosomes", "Ribosomes", "Mitochondria only"], a: 1, exp: "Sex chromosomes (X and Y) determine genetic sex." },
+    { q: "In humans, a female is generally represented as ______.", o: ["XX", "XY", "YY", "XO"], a: 0, exp: "Females carry two X sex chromosomes (XX)." }
 ];
 
 let activeExam = [];
-let timeLeft = 1200; // 20 minutes countdown (20 * 60)
+let timeLeft = 1200; // 20 minutes
 let timer;
 const totalExamQuestions = 60; 
 let currentQuestionIndex = 0;
@@ -416,7 +421,7 @@ function startTimer() {
 function submitExam() {
     clearInterval(timer);
     let score = 0;
-    let reviewHTML = `<h2>Performance Review</h2>`;
+    let reviewHTML = `<h2 style="font-size: 1.5rem; margin-bottom: 20px; color: var(--navy); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Detailed Review & Explanations</h2>`;
 
     activeExam.forEach((item, idx) => {
         const sel = document.querySelector(`input[name="q${idx}"]:checked`);
@@ -424,11 +429,20 @@ function submitExam() {
         const correct = userVal === item.a;
         if(correct) score++;
 
+        const userAnsText = userVal !== null ? `${String.fromCharCode(65 + userVal)}. ${item.o[userVal]}` : 'Skipped / Unanswered';
+        const correctAnsText = `${String.fromCharCode(65 + item.a)}. ${item.o[item.a]}`;
+
         reviewHTML += `
-            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
-                <p><strong>${idx + 1}. ${item.q}</strong></p>
-                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
-                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}.${item.o[item.a]}</p>` : ''}
+            <div class="review-card" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'};">
+                <p style="font-weight: 700; font-size: 1.05rem; margin-bottom: 8px;">${idx + 1}. ${item.q}</p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600; margin-bottom: 4px;">
+                    Your Answer: ${userAnsText} ${correct ? '✓' : '✗'}
+                </p>
+                ${!correct ? `<p style="color: #38761d; font-weight: 700; margin-bottom: 8px;">Correct Answer: ${correctAnsText}</p>` : ''}
+                
+                <div class="explanation-box ${correct ? 'correct-bg' : 'wrong-bg'}">
+                    <strong>🧠 Tutor Explanation:</strong> ${item.exp}
+                </div>
             </div>`;
     });
 
@@ -452,9 +466,10 @@ function submitExam() {
     }
 
     document.getElementById('exam-container').style.display = 'none';
-    document.getElementById('result-screen').style.display = 'block';
+    const resultScreen = document.getElementById('result-screen');
+    resultScreen.style.display = 'block';
     
-    document.getElementById('result-screen').innerHTML = `
+    resultScreen.innerHTML = `
         <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
         <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
         <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
