@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - Daily Current Affairs Challenge</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --green-light: #eef7ed;
+            --red-light: #fef2f2;
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 20px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; box-sizing: border-box; }
+        
+        .container { max-width: 800px; margin: auto; width: 100%; box-sizing: border-box; }
+        
+        header { text-align: center; padding: 35px 20px; background: var(--gradient); color: white; border-radius: 24px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: 1px; }
+        header p { margin: 8px 0 0 0; opacity: 0.9; font-weight: 300; font-size: 0.95rem; }
+
+        /* Motivational Quote Box */
+        .quote-box { background: white; border-left: 5px solid var(--green); padding: 18px 22px; border-radius: 16px; margin-bottom: 25px; box-shadow: var(--card-shadow); text-align: left; }
+        .quote-box p { margin: 0; font-style: italic; color: #475569; font-size: 0.95rem; line-height: 1.5; }
+        .quote-box span { display: block; margin-top: 6px; font-weight: 600; font-size: 0.85rem; color: var(--green); font-style: normal; }
+
+        .challenge-card { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); text-align: left; margin-bottom: 20px; }
+        .day-badge { display: inline-block; background: var(--green-light); color: var(--green); padding: 6px 14px; border-radius: 50px; font-weight: 700; font-size: 0.85rem; margin-bottom: 15px; text-transform: uppercase; }
+        
+        .challenge-card h3 { font-size: 1.15rem; line-height: 1.6; margin-top: 0; margin-bottom: 20px; }
+        
+        .options-group label { display: flex; align-items: center; background: #f8fafc; padding: 15px 18px; margin: 10px 0; border-radius: 14px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s ease; font-weight: 400; font-size: 0.98rem; }
+        .options-group label:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .options-group input[type="radio"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--green); }
+        
+        .btn-action { width: 100%; padding: 16px; background: var(--navy); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 20px; transition: background 0.2s, transform 0.1s; font-family: 'Poppins', sans-serif; }
+        .btn-action:hover { background: #002d5c; }
+        .btn-action:active { transform: scale(0.99); }
+
+        /* Locked / Countdown View */
+        #locked-screen { display: none; text-align: center; padding: 40px 20px; background: white; border-radius: 24px; box-shadow: var(--card-shadow); }
+        .countdown-timer { font-size: 2.2rem; font-weight: 800; color: var(--green); margin: 15px 0; letter-spacing: 1px; }
+        
+        .result-feedback { margin-top: 20px; padding: 16px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; }
+        .result-feedback.correct { background: var(--green-light); color: var(--green); border-left: 4px solid var(--green); }
+        .result-feedback.wrong { background: var(--red-light); color: #991b1b; border-left: 4px solid #d32f2f; }
+
+        footer { margin-top: auto; padding: 30px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.9rem; color: #64748b; margin-bottom: 12px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body onload="initChallenge()">
+
+<div class="container">
+    <header>
+        <h1>ELITE DAILY CHALLENGE</h1>
+        <p>One Current Affairs Question Daily • Build Consistency ⚡</p>
+    </header>
+
+    <!-- Motivational Quote Banner -->
+    <div class="quote-box">
+        <p id="quote-text">"Success is not final; failure is not fatal: It is the courage to continue that counts."</p>
+        <span id="quote-author">— Winston Churchill</span>
+    </div>
+
+    <!-- Active Question Card -->
+    <div id="active-card" class="challenge-card">
+        <div class="day-badge" id="day-label">Day 1 Challenge</div>
+        <h3 id="question-title">Loading today's challenge...</h3>
+        <div class="options-group" id="options-container"></div>
+        <button class="btn-action" id="submit-btn" onclick="submitAnswer()" style="display:none;">Submit Answer</button>
+        <div id="immediate-feedback"></div>
+    </div>
+
+    <!-- Locked / Completed Screen (24hr Countdown) -->
+    <div id="locked-screen" class="challenge-card" style="display: none;">
+        <div style="font-size: 3.5rem; margin-bottom: 5px;">🔥</div>
+        <h2 style="margin: 0; color: var(--navy);">Challenge Completed for Today!</h2>
+        <p style="color: #64748b; margin-top: 8px;">You've already locked in your answer. Come back tomorrow for the next current affairs drop!</p>
+        <div style="margin: 20px 0;">
+            <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: #64748b;">Next Challenge Unlocks In:</span>
+            <div class="countdown-timer" id="countdown-display">24:00:00</div>
+        </div>
+        <div id="past-result-box" style="text-align: left; margin-top: 20px;"></div>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+// Pool of 70 Curated Current Affairs Questions with Answers & Explanations
+const currentAffairsPool = [
+    { q: "Who is the current Secretary-General of the United Nations as of 2026?", o: ["António Guterres", "Ban Ki-moon", "Kofi Annan", "Tedros Adhanom"], a: 0, exp: "António Guterres serves as the Secretary-General of the United Nations." },
+    { q: "Which country hosted the FIFA World Cup tournament in 2022?", o: ["Brazil", "Russia", "Qatar", "South Africa"], a: 2, exp: "Qatar hosted the 2022 FIFA World Cup." },
+    { q: "What is the capital city of Nigeria?", o: ["Lagos", "Abuja", "Port Harcourt", "Kano"], a: 1, exp: "Abuja has been the capital city of Nigeria since 1991." },
+    { q: "Which international organization has its headquarters in Geneva, Switzerland?", o: ["World Health Organization (WHO)", "African Union", "World Bank", "United Nations Security Council"], a: 0, exp: "The WHO headquarters is situated in Geneva, Switzerland." },
+    { q: "Who is the current President of the Federal Republic of Nigeria (as of 2026)?", o: ["Muhammadu Buhari", "Bola Ahmed Tinubu", "Goodluck Jonathan", "Yemi Osinbajo"], a: 1, exp: "Bola Ahmed Tinubu assumed office as the President of Nigeria." },
+    { q: "Which African country became the 54th member of the Commonwealth in 2022?", o: ["Gabon", "Togo", "Rwanda", "Ghana"], a: 0, exp: "Gabon and Togo joined the Commonwealth as member states." },
+    { q: "What does the acronym 'OPEC' stand for?", o: ["Organization of Petroleum Exporting Countries", "Organization of Political and Economic Cooperation", "Oil Producers and Exporters Consortium", "Overseas Petroleum Energy Council"], a: 0, exp: "OPEC stands for the Organization of the Petroleum Exporting Countries." },
+    { q: "Which currency is used as the official legal tender in Japan?", o: ["Yuan", "Won", "Yen", "Ringgit"], a: 2, exp: "The Japanese Yen (¥) is the official currency of Japan." },
+    { q: "Who won the FIFA World Cup in 2022?", o: ["France", "Argentina", "Croatia", "Brazil"], a: 1, exp: "Argentina defeated France in the 2022 World Cup final in Qatar." },
+    { q: "What is the primary function of the Economic Community of West African States (ECOWAS)?", o: ["Military conquest", "Regional economic integration and cooperation", "Religious unity", "Global oil regulation"], a: 1, exp: "ECOWAS promotes economic integration across West African countries." },
+    { q: "Which planet in our solar system is known as the Red Planet?", o: ["Venus", "Jupiter", "Mars", "Saturn"], a: 2, exp: "Mars is called the Red Planet due to iron oxide prevalent on its surface." },
+    { q: "Who wrote the famous Nigerian novel 'Things Fall Apart'?", o: ["Wole Soyinka", "Chinua Achebe", "Chimamanda Adichie", "J.P. Clark"], a: 1, exp: "Chinua Achebe published 'Things Fall Apart' in 1958." },
+    { q: "Which African nation is the most populous?", o: ["Egypt", "South Africa", "Nigeria", "Ethiopia"], a: 2, exp: "Nigeria is the most populous nation in Africa." },
+    { q: "What is the highest court of law in Nigeria?", o: ["Federal High Court", "Court of Appeal", "Supreme Court", "Magistrate Court"], a: 2, exp: "The Supreme Court is the apex court in Nigeria." },
+    { q: "Which global body oversees international trade agreements and disputes?", o: ["World Trade Organization (WTO)", "IMF", "UNESCO", "UNICEF"], a: 0, exp: "The WTO regulates international trade rules." },
+    { q: "What year did Nigeria gain its independence from Britain?", o: ["1957", "1960", "1963", "1999"], a: 1, exp: "Nigeria gained independence on October 1, 1960." },
+    { q: "Which country is famously known as the Land of the Rising Sun?", o: ["China", "South Korea", "Japan", "Thailand"], a: 2, exp: "Japan is referred to as the Land of the Rising Sun." },
+    { q: "What is the chemical symbol for Gold?", o: ["Ag", "Au", "Pb", "Fe"], a: 1, exp: "Au is derived from the Latin word 'aurum', meaning gold." },
+    { q: "Who was the first African to win the Nobel Prize in Literature?", o: ["Chinua Achebe", "Wole Soyinka", "Nelson Mandela", "Desmond Tutu"], a: 1, exp: "Wole Soyinka won the Nobel Prize in Literature in 1986." },
+    { q: "Which ocean is the largest on Earth?", o: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"], a: 3, exp: "The Pacific Ocean is the largest and deepest ocean." },
+    // Continuing pool up to 70 questions for robust rotation
+    { q: "What is the capital of Canada?", o: ["Toronto", "Vancouver", "Ottawa", "Montreal"], a: 2, exp: "Ottawa is the capital city of Canada." },
+    { q: "Which gas makes up the majority of Earth's atmosphere?", o: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"], a: 2, exp: "Nitrogen makes up about 78% of Earth's atmosphere." },
+    { q: "Who is the inventor of the World Wide Web?", o: ["Bill Gates", "Tim Berners-Lee", "Steve Jobs", "Mark Zuckerberg"], a: 1, exp: "Tim Berners-Lee invented the World Wide Web in 1989." },
+    { q: "Which African country was never colonized by Europeans?", o: ["Ghana", "Ethiopia", "Kenya", "Nigeria"], a: 1, exp: "Ethiopia successfully maintained its sovereignty during the Scramble for Africa." },
+    { q: "What is the longest river in the world?", o: ["Amazon River", "Nile River", "Mississippi River", "Yangtze River"], a: 1, exp: "The Nile River is traditionally recognized as the longest river." },
+    { q: "Which country recently joined BRICS as a new member in recent expansions?", o: ["Egypt / UAE / Iran", "UK", "Canada", "Australia"], a: 0, exp: "Egypt, UAE, Iran, and Ethiopia joined BRICS in the recent expansion phase." },
+    { q: "What does AI stand for in technology?", o: ["Automated Internet", "Artificial Intelligence", "Advanced Interaction", "Algorithmic Integration"], a: 1, exp: "AI stands for Artificial Intelligence." },
+    { q: "Which Nigerian musician won a Grammy Award with 'Love, Damini' album era?", o: ["Wizkid", "Burna Boy", "Davido", "Asake"], a: 1, exp: "Burna Boy has won multiple Grammy recognitions, including Best Global Music Album." },
+    { q: "What is the hardest natural substance on Earth?", o: ["Gold", "Iron", "Diamond", "Platinum"], a: 2, exp: "Diamond is the hardest known natural mineral on Earth." },
+    { q: "Which continent is known as the Cradle of Humankind?", o: ["Asia", "Europe", "Africa", "South America"], a: 2, exp: "Africa holds rich hominid fossil discoveries, earning the title Cradle of Humankind." },
+    { q: "How many geopolitical zones does Nigeria have?", o: ["4", "5", "6", "7"], a: 2, exp: "Nigeria is divided into 6 geopolitical zones (NW, NE, NC, SW, SE, SS)." },
+    { q: "What is the currency of the United Kingdom?", o: ["Euro", "Dollar", "Pound Sterling", "Franc"], a: 2, exp: "The Pound Sterling (£) is the official currency of the UK." },
+    { q: "Which organ in the human body purifies blood?", o: ["Heart", "Lungs", "Kidneys", "Liver"], a: 2, exp: "Kidneys filter waste products and excess water from the blood." },
+    { q: "Who painted the Mona Lisa?", o: ["Vincent van Gogh", "Leonardo da Vinci", "Pablo Picasso", "Michelangelo"], a: 1, exp: "Leonardo da Vinci painted the Mona Lisa during the Renaissance." },
+    { q: "What is the boiling point of water at standard atmospheric pressure?", o: ["90 °C", "100 °C", "110 °C", "212 °C (Celsius scale = 100)"], a: 1, exp: "Water boils at 100 degrees Celsius." },
+    { q: "Which international body maintains world peace and security?", o: ["UNESCO", "United Nations Security Council", "OPEC", "WTO"], a: 1, exp: "The UN Security Council holds primary responsibility for international peace." },
+    { q: "What is the smallest prime number?", o: ["0", "1", "2", "3"], a: 2, exp: "2 is the smallest and only even prime number." },
+    { q: "Which country shares the longest land border with the United States?", o: ["Mexico", "Canada", "Russia", "Cuba"], a: 1, exp: "Canada shares the longest international land border with the US." },
+    { q: "What does 'GSM' stand for in telecommunications?", o: ["Global System for Mobile Communications", "General Satellite Module", "Geographic Signal Mesh", "Global Spectrum Method"], a: 0, exp: "GSM stands for Global System for Mobile Communications." },
+    { q: "Which Nigerian state is known as the 'Centre of Excellence'?", o: ["Kano", "Lagos", "Rivers", "Oyo"], a: 1, exp: "Lagos State's official slogan is 'Centre of Excellence'." },
+    { q: "What is the capital of Australia?", o: ["Sydney", "Melbourne", "Canberra", "Perth"], a: 2, exp: "Canberra is the federal capital of Australia." },
+    { q: "Who is known as the father of computers?", o: ["Alan Turing", "Charles Babbage", "Thomas Edison", "Albert Einstein"], a: 1, exp: "Charles Babbage originated the concept of a programmable computer." },
+    { q: "Which vitamin is synthesized in the human skin when exposed to sunlight?", o: ["Vitamin A", "Vitamin B", "Vitamin C", "Vitamin D"], a: 3, exp: "Vitamin D is produced in the skin upon ultraviolet B sunlight exposure." },
+    { q: "What is the national flower of Nigeria?", o: ["Rose", "Costus spectabilis (Yellow Trumpet)", "Sunflower", "Orchid"], a: 1, exp: "Costus spectabilis represents the national flower of Nigeria." },
+    { q: "Which desert is the largest hot desert in the world?", o: ["Gobi Desert", "Kalahari Desert", "Sahara Desert", "Atacama Desert"], a: 2, exp: "The Sahara Desert is the largest hot desert." },
+    { q: "What is the main component of natural gas?", o: ["Propane", "Methane", "Butane", "Ethane"], a: 1, exp: "Methane (CH₄) makes up the vast majority of natural gas." },
+    { q: "Which African city hosted the 2010 FIFA World Cup?", o: ["Cairo", "Johannesburg", "Nairobi", "Abuja"], a: 1, exp: "Johannesburg (South Africa) hosted matches including the 2010 final." },
+    { q: "What is the square root of 144?", o: ["10", "11", "12", "14"], a: 2, exp: "12 × 12 = 144." },
+    { q: "Which country gifted the Statue of Liberty to the United States?", o: ["Britain", "France", "Germany", "Italy"], a: 1, exp: "France gifted the Statue of Liberty in the 19th century." },
+    { q: "What is the chemical formula for common table salt?", o: ["H₂O", "NaCl", "CO₂", "HCl"], a: 1, exp: "Sodium chloride (NaCl) is table salt." },
+    { q: "Who is the current President of the United States as of 2026?", o: ["Joe Biden", "Donald Trump", "Barack Obama", "Kamala Harris"], a: 1, exp: "Donald Trump holds office as US President in 2026." },
+    { q: "Which planet is closest to the Sun?", o: ["Venus", "Earth", "Mercury", "Mars"], a: 2, exp: "Mercury is the closest planet to the Sun." },
+    { q: "What is the largest mammal on Earth?", o: ["African Elephant", "Blue Whale", "Giraffe", "Hippopotamus"], a: 1, exp: "The Blue Whale is the largest animal ever known to have lived." },
+    { q: "Which country is both in Europe and Asia?", o: ["Turkey", "Egypt", "South Africa", "Brazil"], a: 0, exp: "Turkey spans across both Eastern Europe and Western Asia." },
+    { q: "What does UNESCO stand for?", o: ["United Nations Educational, Scientific and Cultural Organization", "Universal Network for Economic Security and Cooperation", "United Nations Environmental Science Council", "Union of Nations for Education and Social Culture"], a: 0, exp: "UNESCO promotes international educational and cultural collaboration." },
+    { q: "Which Nigerian river confluence gives Lokoja its nickname 'The Confluence Town'?", o: ["Niger and Benue", "Niger and Kaduna", "Ogun and Osun", "Cross River and Niger"], a: 0, exp: "Lokoja sits at the magnificent confluence of the Rivers Niger and Benue." },
+    { q: "What is the freezing point of water in Fahrenheit?", o: ["0 °F", "32 °F", "100 °F", "212 °F"], a: 1, exp: "Water freezes at 32 °F." },
+    { q: "Who painted 'The Starry Night'?", o: ["Claude Monet", "Vincent van Gogh", "Salvador Dalí", "Pablo Picasso"], a: 1, exp: "Vincent van Gogh painted 'The Starry Night' in 1889." },
+    { q: "Which gas do plants absorb from the atmosphere for photosynthesis?", o: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], a: 2, exp: "Plants absorb carbon dioxide to synthesize food during photosynthesis." },
+    { q: "What is the capital city of Kenya?", o: ["Mombasa", "Nairobi", "Kisumu", "Nakuru"], a: 1, exp: "Nairobi is the capital and largest city of Kenya." },
+    { q: "Which sport features terms like 'Deuce', 'Love', and 'Ace'?", o: ["Basketball", "Tennis", "Football", "Cricket"], a: 1, exp: "Tennis scoring utilizes terms like Love (zero), Deuce (tie at 40-40), and Ace." },
+    { q: "What is the powerhouse of the cell?", o: ["Nucleus", "Ribosome", "Mitochondria", "Golgi apparatus"], a: 2, exp: "Mitochondria generate chemical energy needed for cellular biochemical reactions." },
+    { q: "Which country won the Africa Cup of Nations (AFCON) in 2024?", o: ["Nigeria", "Ivory Coast", "Senegal", "Morocco"], a: 1, exp: "Ivory Coast hosted and won the 2023 AFCON tournament held in early 2024." },
+    { q: "What is the national currency of Ghana?", o: ["Naira", "Cedi", "Shilling", "Rand"], a: 1, exp: "The Ghanaian Cedi (GH₵) is the official currency of Ghana." },
+    { q: "Who was the first Prime Minister of independent Nigeria?", o: ["Nnamdi Azikiwe", "Abubakar Tafawa Balewa", "Obafemi Awolowo", "Ahmadu Bello"], a: 1, exp: "Sir Abubakar Tafawa Balewa served as Nigeria's first and only Prime Minister." },
+    { q: "Which element is the most abundant in the Earth's crust?", o: ["Iron", "Silicon", "Oxygen", "Aluminum"], a: 2, exp: "Oxygen makes up nearly 47% of the Earth's crust by mass." },
+    { q: "What is the capital of France?", o: ["Lyon", "Marseille", "Paris", "Nice"], a: 2, exp: "Paris is the capital of France." },
+    { q: "Which international tribunal is located in The Hague, Netherlands?", o: ["International Court of Justice (ICJ)", "World Bank", "WHO", "UNICEF"], a: 0, exp: "The ICJ sits at the Peace Palace in The Hague." },
+    { q: "What is the speed of light in vacuum approximately?", o: ["300 m/s", "3,000 km/s", "300,000 km/s", "3,000,000 km/s"], a: 2, exp: "Light travels at roughly 300,000 kilometers per second (3 × 10⁸ m/s)." },
+    { q: "Which Nigerian author wrote 'Purple Hibiscus'?", o: ["Chinua Achebe", "Chimamanda Ngozi Adichie", "Buchi Emecheta", "Helon Habila"], a: 1, exp: "Chimamanda Ngozi Adichie authored 'Purple Hibiscus'." }
+];
+
+// Daily Motivational Quotes Rotation
+const motivationalQuotes = [
+    { text: "Success is not final; failure is not fatal: It is the courage to continue that counts.", author: "Winston Churchill" },
+    { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+    { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+    { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+    { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+    { text: "It always seems impossible until it's done.", author: "Nelson Mandela" },
+    { text: "Excellence is not an act, but a habit.", author: "Aristotle" }
+];
+
+function initChallenge() {
+    // Set today's quote based on day of the year
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const quote = motivationalQuotes[dayOfYear % motivationalQuotes.length];
+    document.getElementById('quote-text').textContent = `"${quote.text}"`;
+    document.getElementById('quote-author').textContent = `— ${quote.author}`;
+
+    // Check localStorage state
+    const todayStr = new Date().toDateString();
+    const savedData = JSON.parse(localStorage.getItem('elite_daily_challenge'));
+
+    if (savedData && savedData.date === todayStr) {
+        // Already answered today! Show locked countdown screen
+        showLockedScreen(savedData);
+    } else {
+        // New day / first time today! Load active question
+        loadTodayQuestion(savedData);
+    }
+}
+
+function loadTodayQuestion(savedData) {
+    let questionIndex = 0;
+    if (savedData && typeof savedData.currentIndex === 'number') {
+        questionIndex = (savedData.currentIndex + 1) % currentAffairsPool.length;
+    } else {
+        // Seed based on total days passed for smooth progression across users
+        const epochDays = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+        questionIndex = epochDays % currentAffairsPool.length;
+    }
+
+    window.currentQIndex = questionIndex;
+    const item = currentAffairsPool[questionIndex];
+
+    document.getElementById('day-label').textContent = `Daily Challenge • Question #${questionIndex + 1}`;
+    document.getElementById('question-title').textContent = item.q;
+    
+    const optContainer = document.getElementById('options-container');
+    optContainer.innerHTML = item.o.map((opt, i) => `
+        <label><input type="radio" name="daily_opt" value="${i}" onchange="document.getElementById('submit-btn').style.display='block'"> ${String.fromCharCode(65 + i)}. ${opt}</label>
+    `).join('');
+
+    document.getElementById('active-card').style.display = 'block';
+    document.getElementById('locked-screen').style.display = 'none';
+}
+
+function submitAnswer() {
+    const selected = document.querySelector('input[name="daily_opt"]:checked');
+    if (!selected) return;
+
+    const userVal = parseInt(selected.value);
+    const item = currentAffairsPool[window.currentQIndex];
+    const correct = userVal === item.a;
+
+    const todayStr = new Date().toDateString();
+    const dataToSave = {
+        date: todayStr,
+        currentIndex: window.currentQIndex,
+        userAnswer: userVal,
+        correct: correct,
+        correctIndex: item.a,
+        explanation: item.exp
+    };
+
+    localStorage.setItem('elite_daily_challenge', JSON.stringify(dataToSave));
+    showLockedScreen(dataToSave);
+}
+
+function showLockedScreen(data) {
+    document.getElementById('active-card').style.display = 'none';
+    const lockedScreen = document.getElementById('locked-screen');
+    lockedScreen.style.display = 'block';
+
+    const item = currentAffairsPool[data.currentIndex];
+    const userChoiceText = String.fromCharCode(65 + data.userAnswer) + '. ' + item.o[data.userAnswer];
+    const correctChoiceText = String.fromCharCode(65 + data.correctIndex) + '. ' + item.o[data.correctIndex];
+
+    document.getElementById('past-result-box').innerHTML = `
+        <div style="font-weight: 700; margin-bottom: 6px; font-size: 1.02rem;">${window.currentQIndex + 1}. ${item.q}</div>
+        <div class="result-feedback ${data.correct ? 'correct' : 'wrong'}">
+            Your Answer: ${userChoiceText} ${data.correct ? '✓ (Correct!)' : '✗ (Incorrect)'}
+            ${!data.correct ? `<div style="margin-top:6px; color:#1e4620;">Correct Answer: ${correctChoiceText}</div>` : ''}
+            <div style="margin-top: 8px; font-weight: 400; font-size: 0.9rem; color: #334155;"><strong>Explanation:</strong> ${data.explanation}</div>
+        </div>
+    `;
+
+    startCountdownTimer();
+}
+
+function startCountdownTimer() {
+    updateTimer();
+    setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const diff = tomorrow - now;
+
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    document.getElementById('countdown-display').textContent = 
+        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+</script>
+</body>
+</html>
