@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - Smart Academic Dictionary</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #38761d; 
+            --green-light: #eef7ed;
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 15px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; box-sizing: border-box; }
+        
+        .container { max-width: 900px; margin: auto; width: 100%; box-sizing: border-box; }
+        
+        header { text-align: center; padding: 30px 15px; background: var(--gradient); color: white; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 1.8rem; font-weight: 800; letter-spacing: 0.5px; }
+        header p { margin: 8px 0 0 0; opacity: 0.9; font-weight: 300; font-size: 0.88rem; }
+
+        .search-card { background: white; padding: 20px; border-radius: 20px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); margin-bottom: 20px; box-sizing: border-box; width: 100%; }
+        
+        .search-box { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; width: 100%; box-sizing: border-box; }
+        @media(min-width: 600px) {
+            .search-box { flex-direction: row; }
+        }
+
+        .search-input { width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 0.95rem; font-family: 'Poppins', sans-serif; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+        .search-input:focus { border-color: var(--navy); }
+        
+        .btn-search { width: 100%; padding: 14px 20px; background: var(--navy); color: white; border: none; border-radius: 14px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: background 0.2s, transform 0.1s; font-family: 'Poppins', sans-serif; box-sizing: border-box; }
+        @media(min-width: 600px) {
+            .btn-search { width: auto; }
+        }
+        .btn-search:hover { background: #002d5c; }
+        .btn-search:active { transform: scale(0.98); }
+
+        .google-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; width: 100%; box-sizing: border-box; }
+        @media(min-width: 600px) {
+            .google-actions { flex-direction: row; }
+        }
+        
+        .google-btn { flex: 1; padding: 12px 14px; background: #f1f5f9; color: var(--navy); border: 1px solid #cbd5e1; border-radius: 12px; font-weight: 600; font-size: 0.85rem; cursor: pointer; text-align: center; text-decoration: none; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; }
+        .google-btn:hover { background: var(--green-light); border-color: var(--green); color: var(--green); }
+
+        .results-container { display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; width: 100%; box-sizing: border-box; }
+        
+        .result-card { background: white; padding: 18px; border-radius: 16px; box-shadow: var(--card-shadow); border-left: 5px solid var(--green); text-align: left; box-sizing: border-box; width: 100%; }
+        .result-card h3 { margin: 0 0 6px 0; font-size: 1.1rem; color: var(--navy); }
+        .category-tag { display: inline-block; background: var(--green-light); color: var(--green); padding: 4px 10px; border-radius: 50px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 8px; }
+        .result-card p { margin: 0; color: #475569; font-size: 0.9rem; line-height: 1.5; }
+
+        .web-frame-box { background: white; padding: 20px; border-radius: 20px; box-shadow: var(--card-shadow); text-align: center; display: none; box-sizing: border-box; width: 100%; }
+        .web-frame-box h4 { margin-top: 0; color: var(--navy); font-size: 1rem; }
+
+        footer { margin-top: auto; padding: 25px 15px 15px 15px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.85rem; color: #64748b; margin-bottom: 10px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 7px 18px; border-radius: 50px; font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>ELITE DICTIONARY & WEB HUB</h1>
+        <p>Instant Academic Definitions & Live Google Search Integration 🌐</p>
+    </header>
+
+    <!-- Search Card -->
+    <div class="search-card">
+        <div class="search-box">
+            <input type="text" id="query-input" class="search-input" placeholder="Type any term, law, or formula..." onkeyup="handleKeyup(event)">
+            <button class="btn-search" onclick="searchDictionary()">Search</button>
+        </div>
+
+        <div class="google-actions">
+            <button class="google-btn" onclick="searchGoogle()">🔍 Search Google</button>
+            <button class="google-btn" onclick="searchWikipedia()">📚 Wikipedia</button>
+            <button class="google-btn" onclick="searchScholar()">🎓 Google Scholar</button>
+        </div>
+    </div>
+
+    <!-- Results Display Container -->
+    <div id="results-area" class="results-container"></div>
+
+    <!-- Embedded Google Web Search Fallback Box -->
+    <div id="external-card" class="web-frame-box">
+        <h4 id="external-title">Looking for live web results?</h4>
+        <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 15px;">Click below to open comprehensive results directly from Google search engines.</p>
+        <a id="external-link" href="#" target="_blank" class="btn-search" style="text-decoration: none; display: inline-block;">Open Search on Google ↗</a>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+const dictionaryDb = [
+    { term: "Acceleration", cat: "Physics", def: "The rate of change of velocity per unit time (a = dv/dt). SI unit is m/s²." },
+    { term: "Bernoulli's Principle", cat: "Physics", def: "States that an increase in the speed of a fluid occurs simultaneously with a decrease in static pressure or fluid potential energy." },
+    { term: "Capacitance", cat: "Physics", def: "The ratio of the change in an electric charge in a system to the corresponding change in its electric potential (C = Q/V). Unit: Farad." },
+    { term: "Doppler Effect", cat: "Physics", def: "The change in frequency of a wave in relation to an observer who is moving relative to the wave source." },
+    { term: "Entropy", cat: "Physics", def: "A thermodynamic quantity representing the unavailability of a system's thermal energy for conversion into mechanical work (degree of disorder)." },
+    { term: "Force", cat: "Physics", def: "An interaction that, when unopposed, will change the motion of an object (F = ma). Measured in Newtons (N)." },
+    { term: "Gravity", cat: "Physics", def: "A natural phenomenon by which all things with mass or energy are brought toward one another." },
+    { term: "Hooke's Law", cat: "Physics", def: "States that within the elastic limit, the strain produced is directly proportional to the stress applied (F = -kx)." },
+    { term: "Impulse", cat: "Physics", def: "The product of the average net force acting on an object and its time duration (J = F Δt = Δp). Measured in N·s." },
+    { term: "Joule", cat: "Physics", def: "The SI unit of work or energy, equal to the work done by a force of one Newton when its point of application moves one meter." },
+    { term: "Avogadro's Law", cat: "Chemistry", def: "Equal volumes of all gases, at the same temperature and pressure, contain the same number of molecules." },
+    { term: "Catalyst", cat: "Chemistry", def: "A substance that increases the rate of a chemical reaction without undergoing any permanent chemical change itself." },
+    { term: "Electrolysis", cat: "Chemistry", def: "The technique that uses direct electric current (DC) to drive an otherwise non-spontaneous chemical reaction." },
+    { term: "Isotopes", cat: "Chemistry", def: "Variants of a particular chemical element which differ in neutron number, but share the same number of protons." },
+    { term: "Oxidation", cat: "Chemistry", def: "The loss of electrons, increase in oxidation state, or addition of oxygen to a molecule/element." },
+    { term: "Cellular Respiration", cat: "Biology", def: "A set of metabolic reactions taking place in cells to convert biochemical energy from nutrients into ATP." },
+    { term: "Diffusion", cat: "Biology", def: "The net movement of particles from a region of higher concentration to a region of lower concentration." },
+    { term: "Osmosis", cat: "Biology", def: "The spontaneous net movement of solvent molecules through a selectively permeable membrane into a region of higher solute concentration." },
+    { term: "Photosynthesis", cat: "Biology", def: "The process used by plants to convert light energy into chemical energy." },
+    { term: "Differentiation", cat: "Mathematics", def: "The rate of change of a function with respect to a variable (dy/dx)." },
+    { term: "Integration", cat: "Mathematics", def: "The mathematical process of finding integrals (calculating area under a curve)." },
+    { term: "Vector", cat: "Mathematics", def: "A quantity that has both magnitude and direction." }
+];
+
+function handleKeyup(event) {
+    if (event.key === 'Enter') { searchDictionary(); }
+}
+
+function searchDictionary() {
+    const query = document.getElementById('query-input').value.trim().toLowerCase();
+    const resultsArea = document.getElementById('results-area');
+    const externalCard = document.getElementById('external-card');
+
+    if (!query) {
+        resultsArea.innerHTML = `<div class="result-card"><p>Please enter a term to search.</p></div>`;
+        externalCard.style.display = 'none';
+        return;
+    }
+
+    const matches = dictionaryDb.filter(item => 
+        item.term.toLowerCase().includes(query) || item.def.toLowerCase().includes(query) || item.cat.toLowerCase().includes(query)
+    );
+
+    if (matches.length > 0) {
+        resultsArea.innerHTML = matches.map(item => `
+            <div class="result-card">
+                <span class="category-tag">${item.cat}</span>
+                <h3>${item.term}</h3>
+                <p>${item.def}</p>
+            </div>
+        `).join('');
+    } else {
+        resultsArea.innerHTML = `
+            <div class="result-card" style="border-left-color: #cbd5e1;">
+                <span class="category-tag" style="background: #f1f5f9; color: #64748b;">Not Found In Local DB</span>
+                <h3>No exact match found for "${query}"</h3>
+                <p>Use the Google Search buttons above to pull live results directly from Google.</p>
+            </div>`;
+    }
+
+    document.getElementById('external-title').textContent = `Search live web results for "${query}"`;
+    document.getElementById('external-link').href = `https://www.google.com/search?q=${encodeURIComponent(query + " definition physics chemistry science")}`;
+    externalCard.style.display = 'block';
+}
+
+function searchGoogle() {
+    const query = document.getElementById('query-input').value.trim();
+    if (query) { window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank'); }
+    else { alert("Please type a word or question first!"); }
+}
+
+function searchWikipedia() {
+    const query = document.getElementById('query-input').value.trim();
+    if (query) { window.open(`https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(query)}`, '_blank'); }
+    else { alert("Please type a word or question first!"); }
+}
+
+function searchScholar() {
+    const query = document.getElementById('query-input').value.trim();
+    if (query) { window.open(`https://scholar.google.com/scholar?q=${encodeURIComponent(query)}`, '_blank'); }
+    else { alert("Please type a word or question first!"); }
+}
+</script>
+</body>
+</html>
