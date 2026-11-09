@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Exam Hub - Support & Complaints Portal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+        :root { 
+            --navy: #001f3f; 
+            --green: #25D366; /* Official WhatsApp Green */
+            --green-dark: #128C7E;
+            --green-light: #eef7ed;
+            --light-bg: #f8fafc; 
+            --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
+            --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); margin: 0; padding: 15px; color: var(--navy); display: flex; flex-direction: column; min-height: 100vh; box-sizing: border-box; }
+        
+        .container { max-width: 700px; margin: auto; width: 100%; box-sizing: border-box; }
+        
+        header { text-align: center; padding: 35px 15px; background: var(--gradient); color: white; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,31,63,0.15); }
+        header h1 { margin: 0; font-size: 1.8rem; font-weight: 800; letter-spacing: 0.5px; }
+        header p { margin: 8px 0 0 0; opacity: 0.9; font-weight: 300; font-size: 0.9rem; }
+
+        .complaint-card { background: white; padding: 25px; border-radius: 20px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,31,63,0.05); margin-bottom: 25px; box-sizing: border-box; width: 100%; text-align: left; }
+        .complaint-card h3 { margin-top: 0; font-size: 1.15rem; color: var(--navy); margin-bottom: 8px; }
+        .complaint-card p { font-size: 0.9rem; color: #64748b; margin-top: 0; margin-bottom: 20px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; color: var(--navy); }
+        
+        .form-input, .form-textarea { width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 0.95rem; font-family: 'Poppins', sans-serif; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+        .form-input:focus, .form-textarea:focus { border-color: var(--green-dark); }
+        .form-textarea { resize: vertical; min-height: 140px; }
+
+        .btn-whatsapp { width: 100%; padding: 16px; background: var(--green); color: white; border: none; border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s, transform 0.1s; font-family: 'Poppins', sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px; box-sizing: border-box; text-decoration: none; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); }
+        .btn-whatsapp:hover { background: var(--green-dark); }
+        .btn-whatsapp:active { transform: scale(0.99); }
+
+        footer { margin-top: auto; padding: 25px 15px 15px 15px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+        .footer-copy { font-size: 0.85rem; color: #64748b; margin-bottom: 10px; }
+        .dev-btn { background: transparent; border: 1px solid var(--navy); color: var(--navy); padding: 7px 18px; border-radius: 50px; font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Poppins', sans-serif; text-decoration: none; display: inline-block; }
+        .dev-btn:hover { background: var(--navy); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>ELITE EXAM HUB SUPPORT</h1>
+        <p>Encountered an issue or have a complaint? Send us a direct message 💬</p>
+    </header>
+
+    <div class="complaint-card">
+        <h3>Submit Your Feedback or Complaint</h3>
+        <p>Type your message below and hit send. It will automatically route directly to Developer Bob Kelvin's WhatsApp.</p>
+        
+        <div class="form-group">
+            <label class="form-label">Your Name / Nickname</label>
+            <input type="text" id="sender-name" class="form-input" placeholder="e.g. Adebayo John">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="complaint-category" class="form-input">
+                <option value="General Question">General Question / Inquiry</option>
+                <option value="Bug / Technical Issue">Bug or Technical App Issue</option>
+                <option value="Question Correction">Question / Answer Correction</option>
+                <option value="Partnership / Other">Partnership or Other</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Your Message / Complaint</label>
+            <textarea id="complaint-msg" class="form-textarea" placeholder="Describe your issue in detail here..."></textarea>
+        </div>
+
+        <button class="btn-whatsapp" onclick="sendToWhatsApp()">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+            Send via WhatsApp
+        </button>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
+    <a href="https://wa.me/2349032320783" target="_blank" class="dev-btn">Message the Developer</a>
+</footer>
+
+<script>
+function sendToWhatsApp() {
+    const name = document.getElementById('sender-name').value.trim() || 'Anonymous User';
+    const category = document.getElementById('complaint-category').value;
+    const message = document.getElementById('complaint-msg').value.trim();
+
+    if (!message) {
+        alert("Omo, please type your complaint or message before hitting send! 😂");
+        document.getElementById('complaint-msg').focus();
+        return;
+    }
+
+    // Format the clean text for WhatsApp URL
+    const formattedText = `*🚨 ELITE EXAM HUB SUPPORT TICKET*` +
+                          `\n\n*Name:* ${name}` +
+                          `\n*Category:* ${category}` +
+                          `\n*Message:* \n${message}`;
+
+    // Your WhatsApp number encoded
+    const phoneNumber = "2349032320783";
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(formattedText)}`;
+
+    // Open WhatsApp chat
+    window.open(whatsappUrl, '_blank');
+}
+</script>
+</body>
+</html>
