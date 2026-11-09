@@ -9,6 +9,8 @@
         :root { 
             --navy: #001f3f; 
             --green: #38761d; 
+            --green-light: #eef7ed;
+            --red-light: #fef2f2;
             --light-bg: #f8fafc; 
             --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
             --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
@@ -62,6 +64,12 @@
         .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
         .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
 
+        /* REVIEW STYLES */
+        .review-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; text-align: left; box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; }
+        .explanation-box { margin-top: 12px; padding: 14px; border-radius: 10px; font-size: 0.92rem; line-height: 1.5; }
+        .explanation-box.correct-bg { background: var(--green-light); border-left: 4px solid var(--green); color: #1e4620; }
+        .explanation-box.wrong-bg { background: var(--red-light); border-left: 4px solid #d32f2f; color: #991b1b; }
+
         #result-screen { display: none; text-align: center; padding: 50px 20px; }
         
         footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
@@ -80,7 +88,7 @@
 <div class="container">
     <header>
         <h1>GST 101 - THE ART OF SPEAKING, LISTENING & NOTE-TAKING</h1>
-        <p>Elite Exam Hub • THEM NO BORN THIS QUESTIONS MAKE E NO COME OUT 😂</p>
+        <p>Elite Exam Hub • Comprehensive Explanations Edition ⚡</p>
     </header>
 </div>
 
@@ -107,12 +115,7 @@
     </div>
 </div>
 
-<div class="container" id="result-screen">
-    <div style="font-size: 3rem;">GO AND READ😂</div>
-    <h1 id="score-text"></h1>
-    <div id="review-area"></div>
-    <button class="btn-action" onclick="location.reload()">Try Again</button>
-</div>
+<div class="container" id="result-screen"></div>
 
 <footer>
     <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
@@ -129,7 +132,8 @@ const fullMthPool = [
             "The process of writing only",
             "The process of speaking without listening"
         ],
-        a: 1
+        a: 1,
+        exp: "Communication is fundamentally defined as the dynamic, interactive process of transmitting information, ideas, and messages from a sender to a receiver."
     },
     {
         q: "Communication is described as a process because ______.",
@@ -139,7 +143,8 @@ const fullMthPool = [
             "It does not require a receiver",
             "It occurs only in classrooms"
         ],
-        a: 0
+        a: 0,
+        exp: "It is a process because it follows a sequence involving a sender, message, channel, receiver, and feedback working in continuous interaction."
     },
     {
         q: "Which of the following represents the broad forms of communication?",
@@ -149,7 +154,8 @@ const fullMthPool = [
             "Verbal and non-verbal communication",
             "Formal and academic communication"
         ],
-        a: 2
+        a: 2,
+        exp: "Communication broadly manifests in two major forms: verbal (using spoken or written words) and non-verbal (using body language, gestures, and cues)."
     },
     {
         q: "Verbal communication may be ______.",
@@ -159,7 +165,8 @@ const fullMthPool = [
             "Gestural only",
             "Environmental only"
         ],
-        a: 0
+        a: 0,
+        exp: "Verbal communication utilizes words and can take either oral (spoken) or written form."
     },
     {
         q: "Which of the following is an example of written communication?",
@@ -169,7 +176,8 @@ const fullMthPool = [
             "Hand gesture",
             "Eye contact"
         ],
-        a: 1
+        a: 1,
+        exp: "An email is a text-based electronic message, making it a classic example of written verbal communication."
     },
     {
         q: "Non-verbal communication involves ______.",
@@ -179,7 +187,8 @@ const fullMthPool = [
             "Only textbooks",
             "Only speeches"
         ],
-        a: 1
+        a: 1,
+        exp: "Non-verbal communication conveys meaning without words through body posture, facial expressions, eye contact, and hand gestures."
     },
     {
         q: "Which of the following is an example of visual communication?",
@@ -189,7 +198,8 @@ const fullMthPool = [
             "Telephone call",
             "Speech"
         ],
-        a: 0
+        a: 0,
+        exp: "Graphs, charts, and maps use visual elements to present data and information effectively."
     },
     {
         q: "According to the handbook, the most frequently used form of communication is ______.",
@@ -199,7 +209,8 @@ const fullMthPool = [
             "Speech",
             "Drawing"
         ],
-        a: 2
+        a: 2,
+        exp: "Speech is the primary, most frequently utilized mode of human daily interaction and communication."
     },
     {
         q: "Speech primarily distinguishes human beings from ______ according to the discussion in the handbook.",
@@ -209,7 +220,8 @@ const fullMthPool = [
             "Machines",
             "Books"
         ],
-        a: 1
+        a: 1,
+        exp: "Spoken language and complex speech systems are unique cognitive faculties that distinguish humans from animals."
     },
     {
         q: "Speaking is the delivery of language through the ______.",
@@ -219,7 +231,8 @@ const fullMthPool = [
             "Mouth",
             "Hand"
         ],
-        a: 2
+        a: 2,
+        exp: "Oral production of language relies on the physical apparatus of the mouth, vocal cords, and respiratory system."
     },
     {
         q: "Which of the following is involved in speaking?",
@@ -229,7 +242,8 @@ const fullMthPool = [
             "Tongue",
             "All of the above"
         ],
-        a: 3
+        a: 3,
+        exp: "Speech production requires airflow from the lungs, vibration from the vocal cords, and articulation by the tongue and vocal tract."
     },
     {
         q: "Speaking is presented in the handbook as the ______ of the four language skills.",
@@ -239,7 +253,8 @@ const fullMthPool = [
             "Third",
             "Fourth"
         ],
-        a: 1
+        a: 1,
+        exp: "In language acquisition classifications, listening is 1st, speaking is 2nd, reading is 3rd, and writing is 4th."
     },
     {
         q: "A conversation between two or more people is called ______.",
@@ -249,7 +264,8 @@ const fullMthPool = [
             "Lecture",
             "Debate"
         ],
-        a: 1
+        a: 1,
+        exp: "A dialogue is an interactive exchange or conversation involving two or more participants."
     },
     {
         q: "Speaking may be classified as ______.",
@@ -259,7 +275,8 @@ const fullMthPool = [
             "Academic and environmental",
             "Listening and reading"
         ],
-        a: 0
+        a: 0,
+        exp: "Speaking styles are categorized into informal (casual, relaxed) and formal (structured, professional)."
     },
     {
         q: "Informal speaking is commonly used with ______.",
@@ -269,7 +286,8 @@ const fullMthPool = [
             "A formal conference only",
             "A university examination board"
         ],
-        a: 0
+        a: 0,
+        exp: "Informal speech is casual and relaxed, typically used among close friends, peers, and family members."
     },
     {
         q: "Formal speaking is commonly required in ______.",
@@ -279,7 +297,8 @@ const fullMthPool = [
             "Private conversations at home",
             "Informal jokes"
         ],
-        a: 1
+        a: 1,
+        exp: "Formal speaking follows strict grammatical rules and professional etiquette, suited for academics, conferences, and business settings."
     },
     {
         q: "Public speaking involves ______.",
@@ -289,7 +308,8 @@ const fullMthPool = [
             "Writing silently",
             "Listening without responding"
         ],
-        a: 1
+        a: 1,
+        exp: "Public speaking bridges an individual speaker and a collective audience to share prepared ideas."
     },
     {
         q: "Public speaking is described as a central mode of ______.",
@@ -299,7 +319,8 @@ const fullMthPool = [
             "Note-taking",
             "Reading"
         ],
-        a: 0
+        a: 0,
+        exp: "Public speaking serves as a vital tool for community leadership, advocacy, and civic engagement."
     },
     {
         q: "Public speaking and everyday conversation are ______.",
@@ -309,7 +330,8 @@ const fullMthPool = [
             "Both written activities",
             "Both forms of note-taking"
         ],
-        a: 1
+        a: 1,
+        exp: "Public speaking is more structured, requires greater preparation, and features different audience feedback dynamics than casual conversation."
     },
     {
         q: "Public speaking is generally ______ than ordinary conversation.",
@@ -319,7 +341,8 @@ const fullMthPool = [
             "Completely unplanned",
             "Always informal"
         ],
-        a: 1
+        a: 1,
+        exp: "Unlike spontaneous chat, public speaking demands a carefully organized introduction, body, and conclusion."
     },
     {
         q: "Public speaking usually involves ______.",
@@ -329,7 +352,8 @@ const fullMthPool = [
             "No preparation",
             "No audience"
         ],
-        a: 0
+        a: 0,
+        exp: "Speakers are typically bound by scheduled time allocations during presentations and public addresses."
     },
     {
         q: "Compared with ordinary conversation, listeners in public speaking situations generally ______.",
@@ -339,7 +363,8 @@ const fullMthPool = [
             "Must always speak louder than the speaker",
             "Become the speakers"
         ],
-        a: 1
+        a: 1,
+        exp: "Public speaking protocols dictate that the audience listens attentively while the speaker holds the floor without immediate interruption."
     },
     {
         q: "Before preparing a speech, a speaker should consider the ______.",
@@ -349,7 +374,8 @@ const fullMthPool = [
             "Building design only",
             "Speaker's clothing only"
         ],
-        a: 0
+        a: 0,
+        exp: "Audience analysis is a foundational step to ensure the message resonates with listeners' background, age, and interests."
     },
     {
         q: "Understanding the audience helps a speaker to ______.",
@@ -359,7 +385,8 @@ const fullMthPool = [
             "Avoid preparing the speech",
             "Speak without a purpose"
         ],
-        a: 1
+        a: 1,
+        exp: "Tailoring examples and tone to the audience ensures effective message reception and comprehension."
     },
     {
         q: "Which of the following is an audience demographic trait?",
@@ -369,7 +396,8 @@ const fullMthPool = [
             "Location",
             "All of the above"
         ],
-        a: 3
+        a: 3,
+        exp: "Demographics encompass age, gender, occupation, cultural background, and geographic location."
     },
     {
         q: "Good speakers are described as ______.",
@@ -379,7 +407,8 @@ const fullMthPool = [
             "Speaker-centered only",
             "Unprepared"
         ],
-        a: 0
+        a: 0,
+        exp: "An audience-centered speaker prioritizes listener engagement, understanding, and feedback throughout the address."
     },
     {
         q: "A manuscript speech is a speech that is ______.",
@@ -389,7 +418,8 @@ const fullMthPool = [
             "Never prepared",
             "Delivered only through gestures"
         ],
-        a: 0
+        a: 0,
+        exp: "Manuscript delivery involves reading a fully scripted speech directly from paper or a teleprompter."
     },
     {
         q: "Reading a manuscript speech can affect delivery if the speaker ______.",
@@ -399,7 +429,8 @@ const fullMthPool = [
             "Maintains good eye contact",
             "Practises properly"
         ],
-        a: 0
+        a: 0,
+        exp: "Staring rigidly at a script without pausing or making eye contact kills audience connection."
     },
     {
         q: "An extemporaneous speech is ______.",
@@ -409,7 +440,8 @@ const fullMthPool = [
             "Always memorized word for word",
             "Always read from a book"
         ],
-        a: 1
+        a: 1,
+        exp: "Extemporaneous speaking involves thorough preparation and keyword notes, allowing natural conversational delivery."
     },
     {
         q: "An impromptu speech is delivered with ______.",
@@ -419,7 +451,8 @@ const fullMthPool = [
             "A full manuscript only",
             "Several weeks of rehearsal"
         ],
-        a: 0
+        a: 0,
+        exp: "Impromptu speeches are delivered on the spot without prior notice or formal rehearsal."
     },
     {
         q: "A memorized speech is delivered ______.",
@@ -429,7 +462,8 @@ const fullMthPool = [
             "By another person",
             "Without knowing the topic"
         ],
-        a: 0
+        a: 0,
+        exp: "Memorized speeches require reciting a fully written text entirely from memory without notes."
     },
     {
         q: "Which type of speech is read word for word?",
@@ -439,7 +473,8 @@ const fullMthPool = [
             "Extemporaneous",
             "Memorized"
         ],
-        a: 1
+        a: 1,
+        exp: "Manuscript speeches are fully written out and read verbatim to the audience."
     },
     {
         q: "Which type of speech involves little or no preparation?",
@@ -449,7 +484,8 @@ const fullMthPool = [
             "Impromptu",
             "Extemporaneous"
         ],
-        a: 2
+        a: 2,
+        exp: "Impromptu speaking is spontaneous, requiring immediate thought without structured preparation."
     },
     {
         q: "Which type of speech allows flexibility while still requiring preparation?",
@@ -459,7 +495,8 @@ const fullMthPool = [
             "Manuscript",
             "Reading"
         ],
-        a: 0
+        a: 0,
+        exp: "Extemporaneous speaking blends careful preparation with spontaneous, natural wording during delivery."
     },
     {
         q: "Which of the following is NOT one of the broad forms of communication?",
@@ -469,7 +506,8 @@ const fullMthPool = [
             "Visual",
             "Mathematical"
         ],
-        a: 3
+        a: 3,
+        exp: "Mathematical is a specialized symbolic system, whereas verbal, non-verbal, and visual are the recognized broad forms of communication."
     },
     {
         q: "Which of the following can be used in visual communication?",
@@ -479,7 +517,8 @@ const fullMthPool = [
             "Logos",
             "All of the above"
         ],
-        a: 3
+        a: 3,
+        exp: "Visual communication utilizes graphical aids like maps, charts, diagrams, and logos to convey information."
     },
     {
         q: "Which of the following is most closely associated with non-verbal communication?",
@@ -489,7 +528,8 @@ const fullMthPool = [
             "Email",
             "Letter"
         ],
-        a: 0
+        a: 0,
+        exp: "Facial expressions are primary non-verbal indicators of emotion and attitude."
     },
     {
         q: "Which of the following is a feature of public speaking?",
@@ -499,7 +539,8 @@ const fullMthPool = [
             "No preparation",
             "Unlimited interruption"
         ],
-        a: 0
+        a: 0,
+        exp: "Public speaking requires careful consideration of the audience's demographics, knowledge, and expectations."
     },
     {
         q: "Why is audience analysis important?",
@@ -509,7 +550,8 @@ const fullMthPool = [
             "It removes the need for preparation",
             "It makes the audience irrelevant"
         ],
-        a: 0
+        a: 0,
+        exp: "Analyzing the audience enables the speaker to customize language, examples, and tone for maximum impact."
     },
     {
         q: "Which of the following is an example of formal speaking?",
@@ -519,7 +561,8 @@ const fullMthPool = [
             "Family joke",
             "Informal greeting"
         ],
-        a: 0
+        a: 0,
+        exp: "Academic presentations follow rigorous professional standards and formal language rules."
     },
     {
         q: "Which of the following is an example of informal speaking?",
@@ -529,7 +572,8 @@ const fullMthPool = [
             "Conversation with a friend",
             "Business conference"
         ],
-        a: 2
+        a: 2,
+        exp: "Conversing with a friend is casual, relaxed, and unstructured (informal)."
     },
     {
         q: "Which speech type requires the speaker to remember the prepared content?",
@@ -539,7 +583,8 @@ const fullMthPool = [
             "Manuscript speech",
             "Informal speech"
         ],
-        a: 0
+        a: 0,
+        exp: "Memorized speeches require internalizing every word of the text beforehand."
     },
     {
         q: "Which speech type is normally read from a prepared document?",
@@ -549,7 +594,8 @@ const fullMthPool = [
             "Extemporaneous",
             "Conversational"
         ],
-        a: 0
+        a: 0,
+        exp: "Manuscript speeches are read directly off prepared pages."
     },
     {
         q: "A speaker who has prepared but speaks without reading every word is most likely using ______.",
@@ -559,7 +605,8 @@ const fullMthPool = [
             "Impromptu delivery",
             "Silent delivery"
         ],
-        a: 0
+        a: 0,
+        exp: "Extemporaneous speaking relies on outline notes rather than verbatim reading."
     },
     {
         q: "Which of the following should a speaker consider about an audience?",
@@ -569,7 +616,8 @@ const fullMthPool = [
             "Location",
             "All of the above"
         ],
-        a: 3
+        a: 3,
+        exp: "Audience analysis encompasses age brackets, professional background, and geographical context."
     },
     {
         q: "Which of the following best describes public speaking?",
@@ -579,7 +627,8 @@ const fullMthPool = [
             "Reading a novel silently",
             "Writing notes privately"
         ],
-        a: 1
+        a: 1,
+        exp: "Public speaking is the act of delivering a structured message to an assembled audience."
     },
     {
         q: "What makes public speaking different from ordinary conversation?",
@@ -589,7 +638,8 @@ const fullMthPool = [
             "It never has a purpose",
             "It cannot be prepared"
         ],
-        a: 0
+        a: 0,
+        exp: "Public speaking requires formal structure, planning, and specific delivery mechanics."
     },
     {
         q: "Which of the following is important for effective speech delivery?",
@@ -599,7 +649,8 @@ const fullMthPool = [
             "Avoiding preparation",
             "Speaking without purpose"
         ],
-        a: 0
+        a: 0,
+        exp: "Maintaining a steady, appropriate speaking pace ensures audience comprehension."
     },
     {
         q: "Which statement about speaking is correct?",
@@ -609,7 +660,8 @@ const fullMthPool = [
             "Speaking is always written",
             "Speaking requires no language"
         ],
-        a: 1
+        a: 1,
+        exp: "Speaking styles range from casual informal chats to rigid formal presentations."
     },
     {
         q: "Which of the following best summarizes effective public speaking?",
@@ -619,7 +671,8 @@ const fullMthPool = [
             "Reading anything without preparation",
             "Avoiding audience interaction completely"
         ],
-        a: 1
+        a: 1,
+        exp: "Effective public speaking merges diligent preparation, audience awareness, and polished delivery."
     },
     {
         q: "Listening involves ______.",
@@ -629,7 +682,8 @@ const fullMthPool = [
             "Writing without thinking",
             "Ignoring the speaker"
         ],
-        a: 0
+        a: 0,
+        exp: "Listening is an active mental process of receiving and interpreting auditory signals."
     },
     {
         q: "Listening can best be described as ______.",
@@ -639,7 +693,8 @@ const fullMthPool = [
             "Speaking to an audience",
             "Reading written information"
         ],
-        a: 0
+        a: 0,
+        exp: "Unlike passive hearing, listening requires cognitive focus and conscious interpretation."
     },
     {
         q: "Which of the following distinguishes hearing from listening?",
@@ -649,7 +704,8 @@ const fullMthPool = [
             "They are exactly the same",
             "Neither involves sound"
         ],
-        a: 0
+        a: 0,
+        exp: "Hearing is a physiological passive sense, whereas listening is an active, deliberate psychological act."
     },
     {
         q: "A good listener should try to ______.",
@@ -659,7 +715,8 @@ const fullMthPool = [
             "Interrupt constantly",
             "Change the topic immediately"
         ],
-        a: 0
+        a: 0,
+        exp: "Empathy and perspective-taking are hallmarks of effective active listening."
     },
     {
         q: "Which of the following is a characteristic of a good listener?",
@@ -669,7 +726,8 @@ const fullMthPool = [
             "Interrupting constantly",
             "Refusing to understand"
         ],
-        a: 0
+        a: 0,
+        exp: "Asking clarifying questions shows active engagement and comprehension."
     },
     {
         q: "Which of the following is a listening context?",
@@ -679,7 +737,8 @@ const fullMthPool = [
             "Social",
             "All of the above"
         ],
-        a: 3
+        a: 3,
+        exp: "Listening occurs across varied contexts including academic, professional, and social settings."
     },
     {
         q: "Listening in a lecture hall is most closely associated with which context?",
@@ -689,7 +748,8 @@ const fullMthPool = [
             "Social only",
             "Private"
         ],
-        a: 0
+        a: 0,
+        exp: "Lecture halls belong to academic and conference listening environments."
     },
     {
         q: "The purpose of listening ______.",
@@ -699,7 +759,8 @@ const fullMthPool = [
             "Does not depend on context",
             "Is only entertainment"
         ],
-        a: 1
+        a: 1,
+        exp: "Listening goals change depending on whether you are seeking information, critiquing, or enjoying music."
     },
     {
         q: "Which of the following is NOT a listening context identified in the handbook?",
@@ -709,7 +770,8 @@ const fullMthPool = [
             "Social",
             "Mathematical"
         ],
-        a: 3
+        a: 3,
+        exp: "Mathematical is a discipline, not a recognized listening context."
     },
     {
         q: "Effective listening requires ______.",
@@ -719,7 +781,8 @@ const fullMthPool = [
             "Constant talking",
             "Ignoring the speaker"
         ],
-        a: 0
+        a: 0,
+        exp: "Sustained attention is mandatory for processing spoken information."
     },
     {
         q: "Note-taking is useful because it helps learners ______.",
@@ -729,7 +792,8 @@ const fullMthPool = [
             "Avoid listening",
             "Stop learning"
         ],
-        a: 0
+        a: 0,
+        exp: "Notes create external memory archives for revision and study."
     },
     {
         q: "Which of the following is a form of note-taking?",
@@ -739,7 +803,8 @@ const fullMthPool = [
             "Dialogue",
             "Debate"
         ],
-        a: 0
+        a: 0,
+        exp: "Guided notes provide structured frameworks for recording key lecture details."
     },
     {
         q: "Guided notes usually contain ______.",
@@ -749,7 +814,8 @@ const fullMthPool = [
             "Only pictures",
             "A complete examination paper"
         ],
-        a: 0
+        a: 0,
+        exp: "Guided notes feature pre-printed headings and partial outlines with blank spaces for students to fill in key facts."
     },
     {
         q: "One advantage of guided notes is that they help students ______.",
@@ -759,7 +825,8 @@ const fullMthPool = [
             "Stop paying attention",
             "Ignore the lecturer"
         ],
-        a: 0
+        a: 0,
+        exp: "The structured format highlights essential core concepts during fast-paced lectures."
     },
     {
         q: "Electronic note-taking may involve the use of ______.",
@@ -769,7 +836,8 @@ const fullMthPool = [
             "Note-taking software",
             "All of the above"
         ],
-        a: 3
+        a: 3,
+        exp: "Digital note-taking leverages laptops, tablets, stylus pens, and specialized software."
     },
     {
         q: "Which of the following can be included in electronic notes?",
@@ -779,7 +847,8 @@ const fullMthPool = [
             "Text",
             "All of the above"
         ],
-        a: 3
+        a: 3,
+        exp: "Digital notes seamlessly incorporate text, audio recordings, scanned diagrams, and graphs."
     },
     {
         q: "Which of the following is a characteristic of effective note-taking?",
@@ -789,7 +858,8 @@ const fullMthPool = [
             "Sleeping during the lecture",
             "Avoiding concentration"
         ],
-        a: 0
+        a: 0,
+        exp: "Accurate note-taking is impossible without attentive listening."
     },
     {
         q: "During note-taking, the learner should focus on the ______.",
@@ -799,7 +869,8 @@ const fullMthPool = [
             "Telephone",
             "Door"
         ],
-        a: 0
+        a: 0,
+        exp: "Focusing visual and auditory attention on the speaker ensures critical points are captured."
     },
     {
         q: "Which activity is most directly connected with note-taking?",
@@ -809,7 +880,8 @@ const fullMthPool = [
             "Interrupting the speaker",
             "Changing the topic"
         ],
-        a: 0
+        a: 0,
+        exp: "The core purpose of taking notes is recording vital lecture information."
     },
     {
         q: "Which statement about listening is correct?",
@@ -819,7 +891,8 @@ const fullMthPool = [
             "Listening requires no effort",
             "Listening has no purpose"
         ],
-        a: 1
+        a: 1,
+        exp: "Listening is an active cognitive endeavor requiring conscious mental effort."
     },
     {
         q: "A person who hears a sound without deliberately paying attention is primarily ______.",
@@ -829,7 +902,8 @@ const fullMthPool = [
             "Note-taking",
             "Speaking"
         ],
-        a: 0
+        a: 0,
+        exp: "Passive perception of acoustic waves without cognitive processing is hearing."
     },
     {
         q: "A student who carefully follows a lecturer's explanation is ______.",
@@ -839,7 +913,8 @@ const fullMthPool = [
             "Speaking",
             "Writing a speech"
         ],
-        a: 0
+        a: 0,
+        exp: "Following explanations with intent to understand is active listening."
     },
     {
         q: "Which of the following is NOT a benefit of attentive listening?",
@@ -849,7 +924,8 @@ const fullMthPool = [
             "Increased distraction",
             "Better note-taking"
         ],
-        a: 2
+        a: 2,
+        exp: "Attentive listening reduces distraction rather than increasing it."
     },
     {
         q: "A learner taking notes during a lecture should primarily ______.",
@@ -859,7 +935,8 @@ const fullMthPool = [
             "Ignore the lecturer",
             "Focus on unrelated activities"
         ],
-        a: 0
+        a: 0,
+        exp: "Attentive listening acts as the foundation for recording accurate lecture notes."
     },
     {
         q: "Which of the following is an electronic note-taking device?",
@@ -869,7 +946,8 @@ const fullMthPool = [
             "Chalk only",
             "Notebook only"
         ],
-        a: 0
+        a: 0,
+        exp: "Tablets are modern digital devices widely used for electronic note-taking."
     },
     {
         q: "Which method provides students with partially completed lecture notes?",
@@ -879,7 +957,8 @@ const fullMthPool = [
             "Free speaking",
             "Dialogue"
         ],
-        a: 0
+        a: 0,
+        exp: "Guided notes supply pre-structured outlines with strategic blanks."
     },
     {
         q: "What is the major purpose of note-taking during a lecture?",
@@ -889,7 +968,8 @@ const fullMthPool = [
             "To interrupt the lecturer",
             "To avoid learning"
         ],
-        a: 0
+        a: 0,
+        exp: "Notes preserve valuable instructional content for future academic review."
     },
     {
         q: "Which of the following best describes listening?",
@@ -899,7 +979,8 @@ const fullMthPool = [
             "Reading a written passage",
             "Writing without listening"
         ],
-        a: 0
+        a: 0,
+        exp: "Listening is the conscious cognitive translation of auditory signals."
     },
     {
         q: "Why should a listener ask questions when necessary?",
@@ -909,7 +990,8 @@ const fullMthPool = [
             "To end communication",
             "To avoid learning"
         ],
-        a: 0
+        a: 0,
+        exp: "Clarifying questions resolve ambiguities and enhance comprehension."
     },
     {
         q: "Which of the following is an example of social listening?",
@@ -919,7 +1001,8 @@ const fullMthPool = [
             "Writing an examination",
             "Copying notes without listening"
         ],
-        a: 0
+        a: 0,
+        exp: "Social listening takes place during interpersonal communication and social gatherings."
     },
     {
         q: "Which of the following is an example of academic listening?",
@@ -929,7 +1012,8 @@ const fullMthPool = [
             "Hearing traffic noise",
             "Listening to music only"
         ],
-        a: 0
+        a: 0,
+        exp: "University lectures are prime examples of academic listening environments."
     },
     {
         q: "Environmental listening is concerned with ______.",
@@ -939,7 +1023,8 @@ const fullMthPool = [
             "Writing essays",
             "Memorizing speeches"
         ],
-        a: 0
+        a: 0,
+        exp: "Environmental listening involves tuning into ambient background sounds (e.g., weather, traffic, birds)."
     },
     {
         q: "Which of the following can make note-taking more effective?",
@@ -949,7 +1034,8 @@ const fullMthPool = [
             "Avoiding attention",
             "Talking throughout the lecture"
         ],
-        a: 0
+        a: 0,
+        exp: "Visual and mental focus on the speaker aids in capturing critical information."
     },
     {
         q: "A student using a laptop to record important points during a lecture is using ______.",
@@ -959,7 +1045,8 @@ const fullMthPool = [
             "Non-verbal communication only",
             "Public speaking"
         ],
-        a: 0
+        a: 0,
+        exp: "Typing notes on a laptop falls under electronic note-taking."
     },
     {
         q: "Which of the following can be used to create electronic notes?",
@@ -969,7 +1056,8 @@ const fullMthPool = [
             "Tablet",
             "All of the above"
         ],
-        a: 3
+        a: 3,
+        exp: "Computers, tablets, and software applications collectively constitute electronic note-taking tools."
     },
     {
         q: "Guided notes can help learners stay ______ during lectures.",
@@ -979,7 +1067,8 @@ const fullMthPool = [
             "Uninterested",
             "Silent without learning"
         ],
-        a: 0
+        a: 0,
+        exp: "The active requirement of filling in blanks keeps students focused and alert."
     },
     {
         q: "Listening is different from hearing because listening involves ______.",
@@ -989,7 +1078,8 @@ const fullMthPool = [
             "Automatic reaction only",
             "No auditory information"
         ],
-        a: 0
+        a: 0,
+        exp: "Conscious mental attention is what elevates hearing into listening."
     },
     {
         q: "Which of the following is a sign of poor listening?",
@@ -999,7 +1089,8 @@ const fullMthPool = [
             "Paying attention",
             "Understanding the speaker's perspective"
         ],
-        a: 0
+        a: 0,
+        exp: "Ignoring the speaker indicates complete breakdown in listening engagement."
     },
     {
         q: "Which action demonstrates effective listening?",
@@ -1009,7 +1100,8 @@ const fullMthPool = [
             "Looking away continuously",
             "Refusing to ask questions"
         ],
-        a: 0
+        a: 0,
+        exp: "Seeking to understand the speaker's perspective reflects genuine active listening."
     },
     {
         q: "Which of the following is NOT a useful note-taking behaviour?",
@@ -1019,7 +1111,8 @@ const fullMthPool = [
             "Recording important points",
             "Deliberately ignoring key information"
         ],
-        a: 3
+        a: 3,
+        exp: "Ignoring key information defeats the entire purpose of taking notes."
     },
     {
         q: "Which of the following is associated with guided notes?",
@@ -1029,7 +1122,8 @@ const fullMthPool = [
             "Complete absence of structure",
             "Only drawings"
         ],
-        a: 0
+        a: 0,
+        exp: "Guided notes purposefully leave key terms or figures blank for students to supply."
     },
     {
         q: "A listener who asks questions for clarification is demonstrating ______.",
@@ -1039,7 +1133,8 @@ const fullMthPool = [
             "Disinterest",
             "Avoidance"
         ],
-        a: 0
+        a: 0,
+        exp: "Clarification questions prove the listener is actively processing the message."
     },
     {
         q: "Which of the following is most important when taking notes?",
@@ -1049,7 +1144,8 @@ const fullMthPool = [
             "Ignoring the speaker",
             "Avoiding concentration"
         ],
-        a: 0
+        a: 0,
+        exp: "Effective note-taking focuses on capturing main ideas and supporting details rather than verbatim dictation."
     },
     {
         q: "The information recorded in notes is mainly intended for ______.",
@@ -1059,7 +1155,8 @@ const fullMthPool = [
             "Public entertainment",
             "Ignoring the lecture"
         ],
-        a: 0
+        a: 0,
+        exp: "Notes serve as archived study materials for subsequent review and revision."
     },
     {
         q: "Which of the following is a deliberate activity?",
@@ -1069,17 +1166,19 @@ const fullMthPool = [
             "Breathing",
             "Blinking"
         ],
-        a: 0
+        a: 0,
+        exp: "Listening requires intentional cognitive effort, unlike autonomic reflexes."
     },
     {
         q: "Which of the following best describes hearing?",
         o: [
-            "An ability to perceive sound",
+            "An ability to perceive sound waves",
             "A deliberate method of note-taking",
             "A type of public speaking",
             "A form of brainstorming"
         ],
-        a: 0
+        a: 0,
+        exp: "Hearing is the physical sensory capacity to detect sound."
     },
     {
         q: "Which of the following is most appropriate during academic listening?",
@@ -1089,7 +1188,8 @@ const fullMthPool = [
             "Constantly chatting",
             "Refusing to take notes"
         ],
-        a: 0
+        a: 0,
+        exp: "Academic success relies on close attention during lectures."
     },
     {
         q: "Which of the following can be used alongside electronic note-taking?",
@@ -1099,7 +1199,8 @@ const fullMthPool = [
             "Text",
             "All of the above"
         ],
-        a: 3
+        a: 3,
+        exp: "Digital platforms integrate text, charts, graphs, and images seamlessly."
     },
     {
         q: "A good listener should be willing to ______.",
@@ -1109,7 +1210,8 @@ const fullMthPool = [
             "Interrupt unnecessarily",
             "Reject every idea"
         ],
-        a: 0
+        a: 0,
+        exp: "Openness to asking questions characterizes competent listeners."
     },
     {
         q: "Which statement best summarizes effective listening and note-taking?",
@@ -1119,7 +1221,8 @@ const fullMthPool = [
             "Write everything without understanding",
             "Ignore the speaker and rely on memory"
         ],
-        a: 0
+        a: 0,
+        exp: "The synergy of active listening and organized note-taking drives academic achievement."
     },
     {
         q: "Brainstorming is a technique generally used to ______.",
@@ -1129,7 +1232,8 @@ const fullMthPool = [
             "Correct grammatical errors",
             "Deliver a lecture"
         ],
-        a: 0
+        a: 0,
+        exp: "Brainstorming is a creative ideation method designed to produce a large volume of concepts."
     },
     {
         q: "Brainstorming is generally used in a ______ setting.",
@@ -1139,7 +1243,8 @@ const fullMthPool = [
             "Silent reading",
             "Judicial"
         ],
-        a: 0
+        a: 0,
+        exp: "While individual brainstorming exists, it is primarily utilized as a collaborative group technique."
     },
     {
         q: "Who introduced brainstorming as an idea-generation method?",
@@ -1149,7 +1254,8 @@ const fullMthPool = [
             "Aristotle",
             "Noam Chomsky"
         ],
-        a: 0
+        a: 0,
+        exp: "Advertising executive Alex Osborn popularized brainstorming in the 1950s."
     },
     {
         q: "Brainstorming encourages ______.",
@@ -1159,7 +1265,8 @@ const fullMthPool = [
             "Imagination",
             "All of the above"
         ],
-        a: 3
+        a: 3,
+        exp: "Brainstorming protocols deliberately foster spontaneity, original thinking, and uninhibited imagination."
     },
     {
         q: "A brainstorming session should normally focus on ______.",
@@ -1169,7 +1276,8 @@ const fullMthPool = [
             "Grammar only",
             "Personal arguments"
         ],
-        a: 0
+        a: 0,
+        exp: "Productive brainstorming requires a well-defined problem or central topic."
     },
     {
         q: "During brainstorming, criticism of ideas should generally be ______.",
@@ -1179,7 +1287,8 @@ const fullMthPool = [
             "Done before ideas are generated",
             "Used to stop discussion"
         ],
-        a: 0
+        a: 0,
+        exp: "Deferring judgment prevents participants from censoring themselves prematurely."
     },
     {
         q: "Why are wild or exaggerated ideas allowed during brainstorming?",
@@ -1189,7 +1298,8 @@ const fullMthPool = [
             "They eliminate creativity",
             "They prevent participation"
         ],
-        a: 0
+        a: 0,
+        exp: "Outlandish suggestions often spark creative associations and practical solutions."
     },
     {
         q: "Which principle of brainstorming emphasizes generating many ideas?",
@@ -1199,7 +1309,8 @@ const fullMthPool = [
             "Criticism",
             "Rejection"
         ],
-        a: 0
+        a: 0,
+        exp: "Quantity breeds quality; generating a massive pool of ideas increases the likelihood of finding breakthrough solutions."
     },
     {
         q: "The more ideas generated during brainstorming, the ______.",
@@ -1209,7 +1320,8 @@ const fullMthPool = [
             "Less creative the participants become",
             "More restricted the discussion becomes"
         ],
-        a: 0
+        a: 0,
+        exp: "A larger idea pool provides broader options during the evaluation stage."
     },
     {
         q: "Which of the following should NOT dominate the early stage of brainstorming?",
@@ -1219,7 +1331,8 @@ const fullMthPool = [
             "Spontaneity",
             "Imagination"
         ],
-        a: 0
+        a: 0,
+        exp: "Critical evaluation must be strictly withheld during initial idea generation."
     },
     {
         q: "Structured brainstorming is also called the ______ method.",
@@ -1229,7 +1342,8 @@ const fullMthPool = [
             "Silent-reading",
             "Manuscript"
         ],
-        a: 0
+        a: 0,
+        exp: "Structured or round-robin brainstorming requires participants to share ideas sequentially (one at a time)."
     },
     {
         q: "In structured brainstorming, a participant may say ______ when they do not have an idea.",
@@ -1239,7 +1353,8 @@ const fullMthPool = [
             "Cancel",
             "Reject"
         ],
-        a: 0
+        a: 0,
+        exp: "Participants can say 'pass' during their turn if no immediate idea comes to mind."
     },
     {
         q: "Which method of brainstorming is also known as mapping or webbing?",
@@ -1249,7 +1364,8 @@ const fullMthPool = [
             "Manuscript",
             "Dialogue"
         ],
-        a: 0
+        a: 0,
+        exp: "Clustering (or mind mapping/webbing) visually organizes concepts around a central theme."
     },
     {
         q: "Clustering is useful because it shows ______.",
@@ -1259,7 +1375,8 @@ const fullMthPool = [
             "The speaker's pronunciation",
             "How to memorize a speech"
         ],
-        a: 0
+        a: 0,
+        exp: "Visual nodes map out conceptual relationships branching away from a central core topic."
     },
     {
         q: "Which brainstorming technique involves continuous writing without stopping for a set period?",
@@ -1269,7 +1386,8 @@ const fullMthPool = [
             "Listing",
             "Manuscript reading"
         ],
-        a: 0
+        a: 0,
+        exp: "Free writing requires writing continuously without editing or stopping for a timed duration."
     },
     {
         q: "Free writing is primarily intended to encourage ______.",
@@ -1279,7 +1397,8 @@ const fullMthPool = [
             "Silence",
             "Memorization"
         ],
-        a: 0
+        a: 0,
+        exp: "The continuous motion of free writing bypasses inner critic roadblocks to unblock ideation."
     },
     {
         q: "Which brainstorming technique involves writing down everything related to a topic?",
@@ -1289,7 +1408,8 @@ const fullMthPool = [
             "Impromptu speaking",
             "Dialogue"
         ],
-        a: 0
+        a: 0,
+        exp: "Listing is the straightforward practice of compiling a sequential bulleted inventory of thoughts."
     },
     {
         q: "In listing, items can later be ______.",
@@ -1299,7 +1419,8 @@ const fullMthPool = [
             "Memorized immediately",
             "Ignored completely"
         ],
-        a: 0
+        a: 0,
+        exp: "Raw lists are subsequently filtered, categorized, and refined."
     },
     {
         q: "Which of the following is NOT a brainstorming technique discussed in the handbook?",
@@ -1309,7 +1430,8 @@ const fullMthPool = [
             "Listing",
             "Memorized speech"
         ],
-        a: 3
+        a: 3,
+        exp: "Memorized speech is a speech delivery style, not a brainstorming method."
     },
     {
         q: "Brainstorming is primarily concerned with ______.",
@@ -1319,7 +1441,8 @@ const fullMthPool = [
             "Correcting pronunciation",
             "Taking examinations"
         ],
-        a: 0
+        a: 0,
+        exp: "Brainstorming focuses exclusively on creative idea generation."
     },
     {
         q: "What should participants do with criticism during the initial stage of brainstorming?",
@@ -1329,7 +1452,8 @@ const fullMthPool = [
             "Use it to stop ideas",
             "Reject every idea"
         ],
-        a: 0
+        a: 0,
+        exp: "Deferring criticism maintains psychological safety and encourages free expression."
     },
     {
         q: "Which of the following promotes creativity during brainstorming?",
@@ -1339,7 +1463,8 @@ const fullMthPool = [
             "Fear of mistakes",
             "Silence"
         ],
-        a: 0
+        a: 0,
+        exp: "Unfettered imagination fuels innovative brainstorming sessions."
     },
     {
         q: "Why is spontaneity important in brainstorming?",
@@ -1349,7 +1474,8 @@ const fullMthPool = [
             "It makes participants silent",
             "It eliminates originality"
         ],
-        a: 0
+        a: 0,
+        exp: "Spontaneity bypasses overthinking, allowing raw ideas to surface."
     },
     {
         q: "Which of the following is an acceptable brainstorming idea?",
@@ -1359,7 +1485,8 @@ const fullMthPool = [
             "Only a criticism",
             "No idea at all"
         ],
-        a: 0
+        a: 0,
+        exp: "Unconventional or 'wild' ideas are welcomed catalysts for further innovation."
     },
     {
         q: "Which of the following best describes the principle of quantity in brainstorming?",
@@ -1369,7 +1496,8 @@ const fullMthPool = [
             "Reject ideas immediately",
             "Stop when the first idea appears"
         ],
-        a: 0
+        a: 0,
+        exp: "Aiming for high quantity increases the statistical chance of producing exceptional solutions."
     },
     {
         q: "In one-at-a-time brainstorming, participants contribute ideas ______.",
@@ -1379,7 +1507,8 @@ const fullMthPool = [
             "Only after the session ends",
             "Through written examinations"
         ],
-        a: 0
+        a: 0,
+        exp: "Round-robin participation ensures every member gets a sequential turn to contribute."
     },
     {
         q: "The word “pass” in structured brainstorming indicates that a participant ______.",
@@ -1389,7 +1518,8 @@ const fullMthPool = [
             "Has rejected everyone else's ideas",
             "Has left the group"
         ],
-        a: 0
+        a: 0,
+        exp: "Passing lets a member skip their immediate turn without dropping out of the exercise."
     },
     {
         q: "Clustering is especially useful for showing ______.",
@@ -1399,7 +1529,8 @@ const fullMthPool = [
             "Voice pitch",
             "Pronunciation errors"
         ],
-        a: 0
+        a: 0,
+        exp: "Spatial clustering highlights structural links between sub-topics and the central idea."
     },
     {
         q: "Another name for clustering is ______.",
@@ -1409,7 +1540,8 @@ const fullMthPool = [
             "Dialogue",
             "Manuscript"
         ],
-        a: 0
+        a: 0,
+        exp: "Clustering is interchangeably referred to as idea webbing or mind mapping."
     },
     {
         q: "Which method involves writing continuously for a fixed period?",
@@ -1419,7 +1551,8 @@ const fullMthPool = [
             "Clustering",
             "Structured speaking"
         ],
-        a: 0
+        a: 0,
+        exp: "Free writing relies on uninterrupted timed writing."
     },
     {
         q: "Which method involves recording ideas as a list?",
@@ -1429,7 +1562,8 @@ const fullMthPool = [
             "Free speaking",
             "Memorization"
         ],
-        a: 0
+        a: 0,
+        exp: "Listing compiles points sequentially downward."
     },
     {
         q: "Brainstorming should be directed toward ______.",
@@ -1439,7 +1573,8 @@ const fullMthPool = [
             "Only grammatical rules",
             "Only speech production"
         ],
-        a: 0
+        a: 0,
+        exp: "Keeping sessions anchored to a specific problem ensures focused, actionable outcomes."
     },
     {
         q: "Which of the following is encouraged during brainstorming?",
@@ -1449,7 +1584,8 @@ const fullMthPool = [
             "Silence",
             "Fear of unusual ideas"
         ],
-        a: 0
+        a: 0,
+        exp: "Original thinking is actively nurtured in brainstorming."
     },
     {
         q: "Which of the following can reduce the effectiveness of brainstorming?",
@@ -1459,7 +1595,8 @@ const fullMthPool = [
             "Imagination",
             "Idea generation"
         ],
-        a: 0
+        a: 0,
+        exp: "Premature criticism shuts down participation and kills creative flow."
     },
     {
         q: "Which of the following best describes a brainstorming group?",
@@ -1469,7 +1606,8 @@ const fullMthPool = [
             "A group taking an examination",
             "A group reading silently"
         ],
-        a: 0
+        a: 0,
+        exp: "A brainstorming group collaborates to brainstorm solutions for a targeted problem."
     },
     {
         q: "Which of the following should occur before evaluating brainstorming ideas?",
@@ -1479,7 +1617,8 @@ const fullMthPool = [
             "Final selection",
             "Speech delivery"
         ],
-        a: 0
+        a: 0,
+        exp: "Ideas must first be generated in abundance before evaluation and filtering take place."
     },
     {
         q: "Which of the following is a visual brainstorming technique?",
@@ -1489,7 +1628,8 @@ const fullMthPool = [
             "Manuscript reading",
             "Dialogue"
         ],
-        a: 0
+        a: 0,
+        exp: "Clustering uses visual diagrams and spatial webs to map thoughts."
     },
     {
         q: "A central topic in clustering is usually surrounded by ______.",
@@ -1499,7 +1639,8 @@ const fullMthPool = [
             "Speech sounds",
             "Grammar rules only"
         ],
-        a: 0
+        a: 0,
+        exp: "Sub-ideas branch out in all directions surrounding the central core theme."
     },
     {
         q: "Which technique allows the writer to record ideas without stopping to correct them immediately?",
@@ -1509,7 +1650,8 @@ const fullMthPool = [
             "Clustering",
             "Listing only"
         ],
-        a: 0
+        a: 0,
+        exp: "Free writing explicitly forbids pausing for spelling or grammar corrections."
     },
     {
         q: "Which of the following is most closely associated with Alex Osborn?",
@@ -1519,7 +1661,8 @@ const fullMthPool = [
             "Speech organs",
             "Note-taking"
         ],
-        a: 0
+        a: 0,
+        exp: "Alex Osborn pioneered modern brainstorming methodology."
     },
     {
         q: "Brainstorming encourages participants to use their ______.",
@@ -1529,7 +1672,8 @@ const fullMthPool = [
             "Silence",
             "Memorization only"
         ],
-        a: 0
+        a: 0,
+        exp: "Unleashing imagination is core to successful ideation."
     },
     {
         q: "The evaluation of brainstorming ideas should generally come ______.",
@@ -1539,7 +1683,8 @@ const fullMthPool = [
             "Instead of idea generation",
             "Before the topic is chosen"
         ],
-        a: 0
+        a: 0,
+        exp: "Evaluation is strictly separated and postponed until after the ideation phase concludes."
     },
     {
         q: "Which of the following is a reason for allowing wild ideas?",
@@ -1549,7 +1694,8 @@ const fullMthPool = [
             "They eliminate discussion",
             "They make the topic irrelevant"
         ],
-        a: 0
+        a: 0,
+        exp: "Wild ideas trigger creative associations that lead to viable innovations."
     },
     {
         q: "Which of the following is NOT a major goal of brainstorming?",
@@ -1559,7 +1705,8 @@ const fullMthPool = [
             "Encouraging imagination",
             "Immediately criticizing every contribution"
         ],
-        a: 3
+        a: 3,
+        exp: "Immediate criticism destroys brainstorming; the goal is open ideation."
     },
     {
         q: "Which technique would be most appropriate for visually connecting related ideas?",
@@ -1569,7 +1716,8 @@ const fullMthPool = [
             "Manuscript delivery",
             "Dialogue"
         ],
-        a: 0
+        a: 0,
+        exp: "Clustering explicitly connects related thoughts visually via lines and diagrams."
     },
     {
         q: "Which brainstorming method requires participants to contribute one after another?",
@@ -1579,7 +1727,8 @@ const fullMthPool = [
             "Listing",
             "Clustering"
         ],
-        a: 0
+        a: 0,
+        exp: "Structured round-robin brainstorming follows a strict sequential turn-taking format."
     },
     {
         q: "Which method may allow a participant to say “pass”?",
@@ -1589,7 +1738,8 @@ const fullMthPool = [
             "Clustering",
             "Listing"
         ],
-        a: 0
+        a: 0,
+        exp: "The 'pass' rule applies when members take turns sequentially in structured brainstorming."
     },
     {
         q: "Which brainstorming method is also called mapping?",
@@ -1599,7 +1749,8 @@ const fullMthPool = [
             "Free writing",
             "One-at-a-time"
         ],
-        a: 0
+        a: 0,
+        exp: "Clustering is frequently termed idea mapping."
     },
     {
         q: "Which of the following is most appropriate for generating a large number of ideas quickly?",
@@ -1609,7 +1760,8 @@ const fullMthPool = [
             "Note-taking",
             "Reading aloud"
         ],
-        a: 0
+        a: 0,
+        exp: "Brainstorming is specifically optimized for rapid, high-volume idea generation."
     },
     {
         q: "Which statement best summarizes brainstorming?",
@@ -1619,7 +1771,8 @@ const fullMthPool = [
             "It is a method of correcting pronunciation",
             "It is a form of examination"
         ],
-        a: 0
+        a: 0,
+        exp: "Brainstorming is defined as an imaginative, spontaneous technique for generating diverse ideas."
     },
     {
         q: "Speech sounds are produced through the coordinated action of ______.",
@@ -1629,7 +1782,8 @@ const fullMthPool = [
             "Written notes",
             "Audience members"
         ],
-        a: 0
+        a: 0,
+        exp: "Phonetic articulation relies on the physiological coordination of vocal organs."
     },
     {
         q: "Which system supplies the air needed for speech?",
@@ -1639,7 +1793,8 @@ const fullMthPool = [
             "Skeletal system",
             "Nervous system only"
         ],
-        a: 0
+        a: 0,
+        exp: "The respiratory system (lungs, diaphragm) expels the airstream required to power speech sounds."
     },
     {
         q: "The vocal cords are particularly involved in the production of ______ sounds.",
@@ -1649,7 +1804,8 @@ const fullMthPool = [
             "Visual",
             "Silent"
         ],
-        a: 0
+        a: 0,
+        exp: "Vocal cord vibration produces voiced speech sounds."
     },
     {
         q: "Which of the following is an important active articulator?",
@@ -1659,7 +1815,8 @@ const fullMthPool = [
             "Stomach",
             "Heart"
         ],
-        a: 0
+        a: 0,
+        exp: "The tongue is the most flexible and active speech articulator in the vocal tract."
     },
     {
         q: "The tongue is described as being ______.",
@@ -1669,7 +1826,8 @@ const fullMthPool = [
             "Unimportant in speech",
             "Unable to change shape"
         ],
-        a: 0
+        a: 0,
+        exp: "Its high mobility allows the tongue to reshape the oral cavity for different phonemes."
     },
     {
         q: "Which of the following is a part of the tongue?",
@@ -1679,7 +1837,8 @@ const fullMthPool = [
             "Front",
             "All of the above"
         ],
-        a: 3
+        a: 3,
+        exp: "Phonetic anatomy divides the tongue into tip, blade, front, back, and root."
     },
     {
         q: "Which part of the tongue is located at its forward end?",
@@ -1689,7 +1848,8 @@ const fullMthPool = [
             "Back",
             "Velum"
         ],
-        a: 0
+        a: 0,
+        exp: "The tip is the extreme forward extremity of the tongue."
     },
     {
         q: "Which of the following is NOT a part of the tongue mentioned in the handbook?",
@@ -1699,7 +1859,8 @@ const fullMthPool = [
             "Front",
             "Elbow"
         ],
-        a: 3
+        a: 3,
+        exp: "An elbow is a human skeletal joint, not a part of the tongue."
     },
     {
         q: "Bilabial sounds are produced using ______.",
@@ -1709,7 +1870,8 @@ const fullMthPool = [
             "The lower lip and upper teeth",
             "The back of the tongue and velum"
         ],
-        a: 0
+        a: 0,
+        exp: "Bilabial consonants (like /p/, /b/, /m/) are articulated by bringing both lips together."
     },
     {
         q: "Which articulatory category involves the upper and lower lips?",
@@ -1719,7 +1881,8 @@ const fullMthPool = [
             "Labiodental",
             "Velar"
         ],
-        a: 0
+        a: 0,
+        exp: "Bi- (two) labial (lips) refers to the upper and lower lips interacting."
     },
     {
         q: "Dental sounds involve the ______.",
@@ -1729,7 +1892,8 @@ const fullMthPool = [
             "Lower lip and upper teeth",
             "Back of the tongue and velum"
         ],
-        a: 0
+        a: 0,
+        exp: "Dental sounds are made by placing the tongue against the upper teeth."
     },
     {
         q: "Labiodental sounds involve the ______.",
@@ -1739,7 +1903,8 @@ const fullMthPool = [
             "Tongue and lower teeth only",
             "Back of tongue and velum"
         ],
-        a: 0
+        a: 0,
+        exp: "Labiodental sounds (like /f/, /v/) involve the lower lip touching the upper teeth."
     },
     {
         q: "Which of the following is an example of a labiodental articulatory relationship?",
@@ -1749,7 +1914,8 @@ const fullMthPool = [
             "Tongue with teeth only",
             "Back of tongue with velum"
         ],
-        a: 0
+        a: 0,
+        exp: "Labiodental articulation specifically pairs the lower lip against the upper incisors."
     },
     {
         q: "Palato-alveolar articulation involves the ______.",
@@ -1759,7 +1925,8 @@ const fullMthPool = [
             "Lower lip and upper teeth",
             "Vocal cords only"
         ],
-        a: 0
+        a: 0,
+        exp: "Palato-alveolar sounds use the tongue blade against the alveolar ridge and hard palate."
     },
     {
         q: "Velar sounds are produced using the ______.",
@@ -1769,7 +1936,8 @@ const fullMthPool = [
             "Tongue and front teeth",
             "Lower lip and upper teeth"
         ],
-        a: 0
+        a: 0,
+        exp: "Velar sounds (like /k/, /g/) contact the back of the tongue against the soft palate (velum)."
     },
     {
         q: "Which part of the tongue is used in the production of velar sounds?",
@@ -1779,7 +1947,8 @@ const fullMthPool = [
             "Blade only",
             "Front only"
         ],
-        a: 0
+        a: 0,
+        exp: "The back of the tongue elevates to touch the soft palate for velars."
     },
     {
         q: "Glottal sounds are produced in the ______.",
@@ -1789,7 +1958,8 @@ const fullMthPool = [
             "Teeth",
             "Tongue tip"
         ],
-        a: 0
+        a: 0,
+        exp: "Glottal sounds (like /h/) are generated directly at the glottis in the larynx."
     },
     {
         q: "Which of the following is an articulatory category?",
@@ -1799,7 +1969,8 @@ const fullMthPool = [
             "Velar",
             "All of the above"
         ],
-        a: 3
+        a: 3,
+        exp: "Bilabial, glottal, and velar are all established places of articulation."
     },
     {
         q: "The respiratory system contributes to speech by providing ______.",
@@ -1809,7 +1980,8 @@ const fullMthPool = [
             "Facial expressions",
             "Vocabulary"
         ],
-        a: 0
+        a: 0,
+        exp: "Airstream from the respiratory system is the physical energy source for all spoken sounds."
     },
     {
         q: "Which organ is particularly important for shaping many speech sounds?",
@@ -1819,7 +1991,8 @@ const fullMthPool = [
             "Kidney",
             "Heart"
         ],
-        a: 0
+        a: 0,
+        exp: "The tongue articulates and shapes the vocal tract to form distinct vowel and consonant sounds."
     },
     {
         q: "Pitch refers to the perceived ______ of a voice.",
@@ -1829,7 +2002,8 @@ const fullMthPool = [
             "Loudness only",
             "Number of sentences"
         ],
-        a: 0
+        a: 0,
+        exp: "Pitch is the auditory attribute of a voice perceived as high or low, determined by vocal fold vibration frequency."
     },
     {
         q: "Changes in pitch or tone of the voice are called ______.",
@@ -1839,7 +2013,8 @@ const fullMthPool = [
             "Clustering",
             "Articulation"
         ],
-        a: 0
+        a: 0,
+        exp: "Inflection refers to modulation in pitch or tone used to express emotion and emphasis."
     },
     {
         q: "Which of the following is most closely related to pitch?",
@@ -1849,7 +2024,8 @@ const fullMthPool = [
             "Length of a paragraph",
             "Size of the audience"
         ],
-        a: 0
+        a: 0,
+        exp: "Voice pitch measures the relative highness or lowness of vocal sound frequencies."
     },
     {
         q: "Rate refers to ______.",
@@ -1859,7 +2035,8 @@ const fullMthPool = [
             "The movement of the tongue",
             "The size of an audience"
         ],
-        a: 0
+        a: 0,
+        exp: "Speech rate measures how fast or slow a speaker delivers words."
     },
     {
         q: "The handbook gives a common speaking rate of approximately ______ words per minute.",
@@ -1869,7 +2046,8 @@ const fullMthPool = [
             "120–150",
             "250–300"
         ],
-        a: 2
+        a: 2,
+        exp: "Standard conversational English typically flows at around 120 to 150 words per minute."
     },
     {
         q: "Which of the following can influence the appropriate speech rate?",
@@ -1879,7 +2057,8 @@ const fullMthPool = [
             "The colour of the room",
             "The number of chairs"
         ],
-        a: 0
+        a: 0,
+        exp: "Adjusting speaking tempo helps convey emotional mood, suspense, or solemnity."
     },
     {
         q: "A speaker may change speech rate in order to ______.",
@@ -1889,7 +2068,8 @@ const fullMthPool = [
             "Avoid articulation",
             "Stop breathing"
         ],
-        a: 0
+        a: 0,
+        exp: "Varying speech tempo prevents monotony and sets emotional tone."
     },
     {
         q: "Which of the following is NOT primarily concerned with speech production?",
@@ -1899,7 +2079,8 @@ const fullMthPool = [
             "Tongue",
             "Notebook"
         ],
-        a: 3
+        a: 3,
+        exp: "A notebook is a stationery tool used for writing, unrelated to physiological speech production."
     },
     {
         q: "Which of the following is a speech articulator?",
@@ -1909,7 +2090,8 @@ const fullMthPool = [
             "Pen",
             "Paper"
         ],
-        a: 0
+        a: 0,
+        exp: "The tongue is a primary active speech articulator."
     },
     {
         q: "Which of the following uses both lips in articulation?",
@@ -1919,7 +2101,8 @@ const fullMthPool = [
             "Dental",
             "Glottal"
         ],
-        a: 0
+        a: 0,
+        exp: "Bilabial articulation relies on both lips meeting."
     },
     {
         q: "Which articulatory category uses the lower lip and upper teeth?",
@@ -1929,7 +2112,8 @@ const fullMthPool = [
             "Velar",
             "Glottal"
         ],
-        a: 0
+        a: 0,
+        exp: "Labiodental sounds involve the lower lip and upper teeth."
     },
     {
         q: "Which articulatory category involves the tongue and teeth?",
@@ -1939,7 +2123,8 @@ const fullMthPool = [
             "Velar",
             "Glottal"
         ],
-        a: 0
+        a: 0,
+        exp: "Dental sounds engage the tongue against the teeth."
     },
     {
         q: "Which articulatory category involves the back of the tongue and velum?",
@@ -1949,7 +2134,8 @@ const fullMthPool = [
             "Bilabial",
             "Labiodental"
         ],
-        a: 0
+        a: 0,
+        exp: "Velar articulation contacts the back of the tongue with the soft palate."
     },
     {
         q: "Which articulatory category is associated with the vocal folds or glottis?",
@@ -1959,7 +2145,8 @@ const fullMthPool = [
             "Dental",
             "Velar"
         ],
-        a: 0
+        a: 0,
+        exp: "Glottal articulation occurs at the glottis."
     },
     {
         q: "Which of the following is NOT one of the articulatory categories discussed?",
@@ -1969,7 +2156,8 @@ const fullMthPool = [
             "Velar",
             "Circular"
         ],
-        a: 3
+        a: 3,
+        exp: "'Circular' is a geometric shape, not a phonetic articulatory category."
     },
     {
         q: "The vocal cords contribute to speech when they ______.",
@@ -1979,7 +2167,8 @@ const fullMthPool = [
             "Move the lips",
             "Control the tongue"
         ],
-        a: 0
+        a: 0,
+        exp: "Vocal cord vibration creates voicing for speech sounds."
     },
     {
         q: "Which system provides the airflow necessary for speech?",
@@ -1989,7 +2178,8 @@ const fullMthPool = [
             "Circulatory system",
             "Skeletal system"
         ],
-        a: 0
+        a: 0,
+        exp: "The respiratory system expels air to drive vocalization."
     },
     {
         q: "Which of the following can be changed during speech delivery?",
@@ -1999,7 +2189,8 @@ const fullMthPool = [
             "Inflection",
             "All of the above"
         ],
-        a: 3
+        a: 3,
+        exp: "Skilful speakers actively modulate pitch, speaking rate, and vocal inflection."
     },
     {
         q: "A speaker's pitch may be described as ______.",
@@ -2009,7 +2200,8 @@ const fullMthPool = [
             "Wide or narrow",
             "Written or spoken"
         ],
-        a: 0
+        a: 0,
+        exp: "Voice pitch is perceived on a continuum from high to low."
     },
     {
         q: "Inflection involves changes in ______.",
@@ -2019,7 +2211,8 @@ const fullMthPool = [
             "Audience size",
             "Speech topic"
         ],
-        a: 0
+        a: 0,
+        exp: "Vocal inflection is the variation in pitch and tone during speech."
     },
     {
         q: "A speaker talking very quickly is using a ______ rate.",
@@ -2029,7 +2222,8 @@ const fullMthPool = [
             "Static",
             "Silent"
         ],
-        a: 0
+        a: 0,
+        exp: "Rapid word delivery constitutes a fast speaking rate."
     },
     {
         q: "A speaker talking slowly is using a ______ rate.",
@@ -2039,7 +2233,8 @@ const fullMthPool = [
             "High",
             "Low"
         ],
-        a: 0
+        a: 0,
+        exp: "Deliberate, measured word delivery constitutes a slow rate."
     },
     {
         q: "Which of the following is approximately the common speaking rate cited in the handbook?",
@@ -2049,7 +2244,8 @@ const fullMthPool = [
             "500–600 words per minute",
             "1,000 words per minute"
         ],
-        a: 0
+        a: 0,
+        exp: "120 to 150 words per minute is the standard benchmark for comfortable conversational pacing."
     },
     {
         q: "The appropriate speech rate may depend on the ______.",
@@ -2059,7 +2255,8 @@ const fullMthPool = [
             "Colour of the speaker's clothes",
             "Size of the classroom only"
         ],
-        a: 0
+        a: 0,
+        exp: "Pacing directly shapes emotional atmosphere and listener comprehension."
     },
     {
         q: "Which of the following best describes articulation?",
@@ -2069,7 +2266,8 @@ const fullMthPool = [
             "Generating brainstorming ideas",
             "Reading silently"
         ],
-        a: 0
+        a: 0,
+        exp: "Articulation is the physiological formation of clear and distinct speech sounds."
     },
     {
         q: "Which of the following is an example of an active speech organ?",
@@ -2079,7 +2277,8 @@ const fullMthPool = [
             "Chair",
             "Paper"
         ],
-        a: 0
+        a: 0,
+        exp: "The tongue moves actively within the vocal tract during speech."
     },
     {
         q: "The tongue can produce different sounds because it can ______.",
@@ -2089,7 +2288,8 @@ const fullMthPool = [
             "Produce written words",
             "Replace the lungs"
         ],
-        a: 0
+        a: 0,
+        exp: "Varying tongue shapes and contact points alters vocal tract resonance to produce different phonemes."
     },
     {
         q: "Which of the following is involved in producing voiced speech sounds?",
@@ -2099,7 +2299,8 @@ const fullMthPool = [
             "Note-taking",
             "Audience analysis"
         ],
-        a: 0
+        a: 0,
+        exp: "Voiced sounds require active vibration of the vocal folds."
     },
     {
         q: "Which of the following is NOT a feature of speech delivery?",
@@ -2109,7 +2310,8 @@ const fullMthPool = [
             "Inflection",
             "Note-booking"
         ],
-        a: 3
+        a: 3,
+        exp: "Note-booking is a study habit, not a vocal delivery feature."
     },
     {
         q: "Which statement best summarizes speech production and delivery?",
@@ -2119,7 +2321,8 @@ const fullMthPool = [
             "Speech does not involve the respiratory system",
             "Speech delivery does not involve the voice"
         ],
-        a: 0
+        a: 0,
+        exp: "Speech generation requires physiological organ coordination, while effective delivery utilizes vocal dynamics like pitch and rate."
     },
     {
         q: "A complete sentence normally contains a ______ and a predicate.",
@@ -2129,7 +2332,8 @@ const fullMthPool = [
             "Title",
             "Question mark"
         ],
-        a: 0
+        a: 0,
+        exp: "Standard English sentence structure requires a subject paired with a predicate."
     },
     {
         q: "The subject of a sentence identifies ______.",
@@ -2139,7 +2343,8 @@ const fullMthPool = [
             "The number of words",
             "The tense only"
         ],
-        a: 1
+        a: 1,
+        exp: "The subject names the person, place, thing, or idea performing the action or being described."
     },
     {
         q: "The predicate tells us ______.",
@@ -2149,7 +2354,8 @@ const fullMthPool = [
             "The number of paragraphs",
             "The spelling of every word"
         ],
-        a: 0
+        a: 0,
+        exp: "The predicate contains the verb and expresses what the subject is doing or experiencing."
     },
     {
         q: "Subject–verb agreement means that the subject and verb must agree in ______.",
@@ -2159,7 +2365,8 @@ const fullMthPool = [
             "Spelling",
             "Pronunciation"
         ],
-        a: 1
+        a: 1,
+        exp: "Grammatical number agreement dictates that singular subjects take singular verbs, and plural subjects take plural verbs."
     },
     {
         q: "Which sentence demonstrates correct subject–verb agreement?",
@@ -2169,7 +2376,8 @@ const fullMthPool = [
             "The student studies every day.",
             "The students studies every day."
         ],
-        a: 2
+        a: 2,
+        exp: "The singular subject 'student' matches the singular verb form 'studies'."
     },
     {
         q: "Which sentence contains a plural subject?",
@@ -2179,7 +2387,8 @@ const fullMthPool = [
             "The students study.",
             "The child sleeps."
         ],
-        a: 2
+        a: 2,
+        exp: "'Students' is plural, paired correctly with the plural verb 'study'."
     },
     {
         q: "Which sentence contains a singular subject?",
@@ -2189,7 +2398,8 @@ const fullMthPool = [
             "The student reads.",
             "The children laugh."
         ],
-        a: 2
+        a: 2,
+        exp: "'Student' is singular, paired correctly with the singular verb 'reads'."
     },
     {
         q: "Which sentence is correctly written?",
@@ -2199,7 +2409,8 @@ const fullMthPool = [
             "The student studies mathematics.",
             "The students studying mathematics."
         ],
-        a: 2
+        a: 2,
+        exp: "Singular subject 'student' requires the singular verb 'studies'."
     },
     {
         q: "Words occurring between the subject and verb should not cause confusion about ______.",
@@ -2209,7 +2420,8 @@ const fullMthPool = [
             "Punctuation only",
             "Paragraphing"
         ],
-        a: 0
+        a: 0,
+        exp: "Modifiers or prepositional phrases wedged between subjects and verbs must not trick writers into misconjugating verbs."
     },
     {
         q: "A prepositional phrase between a subject and verb can sometimes ______.",
@@ -2219,7 +2431,8 @@ const fullMthPool = [
             "Remove the subject",
             "Change every verb"
         ],
-        a: 1
+        a: 1,
+        exp: "Modifiers can distract writers into matching verbs to the closest noun instead of the true head subject."
     },
     {
         q: "Which word is generally treated as a singular indefinite pronoun?",
@@ -2229,7 +2442,8 @@ const fullMthPool = [
             "Students",
             "People"
         ],
-        a: 0
+        a: 0,
+        exp: "Indefinite pronouns like everyone, everybody, and someone are grammatically singular."
     },
     {
         q: "Which sentence is correct?",
@@ -2239,7 +2453,8 @@ const fullMthPool = [
             "Everyone were ready.",
             "Everyone be ready."
         ],
-        a: 1
+        a: 1,
+        exp: "'Everyone' takes the singular verb 'is'."
     },
     {
         q: "Which of the following is also generally treated as singular?",
@@ -2249,7 +2464,8 @@ const fullMthPool = [
             "Teachers",
             "Children"
         ],
-        a: 0
+        a: 0,
+        exp: "'Everybody' is a singular indefinite pronoun."
     },
     {
         q: "Choose the correct sentence.",
@@ -2259,7 +2475,8 @@ const fullMthPool = [
             "Everybody were present.",
             "Everybody be present."
         ],
-        a: 1
+        a: 1,
+        exp: "Singular pronoun 'everybody' pairs with singular verb 'is'."
     },
     {
         q: "Which of the following is generally singular?",
@@ -2269,7 +2486,8 @@ const fullMthPool = [
             "Teachers",
             "Students"
         ],
-        a: 0
+        a: 0,
+        exp: "'Somebody' is a singular indefinite pronoun."
     },
     {
         q: "Choose the correct sentence.",
@@ -2279,7 +2497,8 @@ const fullMthPool = [
             "Somebody were calling you.",
             "Somebody call you."
         ],
-        a: 1
+        a: 1,
+        exp: "'Somebody' takes the singular verb 'is calling'."
     },
     {
         q: "Which word is generally treated as singular?",
@@ -2289,7 +2508,8 @@ const fullMthPool = [
             "Children",
             "Students"
         ],
-        a: 0
+        a: 0,
+        exp: "'Anyone' is singular."
     },
     {
         q: "Choose the correct sentence.",
@@ -2299,7 +2519,8 @@ const fullMthPool = [
             "Anyone were allowed to participate.",
             "Anyone have allowed to participate."
         ],
-        a: 1
+        a: 1,
+        exp: "'Anyone' takes singular verb 'is allowed'."
     },
     {
         q: "When two subjects are joined by “and,” the subjects are generally treated as ______.",
@@ -2309,7 +2530,8 @@ const fullMthPool = [
             "Uncountable",
             "Abstract"
         ],
-        a: 1
+        a: 1,
+        exp: "Compound subjects linked by 'and' create a plural subject requiring a plural verb."
     },
     {
         q: "Choose the correct sentence.",
@@ -2319,7 +2541,8 @@ const fullMthPool = [
             "John and Peter was students.",
             "John and Peter has students."
         ],
-        a: 1
+        a: 1,
+        exp: "Compound subject 'John and Peter' requires the plural verb 'are'."
     },
     {
         q: "Which conjunction joins two elements and commonly forms a plural subject?",
@@ -2329,7 +2552,8 @@ const fullMthPool = [
             "Although",
             "When"
         ],
-        a: 0
+        a: 0,
+        exp: "The coordinating conjunction 'and' links subjects into a plural compound unit."
     },
     {
         q: "The sentence “The teacher and the student are present” contains a ______ subject.",
@@ -2339,7 +2563,8 @@ const fullMthPool = [
             "Negative",
             "Interrogative"
         ],
-        a: 1
+        a: 1,
+        exp: "Two subjects joined by 'and' form a plural subject."
     },
     {
         q: "Correct grammar requires the verb to agree with the ______.",
@@ -2349,7 +2574,8 @@ const fullMthPool = [
             "Longest word",
             "Last word in the sentence"
         ],
-        a: 1
+        a: 1,
+        exp: "Verbs must always match their primary grammatical head subject."
     },
     {
         q: "Which sentence correctly uses a singular verb?",
@@ -2359,7 +2585,8 @@ const fullMthPool = [
             "The students in the classroom studies.",
             "The students in the classroom is studying."
         ],
-        a: 0
+        a: 0,
+        exp: "Head subject 'student' is singular, matching 'studies'."
     },
     {
         q: "Which sentence correctly uses a plural verb?",
@@ -2369,7 +2596,8 @@ const fullMthPool = [
             "The students in the classroom is.",
             "The students in the classroom was."
         ],
-        a: 1
+        a: 1,
+        exp: "Head subject 'students' is plural, matching 'study'."
     },
     {
         q: "The main purpose of planning a speech is to help the speaker communicate information ______.",
@@ -2379,7 +2607,8 @@ const fullMthPool = [
             "Secretly",
             "Slowly only"
         ],
-        a: 1
+        a: 1,
+        exp: "Planning ensures structured, accurate, and clear information delivery."
     },
     {
         q: "Speech planning can help a speaker communicate ______ information.",
@@ -2389,7 +2618,8 @@ const fullMthPool = [
             "Hidden",
             "Unrelated"
         ],
-        a: 1
+        a: 1,
+        exp: "Structured planning keeps presentations focused on relevant core content."
     },
     {
         q: "A well-planned speech is more likely to be ______.",
@@ -2399,7 +2629,8 @@ const fullMthPool = [
             "Confusing",
             "Meaningless"
         ],
-        a: 1
+        a: 1,
+        exp: "Preparation directly improves clarity and audience understanding."
     },
     {
         q: "Public speaking may be used to ______ an audience.",
@@ -2409,7 +2640,8 @@ const fullMthPool = [
             "Silence permanently",
             "Distract only"
         ],
-        a: 0
+        a: 0,
+        exp: "The primary objectives of public speaking are informing, persuading, or entertaining listeners."
     },
     {
         q: "A speech intended mainly to provide knowledge is designed to ______.",
@@ -2419,7 +2651,8 @@ const fullMthPool = [
             "Entertain only",
             "Interrupt"
         ],
-        a: 0
+        a: 0,
+        exp: "Informative speeches focus on transmitting educational knowledge."
     },
     {
         q: "A speech intended to influence an audience's views or actions is generally designed to ______.",
@@ -2429,7 +2662,8 @@ const fullMthPool = [
             "Calculate",
             "Translate"
         ],
-        a: 0
+        a: 0,
+        exp: "Persuasive speeches aim to alter beliefs, attitudes, or behaviors."
     },
     {
         q: "Which of the following can improve the clarity of a speech?",
@@ -2439,7 +2673,8 @@ const fullMthPool = [
             "Unrelated information",
             "Lack of preparation"
         ],
-        a: 0
+        a: 0,
+        exp: "Diligent planning eliminates rambling and refines clarity."
     },
     {
         q: "A speaker who ignores the subject of the speech may provide ______ information.",
@@ -2449,7 +2684,8 @@ const fullMthPool = [
             "Accurate",
             "Organized"
         ],
-        a: 1
+        a: 1,
+        exp: "Failing to stick to the topic results in irrelevant tangents."
     },
     {
         q: "Which of the following is important when preparing a speech?",
@@ -2459,7 +2695,8 @@ const fullMthPool = [
             "Using unrelated examples",
             "Ignoring the audience"
         ],
-        a: 0
+        a: 0,
+        exp: "Logical idea organization is a cornerstone of speech preparation."
     },
     {
         q: "The basic purpose of sentence structure is to organize words so that they convey ______.",
@@ -2469,7 +2706,8 @@ const fullMthPool = [
             "Silence",
             "Confusion"
         ],
-        a: 0
+        a: 0,
+        exp: "Syntax and sentence structure organize words to communicate coherent meaning."
     },
     {
         q: "Which part of a sentence normally tells what the subject does or what happens to it?",
@@ -2479,7 +2717,8 @@ const fullMthPool = [
             "Conjunction only",
             "Preposition only"
         ],
-        a: 0
+        a: 0,
+        exp: "The predicate articulates the action or state of the subject."
     },
     {
         q: "In “The lecturer speaks clearly,” the subject is ______.",
@@ -2489,7 +2728,8 @@ const fullMthPool = [
             "The lecturer",
             "Lecturer speaks"
         ],
-        a: 2
+        a: 2,
+        exp: "'The lecturer' is the entity performing the action."
     },
     {
         q: "In “The lecturer speaks clearly,” the predicate is ______.",
@@ -2499,7 +2739,8 @@ const fullMthPool = [
             "Clearly only",
             "Lecturer only"
         ],
-        a: 1
+        a: 1,
+        exp: "'Speaks clearly' constitutes the complete predicate."
     },
     {
         q: "Which sentence has correct subject–verb agreement?",
@@ -2509,7 +2750,8 @@ const fullMthPool = [
             "The book is useful.",
             "The books was useful."
         ],
-        a: 2
+        a: 2,
+        exp: "Singular 'book' matches singular 'is'."
     },
     {
         q: "Which sentence has correct subject–verb agreement?",
@@ -2519,7 +2761,8 @@ const fullMthPool = [
             "The book are useful.",
             "The book were useful."
         ],
-        a: 1
+        a: 1,
+        exp: "Plural 'books' matches plural 'are'."
     },
     {
         q: "Which sentence is grammatically correct?",
@@ -2529,7 +2772,8 @@ const fullMthPool = [
             "The teacher and student was here.",
             "The teacher and student has here."
         ],
-        a: 1
+        a: 1,
+        exp: "Compound subject joined by 'and' takes plural verb 'are'."
     },
     {
         q: "Which of the following can make subject–verb agreement difficult to identify?",
@@ -2539,7 +2783,8 @@ const fullMthPool = [
             "The title of a book",
             "A paragraph heading"
         ],
-        a: 0
+        a: 0,
+        exp: "Intervening phrases can obscure the true subject."
     },
     {
         q: "Which sentence correctly uses “everyone”?",
@@ -2549,7 +2794,8 @@ const fullMthPool = [
             "Everyone are having books.",
             "Everyone were having a book."
         ],
-        a: 1
+        a: 1,
+        exp: "'Everyone' is singular, taking 'has'."
     },
     {
         q: "Which sentence correctly uses “somebody”?",
@@ -2559,7 +2805,8 @@ const fullMthPool = [
             "Somebody were outside.",
             "Somebody have outside."
         ],
-        a: 1
+        a: 1,
+        exp: "'Somebody' is singular, taking 'is'."
     },
     {
         q: "Which sentence correctly uses “anyone”?",
@@ -2569,7 +2816,8 @@ const fullMthPool = [
             "Anyone were welcome.",
             "Anyone have welcome."
         ],
-        a: 1
+        a: 1,
+        exp: "'Anyone' is singular, taking 'is'."
     },
     {
         q: "Which sentence correctly uses “everybody”?",
@@ -2579,7 +2827,8 @@ const fullMthPool = [
             "Everybody were happy.",
             "Everybody have happy."
         ],
-        a: 1
+        a: 1,
+        exp: "'Everybody' is singular, taking 'is'."
     },
     {
         q: "The phrase “in the classroom” in “The students in the classroom study” is an example of a ______ phrase.",
@@ -2589,7 +2838,8 @@ const fullMthPool = [
             "Predicate only",
             "Conjunction"
         ],
-        a: 0
+        a: 0,
+        exp: "A phrase starting with a preposition ('in') is a prepositional phrase."
     },
     {
         q: "In subject–verb agreement, a speaker should focus on the ______ rather than a distracting noun in a phrase.",
@@ -2599,7 +2849,8 @@ const fullMthPool = [
             "Longest word",
             "First adjective"
         ],
-        a: 0
+        a: 0,
+        exp: "Always anchor verb agreement to the primary head subject."
     },
     {
         q: "Good sentence construction contributes to effective ______.",
@@ -2609,7 +2860,8 @@ const fullMthPool = [
             "Confusion",
             "Interruption"
         ],
-        a: 0
+        a: 0,
+        exp: "Proper syntax underpins clear communication."
     },
     {
         q: "The correct use of grammar in speech and writing helps a person communicate ideas ______.",
@@ -2619,7 +2871,8 @@ const fullMthPool = [
             "Unnecessarily",
             "Secretly"
         ],
-        a: 0
+        a: 0,
+        exp: "Grammar rules ensure ideas are expressed with precision and clarity."
     },
     {
         q: "An adjective is a word that modifies or qualifies a ______.",
@@ -2629,7 +2882,8 @@ const fullMthPool = [
             "Conjunction only",
             "Preposition only"
         ],
-        a: 0
+        a: 0,
+        exp: "Adjectives describe or modify nouns and pronouns."
     },
     {
         q: "Which of the following is an adjective?",
@@ -2639,7 +2893,8 @@ const fullMthPool = [
             "Run",
             "And"
         ],
-        a: 0
+        a: 0,
+        exp: "'Beautiful' is a descriptive adjective."
     },
     {
         q: "An adverb can modify a ______.",
@@ -2649,7 +2904,8 @@ const fullMthPool = [
             "Pronoun only",
             "Article only"
         ],
-        a: 0
+        a: 0,
+        exp: "Adverbs modify verbs, adjectives, or other adverbs."
     },
     {
         q: "Which of the following is an adverb?",
@@ -2659,7 +2915,8 @@ const fullMthPool = [
             "Student",
             "And"
         ],
-        a: 0
+        a: 0,
+        exp: "'Quickly' is an adverb of manner."
     },
     {
         q: "An adverb can also modify an ______.",
@@ -2669,7 +2926,8 @@ const fullMthPool = [
             "Noun only",
             "Alphabet"
         ],
-        a: 0
+        a: 0,
+        exp: "Adverbs can intensify or modify adjectives (e.g., 'very fast')."
     },
     {
         q: "Which word is a preposition?",
@@ -2679,7 +2937,8 @@ const fullMthPool = [
             "Beautiful",
             "Study"
         ],
-        a: 0
+        a: 0,
+        exp: "'Under' is a preposition indicating position."
     },
     {
         q: "Prepositions are used to show relationships of ______.",
@@ -2689,7 +2948,8 @@ const fullMthPool = [
             "Pronunciation only",
             "Paragraph length"
         ],
-        a: 0
+        a: 0,
+        exp: "Prepositions link nouns/pronouns to other words to show spatial, temporal, or directional relationships."
     },
     {
         q: "Which of the following is a preposition?",
@@ -2699,7 +2959,8 @@ const fullMthPool = [
             "Quickly",
             "Beautiful"
         ],
-        a: 0
+        a: 0,
+        exp: "'In' is a standard preposition."
     },
     {
         q: "Which of the following is NOT a preposition?",
@@ -2709,7 +2970,8 @@ const fullMthPool = [
             "With",
             "Beautiful"
         ],
-        a: 3
+        a: 3,
+        exp: "'Beautiful' is an adjective."
     },
     {
         q: "In the expression “in the classroom,” the word “in” functions as a ______.",
@@ -2719,7 +2981,8 @@ const fullMthPool = [
             "Adverb",
             "Conjunction"
         ],
-        a: 0
+        a: 0,
+        exp: "'In' establishes location, acting as a preposition."
     },
     {
         q: "Which of the following is a preposition of place?",
@@ -2729,7 +2992,8 @@ const fullMthPool = [
             "Quickly",
             "Although"
         ],
-        a: 0
+        a: 0,
+        exp: "'Under' indicates physical position."
     },
     {
         q: "Which of the following is a preposition?",
@@ -2739,7 +3003,8 @@ const fullMthPool = [
             "But",
             "So"
         ],
-        a: 0
+        a: 0,
+        exp: "'By' is a preposition."
     },
     {
         q: "Which word can function as a preposition?",
@@ -2749,7 +3014,8 @@ const fullMthPool = [
             "Because",
             "Or"
         ],
-        a: 0
+        a: 0,
+        exp: "'For' frequently functions as a preposition."
     },
     {
         q: "Which of the following is a preposition?",
@@ -2759,7 +3025,8 @@ const fullMthPool = [
             "But",
             "So"
         ],
-        a: 0
+        a: 0,
+        exp: "'From' is a preposition of origin/direction."
     },
     {
         q: "Which of the following is a preposition?",
@@ -2769,7 +3036,8 @@ const fullMthPool = [
             "Although",
             "Or"
         ],
-        a: 0
+        a: 0,
+        exp: "'With' is a preposition."
     },
     {
         q: "A conjunction is a word that ______ grammatical units.",
@@ -2779,7 +3047,8 @@ const fullMthPool = [
             "Replaces all",
             "Separates permanently"
         ],
-        a: 0
+        a: 0,
+        exp: "Conjunctions connect words, phrases, or clauses."
     },
     {
         q: "Which of the following is a conjunction?",
@@ -2789,7 +3058,8 @@ const fullMthPool = [
             "Quickly",
             "Beautiful"
         ],
-        a: 0
+        a: 0,
+        exp: "'And' is a coordinating conjunction."
     },
     {
         q: "Which of the following is a coordinating conjunction?",
@@ -2799,7 +3069,8 @@ const fullMthPool = [
             "Although",
             "When"
         ],
-        a: 0
+        a: 0,
+        exp: "'But' connects contrasting clauses as a coordinating conjunction."
     },
     {
         q: "Which of the following is a coordinating conjunction?",
@@ -2809,7 +3080,8 @@ const fullMthPool = [
             "Because",
             "Before"
         ],
-        a: 0
+        a: 0,
+        exp: "'Or' presents alternatives as a coordinating conjunction."
     },
     {
         q: "Which of the following is a coordinating conjunction?",
@@ -2819,7 +3091,8 @@ const fullMthPool = [
             "Because",
             "When"
         ],
-        a: 0
+        a: 0,
+        exp: "'So' connects cause and effect."
     },
     {
         q: "Which group contains coordinating conjunctions?",
@@ -2829,7 +3102,8 @@ const fullMthPool = [
             "In, on, at, under",
             "Quickly, slowly, carefully, loudly"
         ],
-        a: 0
+        a: 0,
+        exp: "FANBOYS derivatives like and, but, or, and so are coordinating conjunctions."
     },
     {
         q: "Which of the following is a subordinating conjunction?",
@@ -2839,7 +3113,8 @@ const fullMthPool = [
             "Or",
             "So"
         ],
-        a: 0
+        a: 0,
+        exp: "'Because' introduces dependent clauses."
     },
     {
         q: "Which of the following is a subordinating conjunction?",
@@ -2849,7 +3124,8 @@ const fullMthPool = [
             "But",
             "Or"
         ],
-        a: 0
+        a: 0,
+        exp: "'Although' introduces concessive dependent clauses."
     },
     {
         q: "Which of the following is a subordinating conjunction?",
@@ -2859,7 +3135,8 @@ const fullMthPool = [
             "But",
             "So"
         ],
-        a: 0
+        a: 0,
+        exp: "'Before' indicates time subordination."
     },
     {
         q: "Which of the following is a subordinating conjunction?",
@@ -2869,7 +3146,8 @@ const fullMthPool = [
             "Or",
             "But"
         ],
-        a: 0
+        a: 0,
+        exp: "'After' links dependent clauses temporally."
     },
     {
         q: "Which of the following is a subordinating conjunction?",
@@ -2879,7 +3157,8 @@ const fullMthPool = [
             "Or",
             "So"
         ],
-        a: 0
+        a: 0,
+        exp: "'When' acts as a subordinating conjunction of time."
     },
     {
         q: "Which pair contains only conjunctions?",
@@ -2889,7 +3168,8 @@ const fullMthPool = [
             "Quickly, slowly",
             "Beautiful, intelligent"
         ],
-        a: 0
+        a: 0,
+        exp: "'And' and 'but' are conjunctions."
     },
     {
         q: "Which pair contains only prepositions?",
@@ -2899,7 +3179,8 @@ const fullMthPool = [
             "Quickly, slowly",
             "Because, although"
         ],
-        a: 0
+        a: 0,
+        exp: "'In' and 'on' are prepositions."
     },
     {
         q: "Which pair contains subordinating conjunctions?",
@@ -2909,7 +3190,8 @@ const fullMthPool = [
             "In, at",
             "Quickly, carefully"
         ],
-        a: 0
+        a: 0,
+        exp: "'Because' and 'although' are subordinating conjunctions."
     },
     {
         q: "The word “and” is mainly used to express ______.",
@@ -2919,7 +3201,8 @@ const fullMthPool = [
             "Location",
             "Time only"
         ],
-        a: 0
+        a: 0,
+        exp: "'And' connects similar ideas or items."
     },
     {
         q: "An antonym is a word that has a meaning that is ______ to another word.",
@@ -2929,7 +3212,8 @@ const fullMthPool = [
             "Unrelated in every case",
             "Longer"
         ],
-        a: 0
+        a: 0,
+        exp: "Antonyms are words with contrasting or opposite meanings."
     },
     {
         q: "Which pair consists of antonyms?",
@@ -2939,7 +3223,8 @@ const fullMthPool = [
             "Fast — Quick",
             "Begin — Start"
         ],
-        a: 0
+        a: 0,
+        exp: "Hot and cold represent opposite thermal states."
     },
     {
         q: "A synonym is a word that has the same or nearly the same ______ as another word.",
@@ -2949,7 +3234,8 @@ const fullMthPool = [
             "Number of letters",
             "Pronunciation always"
         ],
-        a: 0
+        a: 0,
+        exp: "Synonyms share identical or very similar meanings."
     },
     {
         q: "Which pair consists of synonyms?",
@@ -2959,7 +3245,8 @@ const fullMthPool = [
             "Old — New",
             "Happy — Sad"
         ],
-        a: 0
+        a: 0,
+        exp: "Big and large share the same meaning."
     },
     {
         q: "Which pair contains synonyms?",
@@ -2969,7 +3256,8 @@ const fullMthPool = [
             "Rich — Poor",
             "Strong — Weak"
         ],
-        a: 0
+        a: 0,
+        exp: "Begin and start are direct synonyms."
     },
     {
         q: "Which pair contains antonyms?",
@@ -2979,7 +3267,8 @@ const fullMthPool = [
             "Begin — Start",
             "Quick — Fast"
         ],
-        a: 0
+        a: 0,
+        exp: "Strong and weak are antonyms."
     },
     {
         q: "Homophones are words that ______.",
@@ -2989,7 +3278,8 @@ const fullMthPool = [
             "Always have identical spelling",
             "Have opposite meanings"
         ],
-        a: 0
+        a: 0,
+        exp: "Homophones share identical pronunciations despite different spellings and meanings."
     },
     {
         q: "Which pair is an example of homophones?",
@@ -2999,7 +3289,8 @@ const fullMthPool = [
             "Hot — Cold",
             "Begin — Start"
         ],
-        a: 0
+        a: 0,
+        exp: "Right and write sound identical when spoken."
     },
     {
         q: "Homonyms are words associated with the same form or pronunciation but having ______.",
@@ -3009,7 +3300,8 @@ const fullMthPool = [
             "Opposite spellings",
             "No meaning"
         ],
-        a: 0
+        a: 0,
+        exp: "Homonyms share spelling or sound but possess distinct meanings."
     },
     {
         q: "Vocabulary development involves increasing one's knowledge of ______.",
@@ -3019,7 +3311,8 @@ const fullMthPool = [
             "Punctuation only",
             "Paragraph length"
         ],
-        a: 0
+        a: 0,
+        exp: "Building vocabulary expands word mastery and comprehension."
     },
     {
         q: "Learning synonyms can help a speaker to ______.",
@@ -3029,7 +3322,8 @@ const fullMthPool = [
             "Reduce understanding",
             "Eliminate grammar"
         ],
-        a: 0
+        a: 0,
+        exp: "Mastering synonyms enriches expressive vocabulary options."
     },
     {
         q: "Learning antonyms helps a person understand ______.",
@@ -3039,7 +3333,8 @@ const fullMthPool = [
             "Punctuation",
             "Sentence length"
         ],
-        a: 0
+        a: 0,
+        exp: "Antonyms clarify boundaries of meaning through contrast."
     },
     {
         q: "The meaning associated with a word beyond its basic dictionary definition is called ______.",
@@ -3049,7 +3344,8 @@ const fullMthPool = [
             "Subject",
             "Predicate"
         ],
-        a: 0
+        a: 0,
+        exp: "Connotation refers to emotional or cultural associations attached to words."
     },
     {
         q: "A word's basic dictionary meaning is commonly referred to as its ______.",
@@ -3059,7 +3355,8 @@ const fullMthPool = [
             "Antonym",
             "Homophone"
         ],
-        a: 0
+        a: 0,
+        exp: "Denotation is the literal, dictionary definition of a word."
     },
     {
         q: "Connotation may be ______.",
@@ -3069,7 +3366,8 @@ const fullMthPool = [
             "Only negative",
             "Only neutral"
         ],
-        a: 0
+        a: 0,
+        exp: "Word connotations evoke favorable, unfavorable, or neutral emotional responses."
     },
     {
         q: "Which of the following describes a positive connotation?",
@@ -3079,7 +3377,8 @@ const fullMthPool = [
             "A spelling mistake",
             "A grammatical error"
         ],
-        a: 0
+        a: 0,
+        exp: "Positive connotations carry uplifting or flattering emotional tones."
     },
     {
         q: "Which of the following describes a negative connotation?",
@@ -3089,7 +3388,8 @@ const fullMthPool = [
             "A punctuation mark",
             "A verb agreement rule"
         ],
-        a: 0
+        a: 0,
+        exp: "Negative connotations evoke disapproval or unpleasant feelings."
     },
     {
         q: "Why is vocabulary important in effective communication?",
@@ -3099,7 +3399,8 @@ const fullMthPool = [
             "It eliminates the need for listening",
             "It makes every sentence longer"
         ],
-        a: 0
+        a: 0,
+        exp: "A robust vocabulary allows precise expression of nuanced thoughts."
     },
     {
         q: "A speaker who chooses words carefully is more likely to communicate ______.",
@@ -3109,7 +3410,8 @@ const fullMthPool = [
             "Unnecessarily",
             "Confusingly"
         ],
-        a: 0
+        a: 0,
+        exp: "Mindful word selection optimizes communicative clarity."
     },
     {
         q: "The study of parts of speech and vocabulary contributes to better ______.",
@@ -3119,14 +3421,15 @@ const fullMthPool = [
             "Confusion",
             "Interruption"
         ],
-        a: 0
+        a: 0,
+        exp: "Grammar and vocabulary mastery directly elevate overall communication competence."
     }
 ];
 
 let activeExam = [];
-let timeLeft = 1200; // 45 minutes countdown (20 * 60)
+let timeLeft = 2700; // 45 minutes countdown (45 * 60)
 let timer;
-const totalExamQuestions =60; 
+const totalExamQuestions = 60; 
 let currentQuestionIndex = 0;
 
 function shufflePool(array) {
@@ -3143,8 +3446,8 @@ function initExam() {
     setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1000);
 
     let shuffledSelection = shufflePool([...fullMthPool]);
-    activeExam = shuffledSelection;
-    timeLeft = 1200; 
+    activeExam = shuffledSelection.slice(0, totalExamQuestions);
+    timeLeft = 2700; 
     currentQuestionIndex = 0; 
     
     renderQuestions();
@@ -3215,7 +3518,7 @@ function startTimer() {
 function submitExam() {
     clearInterval(timer);
     let score = 0;
-    let reviewHTML = `<h2>Performance Review</h2>`;
+    let reviewHTML = `<h2 style="font-size: 1.5rem; margin-bottom: 20px; color: var(--navy); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Detailed Review & Explanations</h2>`;
 
     activeExam.forEach((item, idx) => {
         const sel = document.querySelector(`input[name="q${idx}"]:checked`);
@@ -3223,11 +3526,20 @@ function submitExam() {
         const correct = userVal === item.a;
         if(correct) score++;
 
+        const userAnsText = userVal !== null ? `${String.fromCharCode(65 + userVal)}. ${item.o[userVal]}` : 'Skipped / Unanswered';
+        const correctAnsText = `${String.fromCharCode(65 + item.a)}. ${item.o[item.a]}`;
+
         reviewHTML += `
-            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
-                <p><strong>${idx + 1}. ${item.q}</strong></p>
-                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
-                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}.${item.o[item.a]}</p>` : ''}
+            <div class="review-card" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'};">
+                <p style="font-weight: 700; font-size: 1.05rem; margin-bottom: 8px;">${idx + 1}. ${item.q}</p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600; margin-bottom: 4px;">
+                    Your Answer: ${userAnsText} ${correct ? '✓' : '✗'}
+                </p>
+                ${!correct ? `<p style="color: #38761d; font-weight: 700; margin-bottom: 8px;">Correct Answer: ${correctAnsText}</p>` : ''}
+                
+                <div class="explanation-box ${correct ? 'correct-bg' : 'wrong-bg'}">
+                    <strong>🧠 Tutor Explanation:</strong> ${item.exp}
+                </div>
             </div>`;
     });
 
@@ -3251,13 +3563,14 @@ function submitExam() {
     }
 
     document.getElementById('exam-container').style.display = 'none';
-    document.getElementById('result-screen').style.display = 'block';
+    const resultScreen = document.getElementById('result-screen');
+    resultScreen.style.display = 'block';
     
-    document.getElementById('result-screen').innerHTML = `
+    resultScreen.innerHTML = `
         <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
         <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
         <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
-        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <p style="font-size: 1.15rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 600;">"${remark}"</p>
         <div id="review-area">${reviewHTML}</div>
         <button class="btn-action" onclick="location.reload()">Try Again</button>
     `;
