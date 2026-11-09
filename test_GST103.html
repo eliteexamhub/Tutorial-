@@ -9,6 +9,8 @@
         :root { 
             --navy: #001f3f; 
             --green: #38761d; 
+            --green-light: #eef7ed;
+            --red-light: #fef2f2;
             --light-bg: #f8fafc; 
             --gradient: linear-gradient(135deg, #001f3f 0%, #38761d 100%); 
             --card-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.05), 0 8px 10px -6px rgba(0, 31, 63, 0.05);
@@ -62,6 +64,12 @@
         .tracker-dot.answered { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 10px rgba(56,118,29,0.2); }
         .tracker-dot.answered.current { box-shadow: 0 0 0 2px var(--navy); }
 
+        /* REVIEW STYLES */
+        .review-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; text-align: left; box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; }
+        .explanation-box { margin-top: 12px; padding: 14px; border-radius: 10px; font-size: 0.92rem; line-height: 1.5; }
+        .explanation-box.correct-bg { background: var(--green-light); border-left: 4px solid var(--green); color: #1e4620; }
+        .explanation-box.wrong-bg { background: var(--red-light); border-left: 4px solid #d32f2f; color: #991b1b; }
+
         #result-screen { display: none; text-align: center; padding: 50px 20px; }
         
         footer { margin-top: auto; padding: 40px 20px 20px 20px; text-align: center; border-top: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
@@ -80,7 +88,7 @@
 <div class="container">
     <header>
         <h1>GST 103: USE OF LIBRARY</h1>
-        <p>Elite Exam Hub • NO SHAKING, ELITE EXAM HUB DEY FOR YOU 😂</p>
+        <p>Elite Exam Hub • Comprehensive Explanations Edition ⚡</p>
     </header>
 </div>
 
@@ -107,12 +115,7 @@
     </div>
 </div>
 
-<div class="container" id="result-screen">
-    <div style="font-size: 3rem;">NO FALL YOUR HAND 😂</div>
-    <h1 id="score-text"></h1>
-    <div id="review-area"></div>
-    <button class="btn-action" onclick="location.reload()">Try Again</button>
-</div>
+<div class="container" id="result-screen"></div>
 
 <footer>
     <div class="footer-copy">&copy; 2026 Elite Exam Hub. All Rights Reserved.</div>
@@ -120,7 +123,7 @@
 </footer>
 
 <script>
-// GST 103 Question Bank (146 Questions)
+// GST 103 Question Bank (146 Questions with Explanations)
 const fullPhyPool = [
     { q: "A library can be defined as_____________", o: ["An educational resource centre", "A 'nest' where scholars are hatched", "A storehouse of knowledge", "All of the above"], a: 3, exp: "A library can be described as an educational resource centre, a place where knowledge is preserved, and a centre that supports scholars and learning." },
     { q: "The Use of Library and Introduction to ICT (GST 103) is_____________", o: ["A compulsory course", "A required course", "An elective course", "All of the above"], a: 1, exp: "GST 103 is treated as a required course for students." },
@@ -289,11 +292,10 @@ function shufflePool(array) {
 function initExam() {
     setTimeout(() => { document.getElementById('sync-loader').style.display = 'none'; }, 1000);
 
-    // Randomly select EXACTLY 60 questions from the 146 question pool
     const shuffled = shufflePool([...fullPhyPool]);
     activeExam = shuffled.slice(0, totalExamQuestions);
     
-    timeLeft = 1200; // Reset timer to 20 mins
+    timeLeft = 1200; 
     currentQuestionIndex = 0; 
     
     renderQuestions();
@@ -364,7 +366,7 @@ function startTimer() {
 function submitExam() {
     clearInterval(timer);
     let score = 0;
-    let reviewHTML = `<h2>Performance Review</h2>`;
+    let reviewHTML = `<h2 style="font-size: 1.5rem; margin-bottom: 20px; color: var(--navy); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Detailed Review & Explanations</h2>`;
 
     activeExam.forEach((item, idx) => {
         const sel = document.querySelector(`input[name="q${idx}"]:checked`);
@@ -372,12 +374,20 @@ function submitExam() {
         const correct = userVal === item.a;
         if(correct) score++;
 
+        const userAnsText = userVal !== null ? `${String.fromCharCode(65 + userVal)}. ${item.o[userVal]}` : 'Skipped / Unanswered';
+        const correctAnsText = `${String.fromCharCode(65 + item.a)}. ${item.o[item.a]}`;
+
         reviewHTML += `
-            <div class="question-block active" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'}; padding-left: 15px; text-align: left; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px;">
-                <p><strong>${idx + 1}. ${item.q}</strong></p>
-                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600;">You: ${userVal !== null ? String.fromCharCode(65 + userVal) + '. ' + item.o[userVal] : 'No Answer'}</p>
-                ${!correct ? `<p style="color: #38761d; font-weight: bold;">Correct: ${String.fromCharCode(65 + item.a)}. ${item.o[item.a]}</p>` : ''}
-                <p style="font-size: 0.9rem; color: #475569; margin-top: 8px;"><em>Explanation: ${item.exp}</em></p>
+            <div class="review-card" style="border-left: 5px solid ${correct ? '#38761d' : '#d32f2f'};">
+                <p style="font-weight: 700; font-size: 1.05rem; margin-bottom: 8px;">${idx + 1}. ${item.q}</p>
+                <p style="color: ${correct ? '#38761d' : '#d32f2f'}; font-weight: 600; margin-bottom: 4px;">
+                    Your Answer: ${userAnsText} ${correct ? '✓' : '✗'}
+                </p>
+                ${!correct ? `<p style="color: #38761d; font-weight: 700; margin-bottom: 8px;">Correct Answer: ${correctAnsText}</p>` : ''}
+                
+                <div class="explanation-box ${correct ? 'correct-bg' : 'wrong-bg'}">
+                    <strong>🧠 Tutor Explanation:</strong> ${item.exp}
+                </div>
             </div>`;
     });
 
@@ -401,13 +411,14 @@ function submitExam() {
     }
 
     document.getElementById('exam-container').style.display = 'none';
-    document.getElementById('result-screen').style.display = 'block';
+    const resultScreen = document.getElementById('result-screen');
+    resultScreen.style.display = 'block';
     
-    document.getElementById('result-screen').innerHTML = `
+    resultScreen.innerHTML = `
         <div style="font-size: 4rem; margin-bottom: 10px;">${statusEmoji}</div>
         <h1 style="font-size: 3.5rem; margin: 0; color: var(--navy);">Grade: ${grade}</h1>
         <h2 style="font-weight: 600; margin: 10px 0; color: var(--green);">${percentage}% (${score} / ${totalExamQuestions} Correct)</h2>
-        <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 400;">"${remark}"</p>
+        <p style="font-size: 1.15rem; max-width: 600px; margin: 0 auto 30px auto; color: #475569; font-weight: 600;">"${remark}"</p>
         <div id="review-area">${reviewHTML}</div>
         <button class="btn-action" onclick="location.reload()">Try Again</button>
     `;
